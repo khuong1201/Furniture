@@ -1,0 +1,32 @@
+{
+    "name": "nwidart/permission",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\User\\Providers\\PermissionServiceProvider.php"
+            ],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Permission\\": "Modules/Permission",
+            "Modules\\Permission\\Database\\Factories\\": "database/factories/",
+            "Modules\\Permission\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Permission\\Tests\\": "tests/"
+        }
+    }
+}

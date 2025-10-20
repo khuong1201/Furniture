@@ -1,0 +1,32 @@
+{
+    "name": "nwidart/role",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\User\\Providers\\RoleServiceProvider.php"
+            ],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Role\\": "Modules/Role",
+            "Modules\\Role\\Database\\Factories\\": "database/factories/",
+            "Modules\\Role\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Role\\Tests\\": "tests/"
+        }
+    }
+}
