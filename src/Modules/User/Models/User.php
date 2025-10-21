@@ -11,7 +11,7 @@ class User extends Model
     use HasFactory, HasApiTokens;
 
     protected $fillable = [
-        'uuid', 'name', 'email', 'password', 'role', 'is_active', 'avatar_url', 'is_deleted',
+        'uuid', 'name', 'email', 'password', 'is_active', 'avatar_url', 'is_deleted',
     ];
 
     protected $casts = [

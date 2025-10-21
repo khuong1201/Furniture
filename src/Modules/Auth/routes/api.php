@@ -1,12 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Auth\Http\Controllers\AuthController;
+use Modules\Auth\Http\Controllers\AuthApiController;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/refresh', [AuthController::class, 'refresh']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+Route::prefix('auth')->middleware('api')->group(function () {
+    Route::post('register', [AuthApiController::class, 'register']);
+    Route::post('login', [AuthApiController::class, 'login']);
+    Route::post('refresh', [AuthApiController::class, 'refresh']);
+
+    Route::middleware(['auth:sanctum', 'check.token.expiry'])->group(function () {
+        Route::get('me', [AuthApiController::class, 'me']);
+        Route::post('logout', [AuthApiController::class, 'logout']);
+    });
 });
+

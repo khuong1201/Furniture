@@ -4,73 +4,96 @@ namespace Modules\Auth\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Modules\User\Models\User;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function index()
+    {
+        $users = User::orderBy('created_at', 'desc')->paginate(20);
+        return view('auths.index', compact('users'));
+    }
+
+    // Form tạo user
+    public function create()
+    {
+        return view('auths.create');
+    }
+
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
         $user = User::create([
-            'uuid' => \Str::uuid(),
+            'uuid' => Str::uuid(),
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'customer',
         ]);
 
-        $token = $user->createToken('access_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'access_token' => $token,
-        ]);
-    }
-
-    public function login(Request $request)
-    {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return response()->json(['message' => 'Sai thông tin đăng nhập'], 401);
+        $roleId = DB::table('roles')->where('name', 'customer')->value('id');
+        if (!$roleId) {
+            $roleId = DB::table('roles')->insertGetId([
+                'name' => 'customer',
+                'label' => 'Khách hàng',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        if (!DB::table('role_user')->where(['user_id' => $user->id, 'role_id' => $roleId])->exists()) {
+            DB::table('role_user')->insert([
+                'user_id' => $user->id,
+                'role_id' => $roleId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
 
-        $token = $user->createToken('access_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'access_token' => $token,
-        ]);
+        return redirect()->route('auth.index')->with('success', 'Tạo user thành công.');
     }
 
-    public function refresh(Request $request)
+    // Hiển thị chi tiết user
+    public function show(User $auth)
     {
-        $user = $request->user();
-        $user->tokens()->delete();
-
-        $newToken = $user->createToken('access_token')->plainTextToken;
-
-        return response()->json([
-            'access_token' => $newToken,
-        ]);
+        return view('auths.show', ['user' => $auth]);
     }
 
-    public function logout(Request $request)
+    // Form edit user
+    public function edit(User $auth)
     {
-        $request->user()->tokens()->delete();
+        return view('auths.edit', ['user' => $auth]);
+    }
 
-        return response()->json(['message' => 'Đã đăng xuất']);
+    // Cập nhật user
+    public function update(Request $request, User $auth)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $auth->id,
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        $auth->name = $validated['name'];
+        $auth->email = $validated['email'];
+        if (!empty($validated['password'])) {
+            $auth->password = Hash::make($validated['password']);
+        }
+        $auth->save();
+
+        return redirect()->route('auth.show', $auth->id)->with('success', 'Cập nhật thành công.');
+    }
+
+    // Xóa user
+    public function destroy(User $auth)
+    {
+        $auth->delete();
+        return redirect()->route('auth.index')->with('success', 'Xóa user thành công.');
     }
 }

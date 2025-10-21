@@ -14,7 +14,7 @@ class RoleDatabaseSeeder extends Seeder
     public function run(): void
     {
         $admin = Role::firstOrCreate(['name' => 'admin'], ['label' => 'Quản trị viên']);
-
+        $customer = Role::firstOrCreate(['name' => 'customer'], ['label' => 'Khách hàng']);
         $permissions = [
             ['name' => 'user.view', 'label' => 'Xem người dùng'],
             ['name' => 'user.create', 'label' => 'Tạo người dùng'],

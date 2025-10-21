@@ -29,7 +29,6 @@ class UserApiController extends BaseController
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => $request->role,
         ]);
 
         return $this->success($user, 'Tạo người dùng thành công', 201);

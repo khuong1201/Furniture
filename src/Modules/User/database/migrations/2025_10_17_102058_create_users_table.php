@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('email', 255)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role', 50)->default('customer')->index();
             $table->boolean('is_active')->default(true);
             $table->string('avatar_url')->nullable();
             $table->boolean('is_deleted')->default(false);

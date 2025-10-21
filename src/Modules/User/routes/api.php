@@ -5,7 +5,7 @@ use Modules\User\Http\Controllers\UserApiController;
 
 Route::middleware(['auth:sanctum', 'check.role:customer,admin'])->group(function () {
     Route::get('users', [UserApiController::class, 'index'])
-        ->middleware('check.permission:user.view');
+        ->middleware(['check.permission:user.view', 'check.role:admin']);
 
     Route::post('users', [UserApiController::class, 'store'])
         ->middleware('check.permission:user.create');

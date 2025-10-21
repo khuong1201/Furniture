@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-
+use Modules\Auth\Http\Middleware\CheckAccessTokenExpiry;
 class AuthServiceProvider extends ServiceProvider
 {
     use PathNamespace;
@@ -27,6 +27,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+        $this->app['router']->aliasMiddleware('check.token.expiry', CheckAccessTokenExpiry::class);
     }
 
     /**

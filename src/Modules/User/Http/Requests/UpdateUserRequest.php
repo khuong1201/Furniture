@@ -13,7 +13,6 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'role' => 'required|string',
             'is_active' => 'boolean',
         ];
     }

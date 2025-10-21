@@ -26,7 +26,6 @@ class UserController extends BaseController
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => $request->role,
             'is_active' => true,
             'is_deleted' => false,
         ]);

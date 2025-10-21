@@ -19,15 +19,19 @@ class CheckPermission
             ], 401);
         }
 
+        // Chuyển tất cả permissions cần check thành chữ thường
         $permissions = array_map('strtolower', $permissions);
 
-        $userPermissions = method_exists($user, 'permissions')
-            ? $user->permissions->pluck('name')->map(fn($p) => strtolower($p))->toArray()
-            : (method_exists($user, 'hasPermission')
-                ? $user->getAllPermissions()
-                : []);
+        // Nếu user có bất kỳ quyền nào trong danh sách => cho qua
+        $hasPermission = false;
+        foreach ($permissions as $permission) {
+            if ($user->hasPermission($permission)) {
+                $hasPermission = true;
+                break;
+            }
+        }
 
-        if (empty($userPermissions) || !array_intersect($permissions, $userPermissions)) {
+        if (!$hasPermission) {
             return response()->json([
                 'status' => false,
                 'message' => 'Bạn không có quyền truy cập',
