@@ -1,22 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\User\Http\Controllers\UserApiController;
+use Modules\User\Http\Controllers\UserController;
+use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
-Route::middleware(['auth:sanctum', 'check.role:customer,admin'])->group(function () {
-    Route::get('users', [UserApiController::class, 'index'])
-        ->middleware(['check.permission:user.view', 'check.role:admin']);
-
-    Route::post('users', [UserApiController::class, 'store'])
-        ->middleware('check.permission:user.create');
-
-    Route::get('users/{user}', [UserApiController::class, 'show'])
-        ->middleware('check.permission:user.view');
-
-    Route::put('users/{user}', [UserApiController::class, 'update'])
-        ->middleware('check.permission:user.edit');
-
-    Route::delete('users/{user}', [UserApiController::class, 'destroy'])
-        ->middleware('check.permission:user.delete');
+Route::middleware([JwtAuthenticate::class])->prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{uuid}', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::put('/{uuid}', [UserController::class, 'update']);
+    Route::delete('/{uuid}', [UserController::class, 'destroy']);
 });
 

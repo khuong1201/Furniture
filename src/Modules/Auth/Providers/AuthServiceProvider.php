@@ -7,7 +7,9 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Modules\Auth\Http\Middleware\CheckAccessTokenExpiry;
+use Modules\Auth\Services\AuthService;
+use Modules\Auth\Domain\Repositories\AuthRepositoryInterface;
+use Modules\Auth\Infrastructure\Repositories\EloquentAuthRepository;
 class AuthServiceProvider extends ServiceProvider
 {
     use PathNamespace;
@@ -27,7 +29,14 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
-        $this->app['router']->aliasMiddleware('check.token.expiry', CheckAccessTokenExpiry::class);
+        $config = __DIR__ . '/../Config/jwt.php';
+        if (file_exists($config)) {
+            $this->mergeConfigFrom($config, 'jwt');
+        }
+        $routes = __DIR__ . '/../Routes/api.php';
+        if (file_exists($routes)) {
+            $this->loadRoutesFrom($routes);
+        }
     }
 
     /**
@@ -35,8 +44,11 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(AuthRepositoryInterface::class, EloquentAuthRepository::class);
+        $this->app->singleton(AuthService::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+        $this->mergeConfigFrom(__DIR__.'/../Config/jwt.php', 'jwt');
     }
 
     /**

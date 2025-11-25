@@ -1,6 +1,19 @@
 {
+    "Shared": true,
     "User": true,
     "Auth": true,
     "Role": true,
-    "Permission": true
+    "Permission": true,
+    "Product": true,
+    "Category": true,
+    "Warehouse": true,
+    "Inventory": true,
+    "Order": true,
+    "Address": true,
+    "Review": true,
+    "Promotion": true,
+    "Payment": true,
+    "Shipping": true,
+    "Log": true,
+    "Notification": true
 }

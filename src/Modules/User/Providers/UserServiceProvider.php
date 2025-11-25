@@ -8,6 +8,11 @@ use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
+use Modules\User\Application\UserService;
+use Modules\Shared\Contracts\IUserService;
+use Modules\User\Domain\Repositories\UserRepositoryInterface;
+use Modules\User\Infrastructure\Repositories\EloquentUserRepository;
+
 class UserServiceProvider extends ServiceProvider
 {
     use PathNamespace;
@@ -36,6 +41,11 @@ class UserServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+        $this->app->bind(IUserService::class, UserService::class);
+        $this->app->bind(
+            UserRepositoryInterface::class,
+            EloquentUserRepository::class
+        );
     }
 
     /**

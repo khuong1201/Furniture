@@ -2,92 +2,64 @@
 
 namespace Modules\Role\Http\Controllers;
 
-use Modules\User\Http\Controllers\BaseController;
+use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
-use Modules\Role\Models\Role;
-use Illuminate\Support\Facades\DB;
+use Modules\Role\Domain\Repositories\RoleRepositoryInterface;
+use Modules\Role\Services\RoleService;
 
-class RoleController extends BaseController
+class RoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(
+        protected RoleRepositoryInterface $repo,
+        protected RoleService $service
+    ) {}
+
+    public function index(Request $request)
     {
-        $roles = Role::all();
-        return view('role::index', compact('roles'));
+        $perPage = (int) $request->query('per_page', 15);
+        $filters = ['q' => $request->query('q')];
+        $roles = $this->service->listRoles($perPage, $filters);
+        return response()->json([
+            'data' => $roles->items(),
+            'meta' => [
+                'current_page' => $roles->currentPage(),
+                'per_page' => $roles->perPage(),
+                'total' => $roles->total(),
+                'last_page' => $roles->lastPage(),
+            ],
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('role::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|unique:roles,name',
+        $payload = $request->validate([
+            'name' => 'required|string|unique:roles,name',
+            'description' => 'nullable|string',
         ]);
-
-        Role::create(['name' => $request->name]);
-
-        return redirect()->route('roles.index')->with('success', 'Role created successfully');
+        $role = $this->service->createRole($payload);
+        return response()->json(['role' => $role], 201);
     }
 
-    /**
-     * Show the specified resource.
-     */
     public function show($id)
     {
-        $role = Role::findOrFail($id);
-        return view('role::show', compact('role'));
+        $role = $this->repo->findById($id);
+        if (! $role) abort(404);
+        return response()->json(['role' => $role]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        $role = Role::findOrFail($id);
-        return view('role::edit', compact('role'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
-        $role = Role::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|unique:roles,name,' . $role->id,
+        $payload = $request->validate([
+            'name' => 'sometimes|string|unique:roles,name,'.$id,
+            'description' => 'nullable|string',
         ]);
-
-        $role->update(['name' => $request->name]);
-
-        return redirect()->route('roles.index')->with('success', 'Role updated successfully');
+        $role = $this->service->updateRole($id, $payload);
+        return response()->json(['role' => $role]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
-        DB::beginTransaction();
-        try {
-            $role = Role::findOrFail($id);
-            $role->delete();
-            DB::commit();
-            return redirect()->route('roles.index')->with('success', 'Role deleted successfully');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('roles.index')->with('error', 'Failed to delete role');
-        }
+        $this->service->deleteRole($id);
+        return response()->json(['message' => 'Role deleted'], 200);
     }
 }

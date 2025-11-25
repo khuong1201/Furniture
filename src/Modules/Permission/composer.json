@@ -9,9 +9,7 @@
     ],
     "extra": {
         "laravel": {
-            "providers": [
-                "Modules\\User\\Providers\\PermissionServiceProvider.php"
-            ],
+            "providers": [],
             "aliases": {
 
             }
@@ -19,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Modules\\Permission\\": "Modules/Permission",
+            "Modules\\Permission\\": "app/",
             "Modules\\Permission\\Database\\Factories\\": "database/factories/",
             "Modules\\Permission\\Database\\Seeders\\": "database/seeders/"
         }

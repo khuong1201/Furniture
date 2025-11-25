@@ -1,11 +1,35 @@
+# ----- Normalize Line Endings -----
 * text=auto eol=lf
 
+# ----- Language-specific diff -----
+*.php      diff=php
 *.blade.php diff=html
-*.css diff=css
-*.html diff=html
-*.md diff=markdown
-*.php diff=php
+*.html     diff=html
+*.css      diff=css
+*.md       diff=markdown
+*.js       text eol=lf
+*.ts       text eol=lf
+*.vue      text eol=lf
+*.json     text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.env      text eol=lf
 
-/.github export-ignore
-CHANGELOG.md export-ignore
-.styleci.yml export-ignore
+# ----- Windows executables -----
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# ----- Binary files -----
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.exe   binary
+
+# ----- Export ignores (GitHub releases) -----
+/.github        export-ignore
+CHANGELOG.md    export-ignore
+.styleci.yml    export-ignore

@@ -4,40 +4,34 @@ namespace Modules\Permission\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermission
 {
-    public function handle(Request $request, Closure $next, ...$permissions): Response
+    public function handle(Request $request, Closure $next, string $permission)
     {
         $user = $request->user();
 
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Bạn chưa đăng nhập',
-            ], 401);
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // Chuyển tất cả permissions cần check thành chữ thường
-        $permissions = array_map('strtolower', $permissions);
+        if (method_exists($user, 'hasPermission')) {
+            if (! $user->hasPermission($permission)) {
+                return response()->json(['message' => 'Forbidden.'], 403);
+            }
+            return $next($request);
+        }
 
-        // Nếu user có bất kỳ quyền nào trong danh sách => cho qua
-        $hasPermission = false;
-        foreach ($permissions as $permission) {
-            if ($user->hasPermission($permission)) {
-                $hasPermission = true;
-                break;
+        if (app()->bound(\Modules\Permission\Services\PermissionService::class)) {
+            $service = app(\Modules\Permission\Services\PermissionService::class);
+            if (method_exists($service, 'userHasPermission')) {
+                if (! $service->userHasPermission($user->id, $permission)) {
+                    return response()->json(['message' => 'Forbidden.'], 403);
+                }
+                return $next($request);
             }
         }
 
-        if (!$hasPermission) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Bạn không có quyền truy cập',
-            ], 403);
-        }
-
-        return $next($request);
+        return response()->json(['message' => 'Forbidden.'], 403);
     }
 }

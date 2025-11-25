@@ -9,9 +9,7 @@
     ],
     "extra": {
         "laravel": {
-            "providers": [
-                "Modules\\User\\Providers\\RoleServiceProvider.php"
-            ],
+            "providers": [],
             "aliases": {
 
             }
@@ -19,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Modules\\Role\\": "Modules/Role",
+            "Modules\\Role\\": "app/",
             "Modules\\Role\\Database\\Factories\\": "database/factories/",
             "Modules\\Role\\Database\\Seeders\\": "database/seeders/"
         }

@@ -2,55 +2,44 @@
 
 namespace Modules\Permission\Http\Controllers;
 
-use Modules\User\Http\Controllers\BaseController;
+use Illuminate\Routing\Controller;
+use Illuminate\Http\JsonResponse;
+use Modules\Permission\Services\PermissionService;
 use Illuminate\Http\Request;
 
-class PermissionController extends BaseController
+class PermissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(private PermissionService $service) {}
+
+    public function index(Request $request): JsonResponse
     {
-        return view('permission::index');
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $permissions = $this->service->getPermissionsByUserId($user->id);
+
+        $names = array_values(array_unique(array_map('strtolower', $permissions)));
+
+        return response()->json($names);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(\Modules\Permission\Http\Requests\StorePermissionRequest $request): JsonResponse
     {
-        return view('permission::create');
+        $permission = $this->service->create($request->validated());
+
+        return response()->json($permission, 201);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
+    public function show($permission): JsonResponse
     {
-        return view('permission::show');
+        $p = $this->service->findByName((string) $permission) ?? null;
+
+        if (! $p) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
+        return response()->json($p);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('permission::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
 }

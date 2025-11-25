@@ -7,6 +7,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "cloudinary-labs/cloudinary-laravel": "^3.0",
+        "darkaonline/l5-swagger": "^9.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.2",
         "laravel/tinker": "^2.10.1",
@@ -31,7 +33,18 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Modules\\Auth\\Tests\\": "Modules/Auth/tests/",
+            "Modules\\Role\\Tests\\": "Modules/Role/tests/",
+            "Modules\\User\\Tests\\": "Modules/User/tests/",
+            "Modules\\Permission\\Tests\\": "Modules/Permission/tests/",
+            "Modules\\Category\\Tests\\": "Modules/Category/tests/",
+            "Modules\\Product\\Tests\\": "Modules/Product/tests/",
+            "Modules\\Inventory\\Tests\\": "Modules/Inventory/tests/",
+            "Modules\\Warehouse\\Tests\\": "Modules/Warehouse/tests/",
+            "Modules\\Review\\Tests\\": "Modules/Review/tests/",
+            "Modules\\Promotion\\Tests\\": "Modules/Promotion/Tests/",
+            "Modules\\Payment\\Tests\\": "Modules/Payment/Tests/"
         }
     },
     "scripts": {

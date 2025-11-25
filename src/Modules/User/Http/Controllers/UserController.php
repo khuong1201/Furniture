@@ -2,62 +2,53 @@
 
 namespace Modules\User\Http\Controllers;
 
-use Modules\User\Models\User;
 use Modules\User\Http\Requests\StoreUserRequest;
 use Modules\User\Http\Requests\UpdateUserRequest;
+use Modules\User\Domain\Repositories\UserRepositoryInterface;
+use Modules\User\Services\UserService;
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Request;
 
-class UserController extends BaseController
+class UserController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected UserRepositoryInterface $repo,
+        protected UserService $service
+    ) {}
+
+    public function index(Request $request)
     {
-        $users = User::active()->get();
-        return view('user::index', compact('users'));
+        $perPage = (int) $request->query('per_page', 15);
+        $filters = ['q' => $request->query('q')];
+        $res = $this->service->paginate($perPage, $filters);
+
+        return response()->json([
+            'data' => $res['items'],
+            'meta' => $res['meta'],
+        ], 200);
     }
 
-    public function create()
+    public function show(string $uuid)
     {
-        return view('user::create');
+        $user = $this->repo->findByUuid($uuid);
+        return response()->json(['user' => $user], 200);
     }
 
     public function store(StoreUserRequest $request)
     {
-        User::create([
-            'uuid' => \Str::uuid(),
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'is_active' => true,
-            'is_deleted' => false,
-        ]);
-
-        return redirect()->route('users.index')->with('success', 'Tạo người dùng thành công');
+        $user = $this->service->create($request->validated());
+        return response()->json(['user' => $user], 201);
     }
 
-    public function show($id)
+    public function update(UpdateUserRequest $request, string $uuid)
     {
-        $user = User::findOrFail($id);
-        return view('user::show', compact('user'));
+        $updated = $this->service->update($uuid, $request->validated());
+        return response()->json(['user' => $updated], 200);
     }
 
-    public function edit($id)
+    public function destroy(string $uuid)
     {
-        $user = User::findOrFail($id);
-        return view('user::edit', compact('user'));
-    }
-
-    public function update(UpdateUserRequest $request, $id)
-    {
-        $user = User::findOrFail($id);
-        $user->update($request->validated());
-
-        return redirect()->route('users.index')->with('success', 'Cập nhật thành công');
-    }
-
-    public function destroy($id)
-    {
-        $user = User::findOrFail($id);
-        $user->update(['is_deleted' => true]);
-
-        return redirect()->route('users.index')->with('success', 'Đã xóa người dùng');
+        $this->service->delete($uuid);
+        return response()->json(['message' => 'User deleted successfully'], 200);
     }
 }

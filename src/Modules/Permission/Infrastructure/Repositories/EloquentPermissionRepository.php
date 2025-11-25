@@ -1,0 +1,39 @@
+<?php
+
+namespace Modules\Permission\Infrastructure\Repositories;
+
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Modules\Permission\Domain\Models\Permission;
+use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
+
+class EloquentPermissionRepository implements PermissionRepositoryInterface
+{
+    public function getPermissionsByUserId(int $userId): array
+    {
+        return DB::table('permissions')
+            ->join('permission_role', 'permissions.id', '=', 'permission_role.permission_id')
+            ->join('role_user', 'permission_role.role_id', '=', 'role_user.role_id')
+            ->where('role_user.user_id', $userId)
+            ->pluck('permissions.name')
+            ->map(fn($v) => strtolower($v))
+            ->unique()
+            ->values()
+            ->toArray();
+    }
+
+    public function findByName(string $name): ?Permission
+    {
+        return Permission::where('name', $name)->first();
+    }
+
+    public function create(array $data): Permission
+    {
+        return Permission::create($data);
+    }
+
+    public function all(): Collection
+    {
+        return Permission::query()->orderBy('id', 'desc')->get();
+    }
+}

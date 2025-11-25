@@ -240,9 +240,9 @@ return [
     |
     */
     'scan' => [
-        'enabled' => true,
+        'enabled' => false,
         'paths' => [
-            base_path('Modules'),
+            base_path('vendor/*/*'),
         ],
     ],
 

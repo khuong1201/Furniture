@@ -10,7 +10,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Modules\\User\\Providers\\AuthServiceProvider.php"
+                "Modules\\Auth\\Providers\\AuthServiceProvider"
             ],
             "aliases": {
 
@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Modules\\Auth\\": "Modules/Auth/",
+            "Modules\\Auth\\": "",
             "Modules\\Auth\\Database\\Factories\\": "database/factories/",
             "Modules\\Auth\\Database\\Seeders\\": "database/seeders/"
         }
