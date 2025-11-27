@@ -1,0 +1,221 @@
+/* --- CÀI ĐẶT CHUNG --- */
+.header-wrapper {
+  font-family: 'Arial', sans-serif;
+  width: 100%;
+}
+
+
+
+/* --- TẦNG 1: HEADER TOP --- */
+.header-top {
+  height: 160px;
+  align-content: center;
+  background-color: #212842; /* Màu nền xanh đậm giống ảnh */
+  color: white;
+  
+}
+
+.top-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+/* Logo */
+.logo {
+  width: 160px;
+  align-items: center; 
+  justify-content: center;
+}
+.logo h1 {
+  font-size: 24px;
+  color: #CFB986; /* Màu vàng kim nhạt */
+  margin: 0;
+  font-family: 'Times New Roman', serif; /* Font có chân cho sang trọng */
+  font-style: italic;
+}
+
+/* Thanh tìm kiếm */
+.search-box {
+  flex-grow: 1; /* Chiếm hết khoảng trống ở giữa */
+  display: flex;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 1300px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: white;
+}
+
+.search-btn {
+  background-color: #212842;
+  border-radius: 4px;
+  color: white;
+  padding: 12px 28px;
+  margin: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Giỏ hàng & User */
+.header-actions {
+  display: flex;
+  gap: 25px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.action-item .icon {
+  font-size: 18px;
+}
+
+/* --- TẦNG 2: HEADER BOTTOM --- */
+.header-bottom {
+  background-color: #F0E7D5; /* Màu be giống ảnh */
+  border-bottom: 1px solid #e5e5e5;
+  padding: 16px 20px;
+}
+
+.bottom-container {
+  display: flex;
+  align-items: center;
+}
+
+.category-dropdown {
+  position: relative; /* QUAN TRỌNG: Để menu con bám theo cái này */
+  display: flex;
+  align-items: center;
+  height: 100%;
+  cursor: pointer;
+  margin-right: 30px;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2C2C2C;
+  font-weight: bold;
+}
+
+.category-menu {
+  position: absolute;   
+  top: 100%;            
+  left: 0;
+  width: 280px;         
+  background-color: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border: 1px solid #eee;
+  
+  /* Mặc định ẩn đi */     
+  opacity: 0;
+  visibility: hidden;
+  
+  /* Hiệu ứng trượt lên nhẹ */
+  transform: translateY(10px); 
+  transition: all 0.3s ease;
+  z-index: 1000; /* Đảm bảo đè lên mọi thứ khác */
+}
+
+/* --- HIỆU ỨNG HOVER (Di chuột vào là hiện) --- */
+.category-dropdown:hover .category-menu {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* --- Style cho từng dòng danh mục --- */
+.category-menu li {
+  list-style: none;
+  border-bottom: 1px solid #f0f0f0; /* Đường kẻ mờ giữa các dòng */
+}
+
+.category-menu li:last-child {
+  border-bottom: none; /* Bỏ đường kẻ ở dòng cuối */
+}
+
+.category-menu a {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  text-decoration: none;
+  color: #555;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+/* Khi di chuột vào từng dòng */
+.category-menu a:hover {
+  background-color: #f9f9f9; /* Màu nền xám nhẹ khi hover */
+  color: #e67e22; /* Đổi màu chữ */
+}
+
+/* Icon bên trái */
+.cat-icon {
+  margin-right: 15px;
+  font-size: 18px;
+  width: 20px; /* Cố định chiều rộng để chữ thẳng hàng */
+  display: flex;
+  justify-content: center;
+  color: #333;
+}
+
+/* Tên danh mục (đẩy mũi tên sang phải cùng) */
+.cat-name {
+  flex-grow: 1; 
+  font-weight: 500;
+}
+
+/* Mũi tên nhỏ bên phải */
+.cat-arrow {
+  color: #ccc;
+}
+.main-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* Menu chính */
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 30px;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: #212842;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase; /* Chữ in hoa */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.2s;
+}
+
+.main-nav a:hover {
+  color: #CFB986; /* Hover đổi màu vàng */
+}
