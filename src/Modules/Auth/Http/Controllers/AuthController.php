@@ -27,7 +27,6 @@ class AuthController
             'password' => bcrypt($data['password']),
         ]);
 
-        // Attach default role
         if (class_exists(\Modules\Role\Domain\Models\Role::class)) {
             $role = \Modules\Role\Domain\Models\Role::where('name', 'user')->first();
             if ($role) {
@@ -44,8 +43,6 @@ class AuthController
         );
 
         return response()->json([
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken->token,
             'user' => $user->only(['id', 'uuid', 'email', 'name']),
         ], 201);
     }

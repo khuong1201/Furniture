@@ -19,5 +19,31 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+        
+        $adminRoleId = DB::table('roles')->insertGetId([
+            'name' => 'admin',
+            'description' => 'Administrator role',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Tạo user admin
+        $admin = User::create([
+            'uuid' => \Illuminate\Support\Str::uuid(),
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'phone' => '0123456789',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'avatar_url' => null,
+        ]);
+
+        // Gán role admin cho user
+        DB::table('role_user')->insert([
+            'role_id' => $adminRoleId,
+            'user_id' => $admin->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

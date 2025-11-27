@@ -8,6 +8,7 @@ use Modules\Product\database\seeders\ProductDatabaseSeeder;
 use Modules\Order\database\seeders\OrderDatabaseSeeder;
 use Modules\Inventory\database\seeders\InventoryDatabaseSeeder;
 use Modules\Warehouse\database\seeders\WarehouseDatabaseSeeder;
+use Modules\User\Database\Seeders\UserDatabaseSeeder;
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -17,6 +18,7 @@ class DatabaseSeeder extends Seeder
             InventoryDatabaseSeeder::class,
             WarehouseDatabaseSeeder::class,
             ProductDatabaseSeeder::class,
+            UserDatabaseSeeder::class,
             // OrderDatabaseSeeder::class,
         ]);
     }
