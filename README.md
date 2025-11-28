@@ -6,20 +6,22 @@
 - MySQL/MariaDB: Nếu dự án có cơ sở dữ liệu.
 
 ## 2. Cài đặt dự án
-```bash
+
 git clone https://github.com/khuong1201/backend-php-Furniture.git
 ### Backend.
 cd backend
 composer install
+
 #### 1. Cấu hình môi trường
 - Chỉnh sửa thông tin trong file `.env` cho phù hợp (database, user, password, v.v.).
 
 #### 2. Tạo key ứng dụng
-```bash
-php artisan key:generate
+php artisan key:
+
 #### 3. Chạy migration và seed dữ liệu
 - php artisan migrate --seed
 #### 4. Khởi chạy server
+
 - php artisan serve
 - Truy cập tại: http://127.0.0.1:8000
 
