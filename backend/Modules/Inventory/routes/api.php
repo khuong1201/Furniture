@@ -7,10 +7,10 @@ use Modules\Auth\Http\Middleware\JwtAuthenticate;
 Route::middleware(['api', JwtAuthenticate::class])
     ->prefix('inventories')
     ->group(function () {
-        Route::get('/', [InventoryController::class, 'index']);
-        Route::post('/upsert', [InventoryController::class, 'upsert']);
-        Route::patch('/{productId}/{warehouseId}/stock', [InventoryController::class, 'adjust']);
-        Route::get('/{uuid}', [InventoryController::class, 'show']);
-        Route::delete('/{uuid}', [InventoryController::class, 'destroy']);
+        Route::get('/', [InventoryController::class, 'inventory.index']);
+        Route::post('/upsert', [InventoryController::class, 'inventory.upsert']);
+        Route::patch('/{productId}/{warehouseId}/stock', [InventoryController::class, 'inventory.adjust']);
+        Route::get('/{uuid}', [InventoryController::class, 'inventory.show']);
+        Route::delete('/{uuid}', [InventoryController::class, 'inventory.destroy']);
     });
 

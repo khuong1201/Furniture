@@ -24,10 +24,8 @@ class CheckPermission
 
         if (app()->bound(\Modules\Permission\Services\PermissionService::class)) {
             $service = app(\Modules\Permission\Services\PermissionService::class);
-            if (method_exists($service, 'userHasPermission')) {
-                if (! $service->userHasPermission($user->id, $permission)) {
-                    return response()->json(['message' => 'Forbidden.'], 403);
-                }
+
+            if ($service->userHasPermission($user->id, $permission)) {
                 return $next($request);
             }
         }

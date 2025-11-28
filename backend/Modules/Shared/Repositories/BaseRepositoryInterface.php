@@ -10,6 +10,7 @@ interface BaseRepositoryInterface
     public function paginate($perPage = 15);
     public function findById($id);
     public function findByUuid($uuid): ?Model;
+    public function findByUuidAndUser(string $uuid, int $userId);
     public function create(array $data): ?Model;
     public function update(Model $model, array $data);
     public function delete(Model $model);

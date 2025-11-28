@@ -43,6 +43,11 @@ abstract class EloquentBaseRepository
         return $this->model->where('uuid', $uuid)->firstOrFail();
     }
 
+        public function findByUuidAndUser($uuid, $userId)
+    {
+        return $this->model->where('uuid', $uuid)->where('user_id', $userId)->firstOrFail();
+    }
+
     public function create(array $data): Model
     {
         return $this->model->create($data);

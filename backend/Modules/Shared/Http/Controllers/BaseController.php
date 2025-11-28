@@ -57,6 +57,10 @@ abstract class BaseController extends Controller
      */
     protected function validateData(Request $request): array
     {
+        if (method_exists($request, 'validated')) {
+            return $request->validated();
+        }
+
         return $request->all();
     }
 }

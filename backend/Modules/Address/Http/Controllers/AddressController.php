@@ -15,24 +15,28 @@ class AddressController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        return response()->json($this->service->listForUser($request->user()->id));
+        $userId = $request->user()->id;
+        return response()->json($this->service->listForUser($userId));
     }
 
     public function store(StoreAddressRequest $request): JsonResponse
     {
-        $address = $this->service->createForUser($request->user()->id, $request->validated());
+        $userId = $request->user()->id;
+        $address = $this->service->createForUser($userId, $request->validated());
         return response()->json($address, 201);
     }
 
     public function update(UpdateAddressRequest $request, string $uuid): JsonResponse
     {
-        $address = $this->service->update($uuid, $request->validated());
+        $userId = $request->user()->id;
+        $address = $this->service->updateForUser($uuid, $request->validated(), $userId);
         return response()->json($address);
     }
 
-    public function destroy(string $uuid): JsonResponse
+    public function destroy(string $uuid, Request $request): JsonResponse
     {
-        $this->service->delete($uuid);
+        $userId = $request->user()->id;
+        $this->service->deleteForUser($uuid, $userId);
         return response()->json(['message' => 'Address deleted successfully']);
     }
 }

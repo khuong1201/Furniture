@@ -2,44 +2,38 @@
 
 namespace Modules\Permission\Http\Controllers;
 
-use Illuminate\Routing\Controller;
-use Illuminate\Http\JsonResponse;
+use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Permission\Services\PermissionService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
-class PermissionController extends Controller
+class PermissionController extends BaseController
 {
-    public function __construct(private PermissionService $service) {}
+    public function __construct(PermissionService $service)
+    {
+        parent::__construct($service);
+    }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-
-        if (! $user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
+        if (!$user) return response()->json(['message' => 'Unauthenticated.'], 401);
 
         $permissions = $this->service->getPermissionsByUserId($user->id);
-
-        $names = array_values(array_unique(array_map('strtolower', $permissions)));
-
-        return response()->json($names);
+        return response()->json($permissions);
     }
 
-    public function store(\Modules\Permission\Http\Requests\StorePermissionRequest $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $permission = $this->service->create($request->validated());
-
+        $validated = $this->validateData($request);
+        $permission = $this->service->create($validated);
         return response()->json($permission, 201);
     }
-    public function show($permission): JsonResponse
+
+    public function show(string $name): JsonResponse
     {
-        $p = $this->service->findByName((string) $permission) ?? null;
-
-        if (! $p) {
-            return response()->json(['message' => 'Not found.'], 404);
-        }
-
-        return response()->json($p);
+        $permission = $this->service->findByName($name);
+        if (!$permission) return response()->json(['message' => 'Not found.'], 404);
+        return response()->json($permission);
     }
 }

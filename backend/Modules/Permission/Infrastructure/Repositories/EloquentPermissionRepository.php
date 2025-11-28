@@ -5,9 +5,10 @@ namespace Modules\Permission\Infrastructure\Repositories;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Modules\Permission\Domain\Models\Permission;
+use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
 
-class EloquentPermissionRepository implements PermissionRepositoryInterface
+class EloquentPermissionRepository extends EloquentBaseRepository implements PermissionRepositoryInterface
 {
     public function getPermissionsByUserId(int $userId): array
     {
@@ -21,19 +22,9 @@ class EloquentPermissionRepository implements PermissionRepositoryInterface
             ->values()
             ->toArray();
     }
-
+    
     public function findByName(string $name): ?Permission
     {
         return Permission::where('name', $name)->first();
-    }
-
-    public function create(array $data): Permission
-    {
-        return Permission::create($data);
-    }
-
-    public function all(): Collection
-    {
-        return Permission::query()->orderBy('id', 'desc')->get();
     }
 }

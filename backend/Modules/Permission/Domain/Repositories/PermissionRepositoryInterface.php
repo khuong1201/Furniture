@@ -4,14 +4,10 @@ namespace Modules\Permission\Domain\Repositories;
 
 use Illuminate\Support\Collection;
 use Modules\Permission\Domain\Models\Permission;
-
-interface PermissionRepositoryInterface
+use Modules\Shared\Repositories\BaseRepositoryInterface;
+interface PermissionRepositoryInterface extends BaseRepositoryInterface
 {
     public function getPermissionsByUserId(int $userId): array;
 
     public function findByName(string $name): ?Permission;
-
-    public function create(array $data): Permission;
-
-    public function all(): Collection;
 }

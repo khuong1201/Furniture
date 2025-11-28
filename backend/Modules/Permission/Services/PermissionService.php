@@ -4,30 +4,28 @@ namespace Modules\Permission\Services;
 
 use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
 use Modules\Permission\Domain\Models\Permission;
+use Modules\Shared\Services\BaseService;
 
-class PermissionService
+class PermissionService extends BaseService
 {
-    public function __construct(private PermissionRepositoryInterface $repo) {}
+    public function __construct(PermissionRepositoryInterface $repo)
+    {
+        parent::__construct($repo);
+    }
 
     public function getPermissionsByUserId(int $userId): array
     {
-        $permissions = $this->repo->getPermissionsByUserId($userId);
-        $normalized = array_map('strtolower', $permissions);
-        return array_values(array_unique($normalized));
+        $permissions = $this->repository->getPermissionsByUserId($userId);
+        return array_values(array_unique(array_map('strtolower', $permissions)));
+    }
+
+    public function userHasPermission(int $userId, string $permission): bool
+    {
+        return in_array(strtolower($permission), $this->getPermissionsByUserId($userId));
     }
 
     public function findByName(string $name): ?Permission
     {
-        return $this->repo->findByName($name);
-    }
-
-    public function create(array $data): Permission
-    {
-        return $this->repo->create($data);
-    }
-
-    public function all()
-    {
-        return $this->repo->all();
+        return $this->repository->findByName($name);
     }
 }
