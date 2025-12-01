@@ -40,4 +40,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    protected static function newFactory()
+    {
+        return \Modules\Order\Database\factories\OrderFactory::new();
+    }
 }

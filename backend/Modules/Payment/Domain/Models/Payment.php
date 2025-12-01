@@ -34,4 +34,9 @@ class Payment extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    protected static function newFactory()
+    {
+        return \Modules\Payment\Database\factories\PaymentFactory::new();
+    }
 }

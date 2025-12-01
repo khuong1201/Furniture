@@ -38,4 +38,9 @@ class Review extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    protected static function newFactory()
+    {
+        return \Modules\Review\Database\factories\ReviewFactory::new();
+    }
 }

@@ -42,4 +42,9 @@ class Promotion extends Model
                      ->where('start_date', '<=', now())
                      ->where('end_date', '>=', now());
     }
+
+    protected static function newFactory()
+    {
+        return \Modules\Promotion\Database\factories\PromotionFactory::new();
+    }
 }

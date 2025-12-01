@@ -42,4 +42,9 @@ class Inventory extends Model
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
+
+    protected static function newFactory()
+    {
+        return \Modules\Inventory\Database\factories\InventoryFactory::new();
+    }
 }

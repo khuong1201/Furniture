@@ -33,4 +33,9 @@ class Shipping extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    protected static function newFactory()
+    {
+        return \Modules\Shipping\Database\factories\Shpi::new();
+    }
 }
