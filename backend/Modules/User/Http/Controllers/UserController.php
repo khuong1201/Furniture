@@ -2,53 +2,38 @@
 
 namespace Modules\User\Http\Controllers;
 
+use Modules\Shared\Http\Controllers\BaseController;
+use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\User\Services\UserService;
 use Modules\User\Http\Requests\StoreUserRequest;
 use Modules\User\Http\Requests\UpdateUserRequest;
-use Modules\User\Domain\Repositories\UserRepositoryInterface;
-use Modules\User\Services\UserService;
-use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
-
-class UserController extends Controller
+use Illuminate\Http\JsonResponse;
+class UserController extends BaseController
 {
-    public function __construct(
-        protected UserRepositoryInterface $repo,
-        protected UserService $service
-    ) {}
-
-    public function index(Request $request)
+    public function __construct(UserService $service)
     {
-        $perPage = (int) $request->query('per_page', 15);
-        $filters = ['q' => $request->query('q')];
-        $res = $this->service->paginate($perPage, $filters);
-
-        return response()->json([
-            'data' => $res['items'],
-            'meta' => $res['meta'],
-        ], 200);
+        parent::__construct($service);
     }
 
-    public function show(string $uuid)
+    public function index(Request $request): JsonResponse
     {
-        $user = $this->repo->findByUuid($uuid);
-        return response()->json(['user' => $user], 200);
+        return parent::index($request); 
     }
 
-    public function store(StoreUserRequest $request)
+    public function store(Request $request): JsonResponse
     {
-        $user = $this->service->create($request->validated());
-        return response()->json(['user' => $user], 201);
+        $request = app(StoreUserRequest::class); 
+        $data = $this->service->create($request->validated());
+
+        return response()->json(ApiResponse::success($data, 'User created successfully', 201), 201);
     }
 
-    public function update(UpdateUserRequest $request, string $uuid)
+    public function update(Request $request, string $uuid): JsonResponse
     {
-        $updated = $this->service->update($uuid, $request->validated());
-        return response()->json(['user' => $updated], 200);
-    }
+        $request = app(UpdateUserRequest::class);
+        $data = $this->service->update($uuid, $request->validated());
 
-    public function destroy(string $uuid)
-    {
-        $this->service->delete($uuid);
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        return response()->json(ApiResponse::success($data, 'User updated successfully'));
     }
 }

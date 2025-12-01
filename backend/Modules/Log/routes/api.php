@@ -3,9 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Log\Http\Controllers\LogController;
 use Modules\Auth\Http\Middleware\JwtAuthenticate;
-use Modules\Permission\Http\Middleware\CheckPermission;
 
-Route::prefix('logs')->middleware([JwtAuthenticate::class, CheckPermission::class . ':view_logs'])->group(function () {
-    Route::get('/', [LogController::class, 'index']);
+Route::middleware(['api', JwtAuthenticate::class])->prefix('admin')->group(function () {
+    Route::get('logs', [LogController::class, 'index'])
+        ->middleware('permission:system.view_logs');
+        
+    Route::get('logs/{uuid}', [LogController::class, 'show'])
+        ->middleware('permission:system.view_logs');
 });
-

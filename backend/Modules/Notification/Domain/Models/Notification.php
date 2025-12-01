@@ -6,24 +6,46 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Modules\User\Domain\Models\User;
+use Modules\Shared\Traits\Loggable;
+
 class Notification extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Loggable;
 
     protected $fillable = [
-        'uuid', 'user_id', 'title', 'content', 'type', 'is_read',
+        'uuid', 'user_id', 'title', 'content', 'type', 'data', 'read_at',
     ];
+
+    protected $casts = [
+        'data' => 'array',
+        'read_at' => 'datetime',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
+    }
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    protected static function boot()
+    public function markAsRead(): void
     {
-        parent::boot();
-        static::creating(function ($model) {
-            $model->uuid = Str::uuid();
-        });
+        if (is_null($this->read_at)) {
+            $this->update(['read_at' => now()]);
+        }
+    }
+
+    public function markAsUnread(): void
+    {
+        $this->update(['read_at' => null]);
+    }
+
+    public function isRead(): bool
+    {
+        return !is_null($this->read_at);
     }
 }

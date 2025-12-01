@@ -5,19 +5,33 @@ namespace Modules\Category\Domain\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\Category\Database\Factories\CategoryFactory;
+use Illuminate\Support\Str;
+use Modules\Shared\Traits\Loggable;
+
 class Category extends Model
 {
-    use HasFactory, SoftDeletes;
-    
-    protected $table = 'categories';
+    use HasFactory, SoftDeletes, Loggable;
 
     protected $fillable = [
-        'uuid',
-        'name',
-        'description',
-        'parent_id',
+        'uuid', 'name', 'slug', 'description', 'parent_id',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->uuid = (string) Str::uuid();
+            if (empty($model->slug)) {
+                $model->slug = Str::slug($model->name);
+            }
+        });
+        
+        static::updating(function ($model) {
+             if ($model->isDirty('name') && !$model->isDirty('slug')) {
+                 $model->slug = Str::slug($model->name);
+             }
+        });
+    }
 
     public function parent()
     {
@@ -29,24 +43,13 @@ class Category extends Model
         return $this->hasMany(Category::class, 'parent_id');
     }
 
+    public function allChildren()
+    {
+        return $this->children()->with('allChildren');
+    }
+
     protected static function newFactory()
     {
-        return CategoryFactory::new();
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'uuid';
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->uuid)) {
-                $model->uuid = (string) \Illuminate\Support\Str::uuid();
-            }
-        });
+        return \Modules\Category\Database\factories\CategoryFactory::new();
     }
 }

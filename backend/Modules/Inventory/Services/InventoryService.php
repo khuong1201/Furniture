@@ -4,10 +4,10 @@ namespace Modules\Inventory\Services;
 
 use Modules\Shared\Services\BaseService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Modules\Inventory\Domain\Repositories\InventoryRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Modules\Warehouse\Domain\Repositories\WarehouseRepositoryInterface;
+use Modules\Warehouse\Domain\Repositories\WarehouseRepositoryInterface; 
 
 class InventoryService extends BaseService
 {
@@ -19,66 +19,50 @@ class InventoryService extends BaseService
         parent::__construct($repository);
     }
 
-    public function list(array $filters = [])
+    public function upsert(array $data)
     {
-        return $this->repository->paginate($filters['per_page'] ?? 15);
-    }
+        return DB::transaction(function () use ($data) {
+            $this->productRepo->findById($data['product_id']) ?? throw ValidationException::withMessages(['product_id' => 'Invalid product']);
+            $this->warehouseRepo->findById($data['warehouse_id']) ?? throw ValidationException::withMessages(['warehouse_id' => 'Invalid warehouse']);
 
-    public function upsert(
-        int $productId,
-        int $warehouseId,
-        int $quantity,
-        int $minThreshold = 0,
-        ?int $maxThreshold = null
-    ) {
-        return DB::transaction(function () use (
-            $productId,
-            $warehouseId,
-            $quantity,
-            $minThreshold,
-            $maxThreshold
-        ) {
-            $product = $this->productRepo->findById($productId);
-            $warehouse = $this->warehouseRepo->findById($warehouseId);
-
-            if (! $product || ! $warehouse) {
-                throw new \InvalidArgumentException('Product or Warehouse not found');
-            }
-
-            $inv = $this->repository->findByProductAndWarehouse($productId, $warehouseId);
+            $inv = $this->repository->findByProductAndWarehouse($data['product_id'], $data['warehouse_id'], true);
+            
+            $quantity = $data['quantity'] ?? ($inv?->stock_quantity ?? 0);
+            $minThreshold = $data['min_threshold'] ?? ($inv?->min_threshold ?? 0);
+            
             $status = $this->calcStatus($quantity, $minThreshold);
+            
+            $payload = array_merge($data, ['status' => $status]);
 
             if ($inv) {
-                return $this->repository->update($inv, [
-                    'stock_quantity' => $quantity,
-                    'min_threshold' => $minThreshold,
-                    'max_threshold' => $maxThreshold,
-                    'status' => $status,
-                ]);
+                return $this->repository->update($inv, $payload);
             }
 
-            return $this->repository->create([
-                'uuid' => Str::uuid()->toString(),
-                'product_id' => $productId,
-                'warehouse_id' => $warehouseId,
-                'stock_quantity' => $quantity,
-                'min_threshold' => $minThreshold,
-                'max_threshold' => $maxThreshold,
-                'status' => $status,
-            ]);
+            return $this->repository->create($payload);
         });
     }
 
     public function adjustStock(int $productId, int $warehouseId, int $delta)
     {
         return DB::transaction(function () use ($productId, $warehouseId, $delta) {
-            $inv = $this->repository->findByProductAndWarehouse($productId, $warehouseId);
+            $inv = $this->repository->findByProductAndWarehouse($productId, $warehouseId, lock: true);
 
-            if (! $inv) {
-                throw new \InvalidArgumentException('Inventory not found');
+            if (!$inv) {
+                if ($delta < 0) throw ValidationException::withMessages(['stock' => 'Inventory not found for deduction']);
+                
+                return $this->upsert([
+                    'product_id' => $productId,
+                    'warehouse_id' => $warehouseId,
+                    'quantity' => $delta
+                ]);
             }
 
-            $newQty = max(0, $inv->stock_quantity + $delta);
+            $newQty = $inv->stock_quantity + $delta;
+
+            if ($newQty < 0) {
+                throw ValidationException::withMessages(['stock' => "Insufficient stock. Current: {$inv->stock_quantity}, Requested deduction: " . abs($delta)]);
+            }
+
             $status = $this->calcStatus($newQty, $inv->min_threshold);
 
             return $this->repository->update($inv, [

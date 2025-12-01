@@ -12,10 +12,21 @@ class EloquentAddressRepository extends EloquentBaseRepository implements Addres
     {
         parent::__construct($model);
     }
-
-    public function getAllByUser($userId)
+    
+    public function getAllByUser(int $userId)
     {
-        return $this->model->where('user_id', $userId)->get();
+        return $this->model
+            ->where('user_id', $userId)
+            ->orderByDesc('is_default')
+            ->latest()
+            ->get();
     }
 
+    public function resetDefault(int $userId): void
+    {
+        $this->model
+            ->where('user_id', $userId)
+            ->where('is_default', true)
+            ->update(['is_default' => false]);
+    }
 }

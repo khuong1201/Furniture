@@ -7,8 +7,6 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Modules\Role\Domain\Repositories\RoleRepositoryInterface;
-use Modules\Role\Infrastructure\Repositories\EloquentRoleRepository;
 
 class RoleServiceProvider extends ServiceProvider
 {
@@ -36,10 +34,12 @@ class RoleServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(RoleService::class, RoleService::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
-        $this->app->bind(RoleRepositoryInterface::class, EloquentRoleRepository::class);
+        $this->app->bind(
+        \Modules\Role\Domain\Repositories\RoleRepositoryInterface::class,
+        \Modules\Role\Infrastructure\Repositories\EloquentRoleRepository::class
+    );
     }
 
     /**

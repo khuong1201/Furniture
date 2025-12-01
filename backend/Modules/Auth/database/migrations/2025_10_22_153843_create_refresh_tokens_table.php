@@ -9,12 +9,13 @@ return new class extends Migration {
     {
         Schema::create('refresh_tokens', function (Blueprint $table) {
             $table->id();
-            $table->uuid('user_id')->index();
-            $table->string('token', 255)->unique();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            
+            $table->string('token', 64)->unique(); 
             $table->string('device_name')->nullable();
-            $table->string('ip')->nullable();
+            $table->string('ip', 45)->nullable(); 
             $table->text('user_agent')->nullable();
-            $table->timestamp('expires_at')->nullable()->index();
+            $table->timestamp('expires_at')->index();
             $table->timestamps();
         });
     }

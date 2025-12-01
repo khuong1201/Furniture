@@ -12,22 +12,19 @@ class EloquentOrderRepository extends EloquentBaseRepository implements OrderRep
     {
         parent::__construct($model);
     }
-    
-    public function findByUuidOrFail(string $uuid): Order
-    {
-        $order = $this->model->where('uuid', $uuid)->first();
 
-        if (!$order) {
-            throw new ModelNotFoundException("Order not found for uuid: {$uuid}");
+    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->query()->with(['items.product', 'user']);
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
         }
 
-        // eager load quan hệ để khi show có đầy đủ chi tiết
-        $order->load([
-            'items.product:id,uuid,name,price',
-            'items.warehouse:id,name,code',
-            'user:id,name,email',
-        ]);
-
-        return $order;
+        return $query->latest()->paginate($filters['per_page'] ?? 15);
     }
 }

@@ -10,21 +10,24 @@ use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
 
 class EloquentPermissionRepository extends EloquentBaseRepository implements PermissionRepositoryInterface
 {
+    public function __construct(Permission $model)
+    {
+        parent::__construct($model);
+    }
+
     public function getPermissionsByUserId(int $userId): array
     {
         return DB::table('permissions')
             ->join('permission_role', 'permissions.id', '=', 'permission_role.permission_id')
             ->join('role_user', 'permission_role.role_id', '=', 'role_user.role_id')
             ->where('role_user.user_id', $userId)
+            ->distinct()
             ->pluck('permissions.name')
-            ->map(fn($v) => strtolower($v))
-            ->unique()
-            ->values()
             ->toArray();
     }
-    
+
     public function findByName(string $name): ?Permission
     {
-        return Permission::where('name', $name)->first();
+        return $this->model->where('name', $name)->first();
     }
 }

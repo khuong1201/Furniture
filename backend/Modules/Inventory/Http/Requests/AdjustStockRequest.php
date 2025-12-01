@@ -11,7 +11,7 @@ class AdjustStockRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'delta' => 'required|integer',
+            'delta' => 'required|integer|not_in:0',
         ];
     }
 }

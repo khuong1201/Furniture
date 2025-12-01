@@ -4,21 +4,24 @@ namespace Modules\Product\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-
+use Modules\Product\Domain\Models\Product;
 class UpdateProductRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
     public function rules(): array
     {
-        $uuid = $this->route('uuid');
-
+        $uuid = $this->route('product'); 
+        
         return [
             'name' => 'sometimes|string|max:150',
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'category_id' => 'nullable|exists:categories,id',
-            'sku' => ['sometimes','string','max:100', Rule::unique('products', 'sku')->ignore($uuid, 'uuid'),],
+            'sku' => [
+                'sometimes', 'string', 'max:100',
+                Rule::unique('products', 'sku')->ignore($uuid, 'uuid') 
+            ],
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string|max:100',
             'material' => 'nullable|string|max:100',

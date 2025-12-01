@@ -10,17 +10,18 @@ return new class extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->uuid('uuid')->unique();
+            $table->string('name')->unique(); 
             $table->string('description')->nullable();
+            $table->string('module')->nullable()->comment('Nhóm permission (vd: user, role, product)');
             $table->timestamps();
         });
 
         Schema::create('permission_role', function (Blueprint $table) {
-            $table->id();
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
             $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
-            $table->timestamps();
-            $table->unique(['role_id', 'permission_id']);
+            
+            $table->primary(['role_id', 'permission_id']); 
         });
     }
 

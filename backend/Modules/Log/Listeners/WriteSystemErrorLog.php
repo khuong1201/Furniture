@@ -1,21 +1,23 @@
 <?php
+
 namespace Modules\Log\Listeners;
 
 use Modules\Log\Domain\Models\Log;
 use Modules\Log\Events\SystemErrorLogged;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class WriteSystemErrorLog
+class WriteSystemErrorLog implements ShouldQueue
 {
-    public function handle(SystemErrorLogged $event)
+    public $queue = 'logs';
+
+    public function handle(SystemErrorLogged $event): void
     {
         Log::create([
             'user_id' => $event->userId,
-            'type' => 'system',
-            'action' => 'error',
-            'model' => null,
-            'model_uuid' => null,
+            'type' => 'system_error',
+            'action' => 'exception',
             'ip_address' => $event->ipAddress,
-            'message' => $event->message,
+            'message' => substr($event->message, 0, 1000),
             'metadata' => $event->metadata,
         ]);
     }

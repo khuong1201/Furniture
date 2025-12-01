@@ -13,16 +13,24 @@ class EloquentProductRepository extends EloquentBaseRepository implements Produc
         parent::__construct($model);
     }
 
-    public function filter(array $filters)
+    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = $this->query();
+        $query = $this->query()->with(['category', 'images']);
 
         if (!empty($filters['search'])) {
-            $query->where('name', 'like', "%{$filters['search']}%");
+            $q = $filters['search'];
+            $query->where(function($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('sku', 'like', "%{$q}%");
+            });
         }
 
+        if (isset($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+        
         if (isset($filters['status'])) {
-            $query->where('status', $filters['status']);
+            $query->where('status', (bool)$filters['status']);
         }
 
         return $query->latest()->paginate($filters['per_page'] ?? 15);

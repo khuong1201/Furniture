@@ -1,36 +1,22 @@
 <?php
-
 namespace Modules\Product\database\factories;
-
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 use Modules\Product\Domain\Models\Product;
-use Modules\Warehouse\Domain\Models\Warehouse;
-class ProductFactory extends Factory
-{
-    protected $model = Product::class;
+use Modules\Category\Domain\Models\Category;
 
-    public function definition(): array
-    {
+class ProductFactory extends Factory {
+    protected $model = Product::class;
+    public function definition(): array {
+        $name = ucfirst($this->faker->words(3, true));
         return [
-            'uuid' => (string) Str::uuid(),
-            'name' => $this->faker->words(3, true),
-            'description' => $this->faker->sentence(),
-            'price' => $this->faker->randomFloat(2, 10, 1000),
-            'sku' => strtoupper($this->faker->bothify('SKU-####-???')),
+            'uuid' => $this->faker->uuid(),
+            'name' => $name,
+            'description' => $this->faker->paragraph(),
+            'price' => $this->faker->numberBetween(100, 10000) * 1000,
+            'category_id' => Category::factory(),
+            'sku' => strtoupper($this->faker->unique()->bothify('PROD-####-????')),
+            'weight' => $this->faker->randomFloat(2, 0.1, 10),
             'status' => true,
         ];
-    }
-    public function configure()
-    {
-        return $this->afterCreating(function (Product $product) {
-            $warehouses = Warehouse::inRandomOrder()->take(rand(1, 3))->get();
-
-            foreach ($warehouses as $warehouse) {
-                $product->warehouses()->attach($warehouse->id, [
-                    'quantity' => rand(1, 50),
-                ]);
-            }
-        });
     }
 }

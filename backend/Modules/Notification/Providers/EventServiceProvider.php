@@ -11,7 +11,25 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        \Modules\Auth\Events\UserRegistered::class => [
+            \Modules\Notification\Listeners\SendOtpOnRegister::class,
+        ],
+        \Modules\Order\Events\OrderCreated::class => [
+            \Modules\Notification\Listeners\SendOrderSuccessNotification::class,
+        ],
+        \Modules\Order\Events\OrderCancelled::class => [
+            \Modules\Notification\Listeners\SendOrderCancelledNotification::class,
+        ],
+
+        \Modules\Shipping\Events\ShippingStatusUpdated::class => [
+            \Modules\Notification\Listeners\SendShippingUpdateNotification::class,
+        ],
+        \Modules\Payment\Events\PaymentCompleted::class => [
+            \Modules\Order\Listeners\UpdateOrderStatusOnPayment::class,
+            \Modules\Notification\Listeners\SendPaymentSuccessNotification::class,
+        ],
+    ];
 
     /**
      * Indicates if events should be discovered.

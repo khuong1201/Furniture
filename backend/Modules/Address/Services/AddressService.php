@@ -2,9 +2,10 @@
 
 namespace Modules\Address\Services;
 
-use Illuminate\Support\Str;
 use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
 use Modules\Shared\Services\BaseService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AddressService extends BaseService
 {
@@ -18,22 +19,32 @@ class AddressService extends BaseService
         return $this->repository->getAllByUser($userId);
     }
 
-    public function createForUser(int $userId, array $data)
+    protected function beforeCreate(array &$data): void
     {
-        $data['uuid'] = Str::uuid();
-        $data['user_id'] = $userId;
-        return $this->repository->create($data);
+        if (!empty($data['is_default']) && $data['is_default'] === true) {
+            $this->repository->resetDefault($data['user_id']);
+        }
+        
+        $count = $this->repository->getAllByUser($data['user_id'])->count();
+        if ($count === 0) {
+            $data['is_default'] = true;
+        }
     }
 
-    public function updateForUser(string $uuid, array $data, int $userId)
+    protected function beforeUpdate(Model $model, array &$data): void
     {
-        $address = $this->repository->findByUuidAndUser($uuid, $userId);
-        return $this->repository->update($address, $data);
+        if (!empty($data['is_default']) && $data['is_default'] === true) {
+            $this->repository->resetDefault($model->user_id);
+        }
     }
 
-    public function deleteForUser(string $uuid, int $userId)
+    public function deleteForUser(string $uuid, int $userId): bool
     {
         $address = $this->repository->findByUuidAndUser($uuid, $userId);
+        
+        if (!$address) {
+             throw new ModelNotFoundException("Address not found or access denied.");
+        }
         return $this->repository->delete($address);
     }
 }

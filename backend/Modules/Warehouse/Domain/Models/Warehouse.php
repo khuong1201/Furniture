@@ -5,41 +5,44 @@ namespace Modules\Warehouse\Domain\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\Warehouse\Database\Factories\WarehouseFactory;
+use Illuminate\Support\Str;
+use Modules\Product\Models\Product;
+use Modules\User\Domain\Models\User;
+use Modules\Shared\Traits\Loggable;
 
 class Warehouse extends Model
 {
-    use HasFactory, SoftDeletes;
-
-    protected $table = 'warehouses';
+    use HasFactory, SoftDeletes, Loggable;
 
     protected $fillable = [
         'uuid', 'name', 'location', 'manager_id'
     ];
 
-    protected $casts = [
-    ];
-
-    public function products()
+    protected static function boot()
     {
-        return $this->belongsToMany(\Modules\Product\Domain\Models\Product::class, 'warehouse_product')
-                    ->withPivot('quantity')
-                    ->withTimestamps();
-    }
-
-    public function inventories()
-    {
-        return $this->hasMany(\Modules\Inventory\Domain\Models\Inventory::class, 'warehouse_id');
+        parent::boot();
+        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
     }
 
     public function manager()
     {
-        return $this->belongsTo(\Modules\User\Domain\Models\User::class, 'manager_id');
+        return $this->belongsTo(User::class, 'manager_id');
     }
 
-    protected static function newFactory(): Factory
+    public function products()
     {
-        return WarehouseFactory::new();
+        return $this->belongsToMany(Product::class, 'warehouse_product')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
+    }
+
+    public function getTotalItemsAttribute()
+    {
+        return $this->products()->sum('quantity');
+    }
+
+    protected static function newFactory()
+    {
+        return \Modules\Warehouse\Database\factories\WarehouseFactory::new();
     }
 }

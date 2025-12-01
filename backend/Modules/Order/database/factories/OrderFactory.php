@@ -1,25 +1,20 @@
 <?php
-
 namespace Modules\Order\database\factories;
-
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 use Modules\Order\Domain\Models\Order;
 use Modules\User\Domain\Models\User;
 
-class OrderFactory extends Factory
-{
+class OrderFactory extends Factory {
     protected $model = Order::class;
-
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
-            'uuid' => Str::uuid(),
+            'uuid' => $this->faker->uuid(),
             'user_id' => User::factory(),
-            'status' => 'pending',
-            'payment_status' => 'unpaid',
-            'shipping_status' => 'not_shipped',
-            'total_amount' => fake()->randomFloat(2, 100, 1000),
+            'shipping_address_snapshot' => ['address' => 'Fake Snapshot Data'], 
+            'status' => $this->faker->randomElement(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
+            'payment_status' => $this->faker->randomElement(['unpaid', 'paid']),
+            'total_amount' => 0,
+            'ordered_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];
     }
 }

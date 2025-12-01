@@ -4,6 +4,7 @@ namespace Modules\Permission\Http\Controllers;
 
 use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Permission\Services\PermissionService;
+use Modules\Permission\Http\Requests\StorePermissionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -16,24 +17,34 @@ class PermissionController extends BaseController
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        if (!$user) return response()->json(['message' => 'Unauthenticated.'], 401);
-
-        $permissions = $this->service->getPermissionsByUserId($user->id);
-        return response()->json($permissions);
+        return parent::index($request);
+    }
+    
+    public function myPermissions(Request $request): JsonResponse
+    {
+        $permissions = $this->service->getUserPermissions($request->user()->id);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $permissions
+        ]);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $this->validateData($request);
-        $permission = $this->service->create($validated);
-        return response()->json($permission, 201);
+        $request = app(StorePermissionRequest::class);
+        
+        $data = $this->service->create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Permission created successfully',
+            'data' => $data
+        ], 201);
     }
 
-    public function show(string $name): JsonResponse
+    public function show(string $uuid): JsonResponse
     {
-        $permission = $this->service->findByName($name);
-        if (!$permission) return response()->json(['message' => 'Not found.'], 404);
-        return response()->json($permission);
+        return parent::show($uuid);
     }
 }

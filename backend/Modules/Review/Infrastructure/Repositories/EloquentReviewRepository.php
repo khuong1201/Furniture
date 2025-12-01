@@ -2,39 +2,36 @@
 
 namespace Modules\Review\Infrastructure\Repositories;
 
+use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Review\Domain\Models\Review;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class EloquentReviewRepository implements ReviewRepositoryInterface
+class EloquentReviewRepository extends EloquentBaseRepository implements ReviewRepositoryInterface
 {
-    public function paginate(int $perPage = 10, array $filters = []): LengthAwarePaginator
+    public function __construct(Review $model)
     {
-        $query = Review::query()->with(['user', 'product']);
-        if (isset($filters['product_id'])) {
-            $query->where('product_id', $filters['product_id']);
+        parent::__construct($model);
+    }
+
+    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->query()->with(['user:id,name,avatar_url']); 
+
+        if (!empty($filters['product_uuid'])) {
+            $query->whereHas('product', function($q) use ($filters) {
+                $q->where('uuid', $filters['product_uuid']);
+            });
         }
-        return $query->latest()->paginate($perPage);
-    }
 
-    public function create(array $data): Review
-    {
-        return Review::create($data);
-    }
+        if (isset($filters['is_approved'])) {
+            $query->where('is_approved', (bool)$filters['is_approved']);
+        }
+        
+        if (!empty($filters['rating'])) {
+            $query->where('rating', $filters['rating']);
+        }
 
-    public function update(Review $review, array $data): Review
-    {
-        $review->update($data);
-        return $review;
-    }
-
-    public function delete(Review $review): bool
-    {
-        return $review->delete();
-    }
-
-    public function findByUuid(string $uuid): ?Review
-    {
-        return Review::where('uuid', $uuid)->first();
+        return $query->latest()->paginate($filters['per_page'] ?? 10);
     }
 }

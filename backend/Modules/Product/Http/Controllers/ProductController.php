@@ -2,78 +2,51 @@
 
 namespace Modules\Product\Http\Controllers;
 
-use Illuminate\Routing\Controller;
+use Illuminate\Http\Request;
+use Modules\Shared\Http\Controllers\BaseController;
+use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Product\Services\ProductService;
 use Modules\Product\Http\Requests\StoreProductRequest;
 use Modules\Product\Http\Requests\UpdateProductRequest;
-use Modules\Product\Services\ProductService;
+use Modules\Product\Http\Resources\ProductResource;
 
-class ProductController extends Controller
+class ProductController extends BaseController
 {
-    public function __construct(protected ProductService $service) {}
-
-    public function index()
+    public function __construct(ProductService $service)
     {
-        $filters = request()->only(['search', 'status', 'per_page']);
-        $user = auth()->user();
-        $detailed = in_array($user->role, ['admin', 'business']);
-
-        $products = $this->service->list($filters);
-
-        if ($detailed) {
-            $products->load(['warehouses' => function($q) {
-                $q->select('warehouses.id', 'name')->withPivot('quantity');
-            }]);
-        } else {
-            foreach ($products as $product) {
-                $product->total_quantity = $product->warehouses()->sum('warehouse_product.quantity');
-            }
-        }
-
-        return response()->json($products);
+        parent::__construct($service);
     }
 
-    public function store(StoreProductRequest $request)
+    public function index(Request $request): \Illuminate\Http\JsonResponse
     {
-        $images = $request->file('images', []);
-        if ($images && !is_array($images)) {
-            $images = [$images];
-        }
-        $product = $this->service->create($request->validated(), $images);
-
-        return response()->json($product, 201);
-    } 
-
-    public function show(string $uuid)
-    {
-        $user = auth()->user();
-        $detailed = in_array($user->role, ['admin', 'business']);
-
-        $product = $this->service->getProductWithStock($uuid, $detailed);
-
-        return response()->json($product);
+        $data = $this->service->paginate($request->get('per_page', 15), $request->all());
+        
+        return response()->json(ApiResponse::paginated($data));
     }
 
-    public function update(UpdateProductRequest $request, string $uuid)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
+        $request = app(StoreProductRequest::class);
         $data = $request->validated();
+        
+        $product = $this->service->create($data);
 
-        // Lấy file images
-        $images = $request->file('images', []);
-        if ($images && !is_array($images)) {
-            $images = [$images];
-        }
-
-        // Debug log
-        \Log::info('Update product request', ['data' => $data, 'files' => $images]);
-
-        $product = $this->service->update($uuid, $data, $images);
-
-        return response()->json($product, 200);
+        return response()->json(ApiResponse::success($product, 'Product created successfully', 201), 201);
     }
 
-    public function destroy(string $uuid)
+    public function show(string $uuid): \Illuminate\Http\JsonResponse
     {
-        $deleted = $this->service->delete($uuid); 
-        return response()->json(['deleted' => $deleted]);
+        $product = $this->service->findByUuidOrFail($uuid);
+        $product->load(['images', 'warehouses', 'category']);
+
+        return response()->json(ApiResponse::success($product));
     }
+
+    public function update(Request $request, string $uuid): \Illuminate\Http\JsonResponse
+    {
+        $request = app(UpdateProductRequest::class);
+        $product = $this->service->update($uuid, $request->validated());
+        return response()->json(ApiResponse::success($product, 'Product updated successfully'));
+    }
+    
 }

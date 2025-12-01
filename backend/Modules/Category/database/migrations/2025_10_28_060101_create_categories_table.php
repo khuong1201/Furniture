@@ -12,8 +12,14 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->string('name', 100);
+            $table->string('slug', 150)->unique()->index(); 
             $table->text('description')->nullable();
-            $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
+            
+            $table->foreignId('parent_id')
+                  ->nullable()
+                  ->constrained('categories')
+                  ->nullOnDelete(); 
+            
             $table->softDeletes();
             $table->timestamps();
         });

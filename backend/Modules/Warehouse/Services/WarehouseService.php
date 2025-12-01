@@ -4,7 +4,8 @@ namespace Modules\Warehouse\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Warehouse\Domain\Repositories\WarehouseRepositoryInterface;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class WarehouseService extends BaseService
 {
@@ -12,10 +13,24 @@ class WarehouseService extends BaseService
     {
         parent::__construct($repository);
     }
-
-    public function create(array $data)
+    
+    public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $data['uuid'] = $data['uuid'] ?? (string)Str::uuid();
-        return parent::create($data);
+        $filters['per_page'] = $perPage;
+        if (method_exists($this->repository, 'filter')) {
+            return $this->repository->filter($filters);
+        }
+        return $this->repository->paginate($perPage);
+    }
+
+    protected function beforeDelete(Model $model): void
+    {
+        $hasStock = $model->products()->wherePivot('quantity', '>', 0)->exists();
+
+        if ($hasStock) {
+            throw ValidationException::withMessages([
+                'warehouse' => ['Cannot delete warehouse containing stock. Please transfer or clear stock first.']
+            ]);
+        }
     }
 }

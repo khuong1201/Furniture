@@ -7,33 +7,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
-use Modules\User\Database\Factories\UserFactory;
-use Modules\Role\Domain\Models\Role;
-use Modules\Auth\Domain\Models\RefreshToken;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Role\Domain\Models\Role;
+use Modules\Permission\Domain\Models\Permission;
+use Modules\Shared\Traits\Loggable; 
+
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
-
-    protected static function newFactory(): Factory
-    {
-        return UserFactory::new();
-    }
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, Loggable;
 
     protected $fillable = [
-        'uuid',
-        'name',
-        'email',
-        'phone',
-        'password',
-        'avatar_url',
-        'is_active',
+        'uuid', 'name', 'email', 'phone', 'password', 'avatar_url', 'is_active',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected $casts = [
@@ -41,37 +29,27 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    protected static function booted(): void
+    protected static function boot()
     {
+        parent::boot();
         static::creating(function ($user) {
-            if (empty($user->uuid)) {
-                $user->uuid = (string) Str::uuid();
-            }
+            $user->uuid = (string) Str::uuid();
         });
     }
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'role_user');
+        return $this->belongsToMany(Role::class, 'role_user')
+            ->withPivot('assigned_at', 'assigned_by');
     }
 
-    /**
-     * Trả về collection Permissions cho user.
-     * Thực hiện single query: roles with permissions để tránh N+1.
-     */
     public function permissions()
     {
-        return $this->roles()->with('permissions')->get()
-            ->pluck('permissions')->flatten()->unique('id')->values();
+        return $this->roles()->with('permissions');
     }
 
-    public function hasPermission(string $permissionName): bool
+    protected static function newFactory()
     {
-        return $this->permissions()->contains(fn($p) => strcasecmp($p->name, $permissionName) === 0);
-    }
-
-    public function refreshTokens()
-    {
-        return $this->hasMany(RefreshToken::class, 'user_id');
+        return \Modules\User\Database\factories\UserFactory::new();
     }
 }

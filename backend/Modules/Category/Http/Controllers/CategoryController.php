@@ -2,48 +2,43 @@
 
 namespace Modules\Category\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
+use Illuminate\Http\Request;
+use Modules\Shared\Http\Controllers\BaseController;
+use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Category\Services\CategoryService;
 use Modules\Category\Http\Requests\StoreCategoryRequest;
 use Modules\Category\Http\Requests\UpdateCategoryRequest;
-use Modules\Category\Domain\Models\Category;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
-    public function __construct(protected CategoryService $service)
+    public function __construct(CategoryService $service)
     {
-        $this->middleware(\Modules\Auth\Http\Middleware\JwtAuthenticate::class);
+        parent::__construct($service);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->json($this->service->getAll());
-    }
-
-    public function store(StoreCategoryRequest $request): JsonResponse
-    {
-        $category = $this->service->create($request->validated());
-        return response()->json($category, 201);
-    }
-
-    public function update(UpdateCategoryRequest $request, string $uuid): JsonResponse
-    {
-        $category = $this->service->findByUuid($uuid); 
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
+        if ($request->has('tree')) {
+            $data = $this->service->getTree();
+            return response()->json(ApiResponse::success($data));
         }
-        $category = $this->service->update($uuid, $request->validated());
-        return response()->json($category);
+
+        return parent::index($request);
     }
 
-    public function destroy(string $uuid): JsonResponse
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-        $category = $this->service->findByUuid($uuid);
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-        $this->service->delete($uuid);
-        return response()->json(['message' => 'deleted category successfully'], 204); 
+        $request = app(StoreCategoryRequest::class);
+        $data = $this->service->create($request->validated());
+        
+        return response()->json(ApiResponse::success($data, 'Category created', 201), 201);
+    }
+
+    public function update(Request $request, string $uuid): \Illuminate\Http\JsonResponse
+    {
+        $request = app(UpdateCategoryRequest::class);
+        $data = $this->service->update($uuid, $request->validated());
+
+        return response()->json(ApiResponse::success($data, 'Category updated'));
     }
 }

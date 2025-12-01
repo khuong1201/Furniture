@@ -2,68 +2,59 @@
 
 namespace Modules\Product\Services;
 
-use Illuminate\Support\Str;
+use Modules\Shared\Services\BaseService; 
 use Modules\Product\Domain\Repositories\ProductImageRepositoryInterface;
 use Modules\Shared\Services\CloudinaryStorageService;
 use Modules\Product\Domain\Models\Product;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Database\Eloquent\Model;
 
-class ProductImageService
+class ProductImageService extends BaseService
 {
     public function __construct(
-        protected ProductImageRepositoryInterface $imageRepo,
-        protected CloudinaryStorageService $cloudinary
-    ) {}
-
-    public function uploadImages(Product $product, array $files): void
-    {
-        $this->imageRepo->unsetPrimary($product->id);
-
-        foreach ($files as $index => $file) {
-            $uploaded = $this->cloudinary->upload($file, 'products/'.$product->uuid);
-            $this->imageRepo->create([
-                'uuid' => Str::uuid()->toString(),
-                'product_id' => $product->id,
-                'image_url' => $uploaded['url'] ?? $uploaded['secure_url'] ?? null,
-                'public_id' => $uploaded['public_id'] ?? null,
-                'is_primary' => $index === 0,
-            ]);
-        }
+        ProductImageRepositoryInterface $repository,
+        protected CloudinaryStorageService $storage
+    ) {
+        parent::__construct($repository);
     }
 
-    public function uploadSingle(Product $product, $file, bool $isPrimary = false)
+    public function upload(Product $product, UploadedFile $file, bool $isPrimary = false): Model
     {
         if ($isPrimary) {
-            $this->imageRepo->unsetPrimary($product->id);
+            $this->repository->unsetPrimary($product->id);
         }
 
-        $uploaded = $this->cloudinary->upload($file, 'products/'.$product->uuid);
+        $result = $this->storage->upload($file, "products/{$product->uuid}");
 
-        return $this->imageRepo->create([
-            'uuid' => Str::uuid()->toString(),
+        return $this->repository->create([
+            'uuid' => \Illuminate\Support\Str::uuid()->toString(), 
             'product_id' => $product->id,
-            'image_url' => $uploaded['url'] ?? $uploaded['secure_url'] ?? null,
-            'public_id' => $uploaded['public_id'] ?? null,
-            'is_primary' => $isPrimary,
+            'image_url' => $result['url'],
+            'public_id' => $result['public_id'],
+            'is_primary' => $isPrimary
         ]);
     }
 
-    public function deleteImages(Product $product): void
+    public function uploadMultiple(Product $product, array $files): void
     {
-        $images = $product->images;
-        foreach ($images as $image) {
-            if ($image->public_id) {
-                $this->cloudinary->deleteImage($image->public_id);
-            }
-            $this->imageRepo->delete($image);
+        $hasPrimary = $product->images()->where('is_primary', true)->exists();
+
+        foreach ($files as $index => $file) {
+            $isPrimary = (!$hasPrimary && $index === 0);
+            $this->upload($product, $file, $isPrimary);
         }
     }
 
-    public function deleteByUuid(string $uuid): bool
+    public function delete(string $uuid): bool
     {
-        $image = $this->imageRepo->findByUuid($uuid);
-        if (! $image) return false;
-        if ($image->public_id) $this->cloudinary->deleteImage($image->public_id);
-        $this->imageRepo->delete($image);
-        return true;
+        $image = $this->repository->findByUuid($uuid);
+        
+        if (!$image) return false;
+
+        if ($image->public_id) {
+            $this->storage->delete($image->public_id);
+        }
+        
+        return $this->repository->delete($image);
     }
 }

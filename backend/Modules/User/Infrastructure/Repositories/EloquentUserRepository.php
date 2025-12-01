@@ -5,52 +5,32 @@ namespace Modules\User\Infrastructure\Repositories;
 use Modules\User\Domain\Repositories\UserRepositoryInterface;
 use Modules\User\Domain\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Modules\Shared\Repositories\EloquentBaseRepository;
 
-class EloquentUserRepository implements UserRepositoryInterface
+class EloquentUserRepository extends EloquentBaseRepository implements UserRepositoryInterface
 {
-    public function all(int $perPage = 10): LengthAwarePaginator
+    public function __construct(User $model)
     {
-        return User::latest()->paginate($perPage);
+        parent::__construct($model);
     }
 
-    public function findByUuid(string $uuid): User
+    public function filter(array $filters): LengthAwarePaginator
     {
-        return User::where('uuid', $uuid)->firstOrFail();
-    }
-
-    public function findById(int|string $id): ?User
-    {
-        return User::find($id);
-    }
-
-    public function create(array $data): User
-    {
-        return User::create($data);
-    }
-
-    public function update(User $user, array $data): User
-    {
-        $user->update($data);
-        return $user;
-    }
-
-    public function delete(User $user): bool
-    {
-        return $user->delete();
-    }
-
-    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
-    {
-        $query = User::query()->latest();
+        $query = $this->query();
 
         if (!empty($filters['q'])) {
             $q = $filters['q'];
             $query->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%");
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%");
             });
         }
+        
+        if (isset($filters['is_active'])) {
+            $query->where('is_active', (bool)$filters['is_active']);
+        }
 
-        return $query->paginate($perPage);
+        return $query->latest()->paginate($filters['per_page'] ?? 15);
     }
 }

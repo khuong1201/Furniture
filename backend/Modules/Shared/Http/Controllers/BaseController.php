@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Modules\Shared\Services\BaseService;
+use Illuminate\Foundation\Http\FormRequest;
 
 abstract class BaseController extends Controller
 {
@@ -18,49 +19,76 @@ abstract class BaseController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->integer('per_page', 15);
+        
+        // Giới hạn per_page để tránh overload
+        $perPage = min($perPage, 100);
+        
         $data = $this->service->paginate($perPage);
 
-        return response()->json($data);
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
     }
 
     public function show(string $uuid): JsonResponse
     {
         $data = $this->service->findByUuidOrFail($uuid);
-        return response()->json($data);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
     }
     
     public function store(Request $request): JsonResponse
     {
-        $validated = $this->validateData($request);
+        $validated = $this->validateRequest($request);
         $data = $this->service->create($validated);
 
-        return response()->json($data, 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Created successfully',
+            'data' => $data
+        ], 201);
     }
 
     public function update(Request $request, string $uuid): JsonResponse
     {
-        $validated = $this->validateData($request);
+        $validated = $this->validateRequest($request);
         $data = $this->service->update($uuid, $validated);
 
-        return response()->json($data);
+        return response()->json([
+            'success' => true,
+            'message' => 'Updated successfully',
+            'data' => $data
+        ]);
     }
 
     public function destroy(string $uuid): JsonResponse
     {
         $this->service->delete($uuid);
-        return response()->json(['message' => 'Deleted successfully']);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Deleted successfully'
+        ]);
     }
 
-    /**
-     * Override ở module con nếu có rules riêng.
-     */
-    protected function validateData(Request $request): array
+    protected function validateRequest(Request $request): array
     {
-        if (method_exists($request, 'validated')) {
-            return $request->validated();
+        if (!$request instanceof FormRequest) {
+            throw new \LogicException(
+                'Request must be a FormRequest instance. Create a FormRequest class for validation.'
+            );
         }
 
-        return $request->all();
+        return $request->validated();
+    }
+    
+    protected function getValidationRules(): array
+    {
+        return [];
     }
 }

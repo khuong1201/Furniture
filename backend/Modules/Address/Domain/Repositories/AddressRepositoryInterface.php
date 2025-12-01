@@ -7,5 +7,6 @@ use Modules\Shared\Repositories\BaseRepositoryInterface;
 
 interface AddressRepositoryInterface extends BaseRepositoryInterface
 {
-    public function getAllByUser($userId);
+    public function getAllByUser(int $userId);
+    public function resetDefault(int $userId): void;
 }

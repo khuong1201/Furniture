@@ -2,37 +2,50 @@
 
 namespace Modules\Review\Http\Controllers;
 
-use Illuminate\Routing\Controller;
+use Illuminate\Http\Request; 
+use Illuminate\Http\JsonResponse;
+use Modules\Shared\Http\Controllers\BaseController;
+use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Review\Services\ReviewService;
 use Modules\Review\Http\Requests\StoreReviewRequest;
 use Modules\Review\Http\Requests\UpdateReviewRequest;
-use Illuminate\Http\Request;
 
-class ReviewController extends Controller
+class ReviewController extends BaseController
 {
-    public function __construct(protected ReviewService $service) {}
-
-    public function index(Request $request)
+    public function __construct(ReviewService $service)
     {
-        $reviews = $this->service->list($request->all(), $request->query('per_page', 10));
-        return response()->json($reviews);
+        parent::__construct($service);
     }
 
-    public function store(StoreReviewRequest $request)
+    public function index(Request $request): JsonResponse
     {
-        $review = $this->service->create($request->validated());
-        return response()->json($review, 201);
+        $filters = $request->all();
+
+        $data = $this->service->paginate($request->get('per_page', 10), $filters);
+        return response()->json(ApiResponse::paginated($data));
     }
 
-    public function update(UpdateReviewRequest $request, string $uuid)
+    public function store(Request $request): JsonResponse
     {
-        $review = $this->service->update($uuid, $request->validated());
-        return response()->json($review);
+        $validatedRequest = app(StoreReviewRequest::class);
+        
+        $review = $this->service->create($validatedRequest->validated());
+        
+        return response()->json(ApiResponse::success($review, 'Review created successfully', 201), 201);
     }
 
-    public function destroy(string $uuid)
+    public function update(Request $request, string $uuid): JsonResponse
     {
-        $this->service->delete($uuid);
-        return response()->json(['message' => 'Review deleted']);
+        $validatedRequest = app(UpdateReviewRequest::class);
+        
+        $review = $this->service->update($uuid, $validatedRequest->validated());
+        
+        return response()->json(ApiResponse::success($review, 'Review updated successfully'));
+    }
+
+    public function destroy(string $uuid): JsonResponse
+    {
+        $this->service->delete($uuid); 
+        return response()->json(ApiResponse::success(null, 'Review deleted successfully'));
     }
 }

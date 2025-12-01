@@ -12,14 +12,23 @@ class EloquentCategoryRepository extends EloquentBaseRepository implements Categ
     {
         parent::__construct($model);
     }
-
-    public function allRootWithChildren()
+    
+    public function getTree()
     {
-        return $this->model->with('children')->whereNull('parent_id')->get();
+        return $this->model
+            ->whereNull('parent_id')
+            ->with('allChildren')
+            ->get();
     }
+    
+    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->query();
+        
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', "%{$filters['search']}%");
+        }
 
-    // public function findByUuid($uuid)
-    // {
-    //     return $this->model->where('uuid', $uuid)->first(); 
-    // }
+        return $query->latest()->paginate($filters['per_page'] ?? 15);
+    }
 }

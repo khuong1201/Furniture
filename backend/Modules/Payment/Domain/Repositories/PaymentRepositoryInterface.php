@@ -2,13 +2,7 @@
 
 namespace Modules\Payment\Domain\Repositories;
 
+use Modules\Shared\Repositories\BaseRepositoryInterface;
 use Modules\Payment\Domain\Models\Payment;
 
-interface PaymentRepositoryInterface
-{
-    public function all();
-    public function findByUuid(string $uuid): ?Payment;
-    public function create(array $data): Payment;
-    public function update(Payment $payment, array $data): Payment;
-    public function delete(Payment $payment): bool;
-}
+interface PaymentRepositoryInterface extends BaseRepositoryInterface {}

@@ -2,35 +2,30 @@
 
 namespace Modules\Promotion\Infrastructure\Repositories;
 
+use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Promotion\Domain\Models\Promotion;
 use Modules\Promotion\Domain\Repositories\PromotionRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class EloquentPromotionRepository implements PromotionRepositoryInterface
+class EloquentPromotionRepository extends EloquentBaseRepository implements PromotionRepositoryInterface
 {
-    public function paginate(int $perPage = 15): LengthAwarePaginator
+    public function __construct(Promotion $model)
     {
-        return Promotion::with('products')->latest()->paginate($perPage);
+        parent::__construct($model);
     }
 
-    public function findByUuid(string $uuid): ?Promotion
+    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Promotion::with('products')->where('uuid', $uuid)->first();
-    }
+        $query = $this->query();
 
-    public function create(array $data): Promotion
-    {
-        return Promotion::create($data);
-    }
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', "%{$filters['search']}%");
+        }
 
-    public function update(Promotion $promotion, array $data): Promotion
-    {
-        $promotion->update($data);
-        return $promotion;
-    }
+        if (isset($filters['is_active']) && $filters['is_active']) {
+            $query->active();
+        }
 
-    public function delete(Promotion $promotion): bool
-    {
-        return $promotion->delete();
+        return $query->latest()->paginate($filters['per_page'] ?? 15);
     }
 }

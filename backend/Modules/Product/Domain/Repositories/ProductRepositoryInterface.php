@@ -3,10 +3,6 @@
 namespace Modules\Product\Domain\Repositories;
 
 use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Product\Domain\Models\Product;
 
-interface ProductRepositoryInterface extends BaseRepositoryInterface
-{
-    // Thêm phương thức filter nếu cần
-    public function filter(array $filters);
-}
-
+interface ProductRepositoryInterface extends BaseRepositoryInterface {}

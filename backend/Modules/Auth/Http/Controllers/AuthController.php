@@ -3,89 +3,63 @@
 namespace Modules\Auth\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Modules\Shared\Http\Controllers\BaseController; 
+use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Auth\Services\AuthService;
-use Modules\Auth\Domain\Repositories\AuthRepositoryInterface;
 use Modules\Auth\Http\Requests\RegisterRequest;
 use Modules\Auth\Http\Requests\LoginRequest;
 use Modules\Auth\Http\Requests\RefreshTokenRequest;
 
-class AuthController
+class AuthController extends BaseController 
 {
     public function __construct(
-        private AuthService $authService,
-        private AuthRepositoryInterface $authRepository
+        protected AuthService $authService
     ) {}
 
     public function register(RegisterRequest $request)
     {
-        $data = $request->validated();
-
-        $user = $this->authRepository->create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-        ]);
-
-        if (class_exists(\Modules\Role\Domain\Models\Role::class)) {
-            $role = \Modules\Role\Domain\Models\Role::where('name', 'user')->first();
-            if ($role) {
-                $user->roles()->attach($role);
-            }
-        }
-
-        $accessToken = $this->authService->createAccessToken($user);
-        $refreshToken = $this->authService->createRefreshToken(
-            $user,
-            $data['device_name'] ?? null,
+        $result = $this->authService->register(
+            $request->validated(),
             $request->ip(),
             $request->userAgent()
         );
 
-        return response()->json([
-            'user' => $user->only(['id', 'uuid', 'email', 'name']),
-        ], 201);
+        return response()->json(ApiResponse::success($result, 'Registration successful', 201), 201);
+    }
+
+    public function verify(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $result = $this->authService->verifyOtp($request->email, $request->otp);
+
+        return response()->json($result);
     }
 
     public function login(LoginRequest $request)
     {
-        $data = $request->validated();
-
-        $user = $this->authRepository->findByEmail($data['email']);
-        if (!$user || !Hash::check($data['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-
-        $accessToken = $this->authService->createAccessToken($user);
-        $refreshToken = $this->authService->createRefreshToken(
-            $user,
-            $data['device_name'] ?? null,
+        $result = $this->authService->login(
+            $request->input('email'),
+            $request->input('password'),
+            $request->input('device_name'),
             $request->ip(),
             $request->userAgent()
         );
 
-        return response()->json([
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken->token,
-            'permissions' => method_exists($user, 'permissions')
-                ? $user->permissions()->pluck('name')
-                : [],
-        ]);
+        return response()->json(ApiResponse::success($result, 'Login successful'));
     }
 
     public function refresh(RefreshTokenRequest $request)
     {
-        $token = $request->validated()['refresh_token'];
-        $newToken = $this->authService->rotateRefreshToken($token);
-
-        if (!$newToken) {
-            return response()->json(['message' => 'Invalid or expired refresh token'], 401);
+        try {
+            $result = $this->authService->rotateRefreshToken($request->input('refresh_token'));
+            return response()->json(ApiResponse::success($result, 'Token refreshed'));
+        } catch (\Exception $e) {
+            return response()->json(ApiResponse::error($e->getMessage(), 401), 401);
         }
-
-        return response()->json([
-            'access_token' => $this->authService->createAccessToken($newToken->user),
-            'refresh_token' => $newToken->token,
-        ]);
     }
 
     public function logout(Request $request)
@@ -95,6 +69,6 @@ class AuthController
             $this->authService->revokeRefreshToken($token);
         }
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(ApiResponse::success(null, 'Logged out successfully'));
     }
 }

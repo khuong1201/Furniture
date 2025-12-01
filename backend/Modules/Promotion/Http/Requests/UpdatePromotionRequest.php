@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePromotionRequest extends FormRequest
 {
+    public function authorize(): bool { return true; }
+
     public function rules(): array
     {
         return [
@@ -13,15 +15,10 @@ class UpdatePromotionRequest extends FormRequest
             'type' => 'sometimes|in:percentage,fixed',
             'value' => 'sometimes|numeric|min:0',
             'start_date' => 'sometimes|date',
-            'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'end_date' => 'sometimes|date|after:start_date',
             'status' => 'sometimes|boolean',
             'product_ids' => 'sometimes|array',
             'product_ids.*' => 'integer|exists:products,id',
         ];
-    }
-
-    public function authorize(): bool
-    {
-        return true;
     }
 }

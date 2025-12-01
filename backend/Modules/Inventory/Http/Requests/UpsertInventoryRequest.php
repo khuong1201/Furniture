@@ -13,7 +13,7 @@ class UpsertInventoryRequest extends FormRequest
         return [
             'product_id' => 'required|exists:products,id',
             'warehouse_id' => 'required|exists:warehouses,id',
-            'quantity' => 'required|integer|min:0',
+            'quantity' => 'required|integer|min:0', 
             'min_threshold' => 'nullable|integer|min:0',
             'max_threshold' => 'nullable|integer|min:0',
         ];

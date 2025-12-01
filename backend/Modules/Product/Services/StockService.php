@@ -4,6 +4,7 @@ namespace Modules\Product\Services;
 
 use Modules\Product\Domain\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class StockService
 {
@@ -11,11 +12,13 @@ class StockService
     {
         $warehouse = $product->warehouses()
             ->wherePivot('quantity', '>=', $qty)
-            ->orderBy('pivot_quantity', 'desc')
+            ->orderByPivot('quantity', 'desc') 
             ->first();
 
         if (!$warehouse) {
-            throw new \Exception("Không đủ hàng cho sản phẩm {$product->name}");
+            throw ValidationException::withMessages([
+                'stock' => ["Sản phẩm {$product->name} không đủ hàng trong bất kỳ kho nào."]
+            ]);
         }
 
         $product->warehouses()->updateExistingPivot($warehouse->id, [
@@ -29,8 +32,9 @@ class StockService
     {
         if (!$warehouseId) {
             $warehouseId = $product->warehouses()->first()?->id;
+            
             if (!$warehouseId) {
-                throw new \Exception("Không tìm thấy kho để restore cho sản phẩm {$product->name}");
+                 throw new \RuntimeException("Không tìm thấy kho để hoàn tồn cho sản phẩm {$product->name}");
             }
         }
 

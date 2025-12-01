@@ -4,8 +4,10 @@ namespace Modules\Shared\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-abstract class EloquentBaseRepository
+abstract class EloquentBaseRepository implements BaseRepositoryInterface
 {
     protected Model $model;
 
@@ -19,33 +21,38 @@ abstract class EloquentBaseRepository
         return $this->model->newQuery();
     }
 
-    public function all($withTrashed = false)
+    public function all(bool $withTrashed = false): Collection
     {
         $query = $this->query();
+        
         if ($withTrashed && method_exists($this->model, 'withTrashed')) {
             $query->withTrashed();
         }
+        
         return $query->latest()->get();
     }
 
-    public function paginate($perPage = 15)
+    public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return $this->query()->latest()->paginate($perPage);
     }
 
-    public function findById($id)
+    public function findById(int $id): ?Model
     {
-        return $this->model->findOrFail($id);
+        return $this->model->find($id); 
     }
 
-    public function findByUuid($uuid): ?Model
+    public function findByUuid(string $uuid): ?Model
     {
-        return $this->model->where('uuid', $uuid)->firstOrFail();
+        return $this->model->where('uuid', $uuid)->first(); 
     }
 
-        public function findByUuidAndUser($uuid, $userId)
+    public function findByUuidAndUser(string $uuid, int $userId): ?Model
     {
-        return $this->model->where('uuid', $uuid)->where('user_id', $userId)->firstOrFail();
+        return $this->model
+            ->where('uuid', $uuid)
+            ->where('user_id', $userId)
+            ->first();
     }
 
     public function create(array $data): Model
@@ -53,24 +60,24 @@ abstract class EloquentBaseRepository
         return $this->model->create($data);
     }
 
-    public function update(Model $model, array $data)
+    public function update(Model $model, array $data): Model
     {
         $model->update($data);
-        return $model;
+        return $model->fresh();
     }
 
-    public function delete(Model $model)
+    public function delete(Model $model): bool
     {
         return $model->delete();
     }
 
-    public function filter(array $filters)
+    public function filter(array $filters): LengthAwarePaginator
     {
         $query = $this->query();
 
         foreach ($filters as $key => $value) {
             if (!empty($value) && $this->model->isFillable($key)) {
-                $query->where($key, 'like', "%$value%");
+                $query->where($key, 'like', "%{$value}%");
             }
         }
 

@@ -3,8 +3,8 @@
 namespace Modules\Address\database\factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 use Modules\Address\Domain\Models\Address;
+use Modules\User\Domain\Models\User;
 
 class AddressFactory extends Factory
 {
@@ -13,14 +13,15 @@ class AddressFactory extends Factory
     public function definition(): array
     {
         return [
-            'uuid' => Str::uuid(),
+            'uuid' => $this->faker->uuid(),
+            'user_id' => User::factory(), 
             'full_name' => $this->faker->name(),
             'phone' => $this->faker->phoneNumber(),
             'province' => $this->faker->city(),
             'district' => $this->faker->streetName(),
-            'ward' => $this->faker->streetSuffix(),
-            'street' => $this->faker->address(),
-            'is_default' => $this->faker->boolean(30),
+            'ward' => 'Ward ' . $this->faker->numberBetween(1, 10),
+            'street' => $this->faker->streetAddress(),
+            'is_default' => false,
         ];
     }
 }

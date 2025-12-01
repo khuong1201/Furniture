@@ -2,64 +2,41 @@
 
 namespace Modules\Role\Http\Controllers;
 
-use Illuminate\Routing\Controller;
-use Illuminate\Http\Request;
-use Modules\Role\Domain\Repositories\RoleRepositoryInterface;
+use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Role\Services\RoleService;
+use Modules\Role\Http\Requests\StoreRoleRequest;
+use Modules\Role\Http\Requests\UpdateRoleRequest;
+use Illuminate\Http\Request;
 
-class RoleController extends Controller
+class RoleController extends BaseController
 {
-    public function __construct(
-        protected RoleRepositoryInterface $repo,
-        protected RoleService $service
-    ) {}
-
-    public function index(Request $request)
+    public function __construct(RoleService $service)
     {
-        $perPage = (int) $request->query('per_page', 15);
-        $filters = ['q' => $request->query('q')];
-        $roles = $this->service->listRoles($perPage, $filters);
+        parent::__construct($service);
+    }
+
+    public function store(Request $request): \Illuminate\Http\JsonResponse 
+    {
+        $request = app(StoreRoleRequest::class);
+        $data = $this->service->create($request->validated());
+
         return response()->json([
-            'data' => $roles->items(),
-            'meta' => [
-                'current_page' => $roles->currentPage(),
-                'per_page' => $roles->perPage(),
-                'total' => $roles->total(),
-                'last_page' => $roles->lastPage(),
-            ],
+            'success' => true,
+            'message' => 'Role created successfully',
+            'data' => $data
+        ], 201);
+    }
+
+    public function update(Request $request, string $uuid): \Illuminate\Http\JsonResponse
+    {
+        $request = app(UpdateRoleRequest::class);
+        $data = $this->service->update($uuid, $request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Role updated successfully',
+            'data' => $data
         ]);
     }
-
-    public function store(Request $request)
-    {
-        $payload = $request->validate([
-            'name' => 'required|string|unique:roles,name',
-            'description' => 'nullable|string',
-        ]);
-        $role = $this->service->createRole($payload);
-        return response()->json(['role' => $role], 201);
-    }
-
-    public function show($id)
-    {
-        $role = $this->repo->findById($id);
-        if (! $role) abort(404);
-        return response()->json(['role' => $role]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $payload = $request->validate([
-            'name' => 'sometimes|string|unique:roles,name,'.$id,
-            'description' => 'nullable|string',
-        ]);
-        $role = $this->service->updateRole($id, $payload);
-        return response()->json(['role' => $role]);
-    }
-
-    public function destroy($id)
-    {
-        $this->service->deleteRole($id);
-        return response()->json(['message' => 'Role deleted'], 200);
-    }
+    
 }

@@ -8,10 +8,6 @@ use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Permission\Domain\Models\Permission;
-use Modules\Shared\Contracts\IPermissionRepository;
-use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
-use Modules\Permission\Infrastructure\Repositories\EloquentPermissionRepository;
-use Modules\Permission\Services\PermissionService;
 
 class PermissionServiceProvider extends ServiceProvider
 {
@@ -39,13 +35,10 @@ class PermissionServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(PermissionRepositoryInterface::class, function ($app) {
-            return new EloquentPermissionRepository(new Permission());
-        });
-
-        $this->app->singleton(PermissionService::class, function ($app) {
-            return new PermissionService($app->make(PermissionRepositoryInterface::class));
-        });
+        $this->app->bind(
+            \Modules\Permission\Domain\Repositories\PermissionRepositoryInterface::class,
+            \Modules\Permission\Infrastructure\Repositories\EloquentPermissionRepository::class
+        );
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }

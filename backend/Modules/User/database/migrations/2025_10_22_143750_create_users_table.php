@@ -11,19 +11,19 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->string('name', 255);
-            $table->string('email', 255)->unique();
-            $table->string('phone')->nullable();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('phone')->nullable()->index();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('verification_code', 6)->nullable();
+            $table->timestamp('verification_expires_at')->nullable();
             $table->string('password');
             $table->boolean('is_active')->default(true);
             $table->string('avatar_url')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
-        });
 
-        Schema::table('users', function (Blueprint $table) {
             $table->index('is_active');
         });
     }

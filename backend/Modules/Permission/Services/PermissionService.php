@@ -2,30 +2,33 @@
 
 namespace Modules\Permission\Services;
 
-use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
-use Modules\Permission\Domain\Models\Permission;
 use Modules\Shared\Services\BaseService;
+use Modules\Shared\Services\CacheService;
+use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
 
 class PermissionService extends BaseService
 {
-    public function __construct(PermissionRepositoryInterface $repo)
-    {
+    protected const CACHE_TTL = 86400; 
+
+    public function __construct(
+        PermissionRepositoryInterface $repo,
+        protected CacheService $cacheService
+    ) {
         parent::__construct($repo);
     }
 
-    public function getPermissionsByUserId(int $userId): array
+    public function getUserPermissions(int $userId): array
     {
-        $permissions = $this->repository->getPermissionsByUserId($userId);
-        return array_values(array_unique(array_map('strtolower', $permissions)));
+        $cacheKey = "user_permissions_{$userId}";
+
+        return $this->cacheService->remember($cacheKey, function () use ($userId) {
+            return $this->repository->getPermissionsByUserId($userId);
+        }, self::CACHE_TTL);
     }
 
-    public function userHasPermission(int $userId, string $permission): bool
+    public function hasPermission(int $userId, string $permission): bool
     {
-        return in_array(strtolower($permission), $this->getPermissionsByUserId($userId));
-    }
-
-    public function findByName(string $name): ?Permission
-    {
-        return $this->repository->findByName($name);
+        $permissions = $this->getUserPermissions($userId);
+        return in_array($permission, $permissions);
     }
 }

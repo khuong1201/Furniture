@@ -4,86 +4,65 @@ namespace Modules\Product\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Modules\Product\Services\ProductImageService;
 use Modules\Product\Domain\Models\Product;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 
 class ProductService extends BaseService
 {
-    protected ProductImageService $imageService;
-
-    public function __construct(ProductRepositoryInterface $repository, ProductImageService $imageService)
-    {
-        parent::__construct($repository);
-        $this->imageService = $imageService;
+    public function __construct(
+        ProductRepositoryInterface $repo,
+        protected ProductImageService $imageService
+    ) {
+        parent::__construct($repo);
     }
 
-    public function list(array $filters = [])
+    public function create(array $data): Model
     {
-        return method_exists($this->repository, 'filter') 
-            ? $this->repository->filter($filters) 
-            : $this->repository->all();
-    }
+        return DB::transaction(function () use ($data) {
+            $product = parent::create($data); 
 
-    public function create(array $data, array $images = []): Product
-    {
-        $data['uuid'] = $data['uuid'] ?? Str::uuid()->toString();
-
-        $product = parent::create($data);
-
-        if (!empty($images)) {
-            $this->imageService->uploadImages($product, $images);
-        }
-        
-        if (!empty($data['warehouse_stock'])) {
-            $attach = [];
-            foreach ($data['warehouse_stock'] as $stock) {
-                $attach[$stock['warehouse_id']] = ['quantity' => $stock['quantity']];
+            if (!empty($data['images']) && is_array($data['images'])) {
+                $this->imageService->uploadMultiple($product, $data['images']);
             }
-            $product->warehouses()->sync($attach);
-        }
 
-        return $product->load('images', 'category', 'warehouses');
-    }
-
-    public function update(string $uuid, array $data, array $images = [])
-    {
-        $product = $this->findByUuid($uuid);
-
-        if (!empty($data)) {
-            $product->update($data);
-        }
-
-        if (!empty($images)) {
-            $this->imageService->uploadImages($product, $images);
-        }
-
-        if (isset($data['warehouse_stock'])) {
-            $attach = [];
-            foreach ($data['warehouse_stock'] as $stock) {
-                $attach[$stock['warehouse_id']] = ['quantity' => $stock['quantity']];
+            if (!empty($data['warehouse_stock'])) {
+                $this->syncStock($product, $data['warehouse_stock']);
             }
-            $product->warehouses()->sync($attach);
-        }
 
-        $product->refresh();
-
-        return $product->load('images', 'category', 'warehouses');
+            return $product->load(['images', 'warehouses']);
+        });
     }
 
-    public function getProductWithStock(string $uuid, bool $detailed = false)
+    public function update(string $uuid, array $data): Model
     {
-        $product = $this->findByUuid($uuid);
+        return DB::transaction(function () use ($uuid, $data) {
+            $product = parent::update($uuid, $data);
 
-        if ($detailed) {
-            $product->load(['warehouses' => function($q) {
-                $q->select('warehouses.id', 'name')->withPivot('quantity');
-            }]);
-        } else {
-            $product->total_quantity = $product->warehouses()->sum('warehouse_product.quantity');
-        }
+            if (!empty($data['images']) && is_array($data['images'])) {
+                $this->imageService->uploadMultiple($product, $data['images']);
+            }
 
-        return $product->load('images', 'category');
+            if (isset($data['warehouse_stock'])) {
+                $this->syncStock($product, $data['warehouse_stock']);
+            }
+
+            return $product->load(['images', 'warehouses']);
+        });
     }
 
+    protected function syncStock(Product $product, array $stockData): void
+    {
+        $syncData = [];
+        foreach ($stockData as $item) {
+            $syncData[$item['warehouse_id']] = ['quantity' => $item['quantity']];
+        }
+        $product->warehouses()->sync($syncData);
+    }
+    
+    public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $filters['per_page'] = $perPage;
+        return $this->repository->filter($filters);
+    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -10,14 +11,21 @@ return new class extends Migration {
             $table->id();
             $table->uuid('uuid')->unique();
             $table->unsignedBigInteger('user_id')->nullable()->index();
-            $table->string('type');
-            $table->string('action');
-            $table->string('model')->nullable();
-            $table->uuid('model_uuid')->nullable();
+         
+            $table->string('type', 50)->index();
+            
+            $table->string('action', 100)->index();
+                      
+            $table->string('model', 150)->nullable()->index();
+            $table->uuid('model_uuid')->nullable()->index();
+            
             $table->ipAddress('ip_address')->nullable();
-            $table->text('message')->nullable();
+            $table->text('message')->nullable(); 
             $table->json('metadata')->nullable();
+            
             $table->timestamps();
+            
+            $table->index(['model', 'model_uuid']);
         });
     }
 

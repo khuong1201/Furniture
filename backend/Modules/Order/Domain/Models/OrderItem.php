@@ -3,32 +3,24 @@
 namespace Modules\Order\Domain\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\Order\Infrastructure\Database\Factories\OrderItemFactory;
+use Illuminate\Support\Str;
 use Modules\Product\Domain\Models\Product;
 use Modules\Warehouse\Domain\Models\Warehouse;
+
 class OrderItem extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
-        'uuid',
-        'order_id',
-        'product_id',
-        'warehouse_id',
-        'quantity',
-        'unit_price',
+        'uuid', 'order_id', 'product_id', 'warehouse_id', 
+        'quantity', 'unit_price', 'subtotal', 'original_price', 'discount_amount'
     ];
 
-    protected static function newFactory()
+    protected static function boot()
     {
-        return OrderItemFactory::new();
-    }
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
+        parent::boot();
+        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
     }
 
     public function product()

@@ -4,32 +4,30 @@ namespace Modules\Permission\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Modules\Permission\Services\PermissionService;
+use Modules\Shared\Http\Resources\ApiResponse;
 
 class CheckPermission
 {
+    public function __construct(
+        protected PermissionService $permissionService
+    ) {}
+
     public function handle(Request $request, Closure $next, string $permission)
     {
         $user = $request->user();
-
-        if (! $user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+        if (!$user) {
+            return response()->json(ApiResponse::error('Unauthenticated', 401), 401);
         }
 
-        if (method_exists($user, 'hasPermission')) {
-            if (! $user->hasPermission($permission)) {
-                return response()->json(['message' => 'Forbidden.'], 403);
-            }
-            return $next($request);
-        }
-
-        if (app()->bound(\Modules\Permission\Services\PermissionService::class)) {
-            $service = app(\Modules\Permission\Services\PermissionService::class);
-
-            if ($service->userHasPermission($user->id, $permission)) {
+        $permissionsToCheck = explode('|', $permission);
+        
+        foreach ($permissionsToCheck as $perm) {
+            if ($this->permissionService->hasPermission($user->id, trim($perm))) {
                 return $next($request);
             }
         }
 
-        return response()->json(['message' => 'Forbidden.'], 403);
+        return response()->json(ApiResponse::error('Forbidden: You do not have the required permission.', 403), 403);
     }
 }

@@ -2,49 +2,51 @@
 
 namespace Modules\Promotion\Services;
 
+use Modules\Shared\Services\BaseService;
 use Modules\Promotion\Domain\Repositories\PromotionRepositoryInterface;
-use Modules\Promotion\Domain\Repositories\PromotionProductRepositoryInterface;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 
-class PromotionService
+class PromotionService extends BaseService
 {
-    public function __construct(
-        protected PromotionRepositoryInterface $promotionRepo,
-        protected PromotionProductRepositoryInterface $productRepo
-    ) {}
-
-    public function paginate(int $perPage = 15)
+    public function __construct(PromotionRepositoryInterface $repository)
     {
-        return $this->promotionRepo->paginate($perPage);
+        parent::__construct($repository);
     }
 
-    public function store(array $data)
+    public function create(array $data): Model
     {
-        $promotion = $this->promotionRepo->create($data);
-        if (!empty($data['product_ids'])) {
-            $this->productRepo->attachProducts($promotion->id, $data['product_ids']);
+        return DB::transaction(function () use ($data) {
+            $promotion = parent::create($data);
+
+            if (!empty($data['product_ids'])) {
+                $promotion->products()->sync($data['product_ids']);
+            }
+
+            return $promotion->load('products');
+        });
+    }
+
+    public function update(string $uuid, array $data): Model
+    {
+        return DB::transaction(function () use ($uuid, $data) {
+            $promotion = $this->repository->findByUuid($uuid);
+            
+            $promotion->update($data);
+
+            if (isset($data['product_ids'])) {
+                $promotion->products()->sync($data['product_ids']);
+            }
+
+            return $promotion->load('products');
+        });
+    }
+    
+    public function calculateDiscount($originalPrice, $promotion)
+    {
+        if ($promotion->type === 'percentage') {
+            return $originalPrice * ($promotion->value / 100);
         }
-        return $promotion->load('products');
-    }
-
-    public function update(string $uuid, array $data)
-    {
-        $promotion = $this->promotionRepo->findByUuid($uuid);
-        if (!$promotion) abort(404, 'Promotion not found');
-
-        $this->promotionRepo->update($promotion, $data);
-
-        if (isset($data['product_ids'])) {
-            $this->productRepo->detachProducts($promotion->id, $promotion->products->pluck('id')->toArray());
-            $this->productRepo->attachProducts($promotion->id, $data['product_ids']);
-        }
-
-        return $promotion->fresh('products');
-    }
-
-    public function delete(string $uuid)
-    {
-        $promotion = $this->promotionRepo->findByUuid($uuid);
-        if (!$promotion) abort(404, 'Promotion not found');
-        $this->promotionRepo->delete($promotion);
+        return min($originalPrice, $promotion->value);
     }
 }

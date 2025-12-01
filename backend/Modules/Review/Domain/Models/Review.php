@@ -8,19 +8,25 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Modules\User\Domain\Models\User;
 use Modules\Product\Domain\Models\Product;
+use Modules\Shared\Traits\Loggable;
 
 class Review extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Loggable;
 
     protected $fillable = [
         'uuid', 'user_id', 'product_id', 'rating', 'comment', 'is_approved'
     ];
 
+    protected $casts = [
+        'rating' => 'integer',
+        'is_approved' => 'boolean',
+    ];
+
     protected static function boot()
     {
         parent::boot();
-        static::creating(fn($model) => $model->uuid = $model->uuid ?? (string) Str::uuid());
+        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
     }
 
     public function user()

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Modules\User\Domain\Models\User;
+use Modules\Shared\Http\Resources\ApiResponse; 
 
 class JwtAuthenticate
 {
@@ -25,8 +26,12 @@ class JwtAuthenticate
 
         [$headerEncoded, $payloadEncoded, $signatureEncoded] = $parts;
 
-        $header = json_decode($this->base64UrlDecode($headerEncoded));
-        $payload = json_decode($this->base64UrlDecode($payloadEncoded));
+        try {
+            $header = json_decode($this->base64UrlDecode($headerEncoded));
+            $payload = json_decode($this->base64UrlDecode($payloadEncoded));
+        } catch (\Exception $e) {
+            return null;
+        }
 
         if (!$header || !$payload || !isset($payload->exp, $payload->sub)) return null;
 
@@ -41,24 +46,26 @@ class JwtAuthenticate
 
     public function handle(Request $request, Closure $next)
     {
+
         $token = $request->bearerToken();
         if (!$token) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(ApiResponse::error('Token not provided', 401), 401);
         }
 
         $payload = $this->verify($token, config('jwt.secret'));
         if (!$payload || !isset($payload->sub)) {
-            return response()->json(['message' => 'Invalid or expired token'], 401);
+             return response()->json(ApiResponse::error('Invalid or expired token', 401), 401);
         }
 
         $user = User::find($payload->sub);
+        
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 401);
+             return response()->json(ApiResponse::error('User not found', 401), 401);
         }
 
+        // Set Auth Guard
         Auth::setUser($user);
         $request->setUserResolver(fn () => $user);
-        $request->attributes->set('auth_user', $user);
 
         return $next($request);
     }

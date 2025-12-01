@@ -7,8 +7,6 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Modules\Category\Domain\Repositories\CategoryRepositoryInterface;
-use Modules\Category\Infrastructure\Repositories\EloquentCategoryRepository;
 
 class CategoryServiceProvider extends ServiceProvider
 {
@@ -37,8 +35,8 @@ class CategoryServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            CategoryRepositoryInterface::class,
-            EloquentCategoryRepository::class
+            \Modules\Category\Domain\Repositories\CategoryRepositoryInterface::class,
+            \Modules\Category\Infrastructure\Repositories\EloquentCategoryRepository::class
         );
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);

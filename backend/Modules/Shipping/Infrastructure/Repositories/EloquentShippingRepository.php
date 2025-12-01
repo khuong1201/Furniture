@@ -12,4 +12,19 @@ class EloquentShippingRepository extends EloquentBaseRepository implements Shipp
     {
         parent::__construct($model);
     }
+
+    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->query()->with('order');
+
+        if (!empty($filters['tracking_number'])) {
+            $query->where('tracking_number', 'like', "%{$filters['tracking_number']}%");
+        }
+        
+        if (!empty($filters['order_uuid'])) {
+            $query->whereHas('order', fn($q) => $q->where('uuid', $filters['order_uuid']));
+        }
+
+        return $query->latest()->paginate($filters['per_page'] ?? 15);
+    }
 }

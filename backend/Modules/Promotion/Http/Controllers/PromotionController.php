@@ -2,38 +2,42 @@
 
 namespace Modules\Promotion\Http\Controllers;
 
-use Illuminate\Routing\Controller;
+use Illuminate\Http\Request; 
+use Illuminate\Http\JsonResponse;
+use Modules\Shared\Http\Controllers\BaseController;
+use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Promotion\Services\PromotionService;
 use Modules\Promotion\Http\Requests\StorePromotionRequest;
 use Modules\Promotion\Http\Requests\UpdatePromotionRequest;
-use Modules\Promotion\Services\PromotionService;
-use Illuminate\Http\Request;
 
-class PromotionController extends Controller
+class PromotionController extends BaseController
 {
-    public function __construct(protected PromotionService $service) {}
-
-    public function index(Request $request)
+    public function __construct(PromotionService $service)
     {
-        $perPage = (int) $request->query('per_page', 15);
-        $data = $this->service->paginate($perPage);
-        return response()->json($data);
+        parent::__construct($service);
     }
 
-    public function store(StorePromotionRequest $request)
+    public function index(Request $request): JsonResponse
     {
-        $promotion = $this->service->store($request->validated());
-        return response()->json($promotion, 201);
+        $data = $this->service->paginate($request->get('per_page', 15), $request->all());
+        return response()->json(ApiResponse::paginated($data));
     }
 
-    public function update(UpdatePromotionRequest $request, string $uuid)
+    public function store(Request $request): JsonResponse
     {
-        $promotion = $this->service->update($uuid, $request->validated());
-        return response()->json($promotion);
+        $validatedRequest = app(StorePromotionRequest::class);
+        
+        $promotion = $this->service->create($validatedRequest->validated());
+        
+        return response()->json(ApiResponse::success($promotion, 'Promotion created', 201), 201);
     }
 
-    public function destroy(string $uuid)
+    public function update(Request $request, string $uuid): JsonResponse
     {
-        $this->service->delete($uuid);
-        return response()->json(['message' => 'Promotion deleted']);
+        $validatedRequest = app(UpdatePromotionRequest::class);
+        
+        $promotion = $this->service->update($uuid, $validatedRequest->validated());
+        
+        return response()->json(ApiResponse::success($promotion, 'Promotion updated'));
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Modules\Log\Services;
 
 use Modules\Shared\Services\BaseService;

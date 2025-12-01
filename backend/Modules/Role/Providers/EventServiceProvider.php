@@ -11,7 +11,9 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        \Modules\Role\Events\RoleAssigned::class => [\Modules\Role\Listeners\InvalidatePermissionCache::class,],
+    ];
 
     /**
      * Indicates if events should be discovered.
