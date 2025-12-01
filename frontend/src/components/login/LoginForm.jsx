@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import {useAuth} from '../../hooks/AuthContext'
+import {Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import '../signUp/SignUpForm';
+import '../register/RegisterForm';
 
 function LoginForm () {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
+  const [localError, setLocalError] = useState('');
+  
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    agreeTerms: false,
+    device_name:''
   });
+
+  const { login, loading, error: apiError } = useAuth();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -21,11 +24,24 @@ function LoginForm () {
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
+    if (localError) setLocalError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Submitted:', formData);
+    
+    setLocalError('');
+
+    if (!formData.email || !formData.password) {
+      setLocalError("Please enter both email and password.");
+      return;
+    }
+
+    const isSuccess = await login (formData.email, formData.password, formData.device_name);
+
+    if (isSuccess) {
+        navigate('/'); 
+    }
   };
 
   return (
@@ -77,8 +93,13 @@ function LoginForm () {
 
 
           {/* Submit Button */}
-          <button type="submit" className="btn-primary">
-            LOG IN
+          <button 
+            type="submit" 
+            className="btn-primary" 
+            disabled={loading}
+            style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+          >
+            {loading ? 'Processing...' : 'Create Account'}
           </button>
         </form>
 
@@ -100,7 +121,7 @@ function LoginForm () {
         {/* Footer Login Link */}
         <p className="footer-text">
           Don't have an account?{' '}
-          <Link to='/signup' className='link-highlight'>
+          <Link to='/register' className='link-highlight'>
             Sign up
           </Link>
         </p>
