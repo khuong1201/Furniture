@@ -185,3 +185,14 @@
   color: white;
   cursor: pointer;
 }
+
+.loading-state, .error-state {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #888;
+  width: 100%;
+}
+.error-state {
+  color: red;
+}

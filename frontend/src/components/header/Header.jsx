@@ -1,9 +1,9 @@
 import React from 'react';
-// Giữ nguyên các import SVG của bạn
-import bellIcon from '../assets/icons/bell.svg';
-import cartIcon from '../assets/icons/cart.svg';
-import accountIcon from '../assets/icons/account.svg';
-import searchIcon from '../assets/icons/search.svg';
+import { Link } from 'react-router-dom';
+import bellIcon from '../../assets/icons/bell.svg';
+import cartIcon from '../../assets/icons/cart.svg';
+import accountIcon from '../../assets/icons/account.svg';
+import searchIcon from '../../assets/icons/search.svg';
 import './Header.css';
 
 function Header() {
@@ -31,7 +31,9 @@ function Header() {
 
             <div className="action-item user-action">
               <img src={accountIcon} alt="User" className="svg-icon"/>
-              <span className="auth-text">Log In/ Sign up</span>
+              <Link to="/signup" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
+                 Log In/ Sign up
+              </Link>
             </div>
 
           </div>
