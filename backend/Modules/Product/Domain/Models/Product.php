@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Modules\Review\Domain\Models\Review;
 use Modules\Category\Domain\Models\Category;
 use Modules\Warehouse\Domain\Models\Warehouse; 
 use Modules\Shared\Traits\Loggable;
@@ -51,6 +52,11 @@ class Product extends Model
     public function getTotalStockAttribute(): int
     {
         return $this->warehouses->sum('pivot.quantity');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 
     protected static function newFactory()

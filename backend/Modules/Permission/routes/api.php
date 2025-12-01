@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Permission\Http\Controllers\PermissionController;
 use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
-Route::middleware(['api', 'auth:api'])->prefix('admin')->group(function () {
+Route::middleware(['api', JwtAuthenticate::class])->prefix('admin')->group(function () {
     
     Route::get('my-permissions', [PermissionController::class, 'myPermissions']);
 

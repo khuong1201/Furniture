@@ -32,7 +32,7 @@ class AuthService
             ]);
 
             if (interface_exists(RoleRepositoryInterface::class)) {
-                $role = \Modules\Role\Models\Role::where('name', 'user')->first();
+                $role = \Modules\Role\Domain\Models\Role::where('name', 'user')->first();
                 if ($role) {
                     $user->roles()->attach($role->id);
                 }

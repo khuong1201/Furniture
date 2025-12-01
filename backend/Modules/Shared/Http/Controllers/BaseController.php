@@ -7,6 +7,35 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Modules\Shared\Services\BaseService;
 use Illuminate\Foundation\Http\FormRequest;
+use OpenApi\Attributes as OA;
+
+#[OA\Info(
+    version: "1.0.0",
+    title: "E-commerce Modular API",
+    description: "Tài liệu API hệ thống E-commerce (Sử dụng PHP 8 Attributes)",
+    contact: new OA\Contact(email: "admin@system.com")
+)]
+#[OA\Server(
+    url: "/api",
+    description: "API Server"
+)]
+#[OA\SecurityScheme(
+    securityScheme: "bearerAuth",
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    description: "Nhập Access Token vào đây"
+)]
+
+#[OA\Schema(
+    schema: "ApiResponse",
+    title: "Standard Response",
+    properties: [
+        new OA\Property(property: "success", type: "boolean", example: true),
+        new OA\Property(property: "message", type: "string", example: "Success"),
+        new OA\Property(property: "data", type: "object", nullable: true)
+    ]
+)]
 
 abstract class BaseController extends Controller
 {

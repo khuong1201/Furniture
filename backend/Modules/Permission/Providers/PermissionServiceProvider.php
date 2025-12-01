@@ -8,6 +8,8 @@ use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Permission\Domain\Models\Permission;
+use Modules\Permission\Services\PermissionService;
+use Modules\Permission\Http\Middleware\CheckPermission;
 
 class PermissionServiceProvider extends ServiceProvider
 {
@@ -28,6 +30,9 @@ class PermissionServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+
+        $router = $this->app['router'];
+        $router->aliasMiddleware('permission', CheckPermission::class);
     }
 
     /**
@@ -39,6 +44,7 @@ class PermissionServiceProvider extends ServiceProvider
             \Modules\Permission\Domain\Repositories\PermissionRepositoryInterface::class,
             \Modules\Permission\Infrastructure\Repositories\EloquentPermissionRepository::class
         );
+        $this->app->singleton(PermissionService::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }

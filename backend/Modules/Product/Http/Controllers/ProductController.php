@@ -37,7 +37,8 @@ class ProductController extends BaseController
     public function show(string $uuid): \Illuminate\Http\JsonResponse
     {
         $product = $this->service->findByUuidOrFail($uuid);
-        $product->load(['images', 'warehouses', 'category']);
+        $product->load(['images', 'warehouses', 'category'])
+                ->loadAvg('reviews', 'rating');
 
         return response()->json(ApiResponse::success($product));
     }

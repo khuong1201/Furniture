@@ -2,7 +2,7 @@
 
 namespace Modules\Auth\Events;
 
-use Modules\User\Models\User;
+use Modules\User\Domain\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 

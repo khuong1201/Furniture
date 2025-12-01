@@ -34,20 +34,19 @@ return [
                  * File name of the generated YAML documentation file
                  */
                 'docs_yaml' => 'api-docs.yaml',
-                
+
                 /*
                  * Set this to `json` or `yaml` to determine which documentation file to use in UI
                  */
-                // 'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
-                'format_to_use_for_docs' => 'yaml',
+                'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
 
                 /*
                  * Absolute paths to directory containing the swagger annotations are stored.
                  */
-                // 'annotations' => [
-                //     base_path('app'),
-                // ],
-                'annotations' => [],
+                'annotations' => [
+                    base_path('app'),
+                    base_path('Modules'),
+                ],
             ],
         ],
     ],
@@ -158,7 +157,19 @@ return [
              * @note This option overwrites `paths.excludes`
              * @see \OpenApi\scan
              */
-            'exclude' => [],
+            'exclude' => [
+                'vendor',
+                'storage',
+                
+                'Tests',    
+                'tests',   
+                'test',    
+                'Database', 
+                'database',
+                'Config',
+                'Resources',
+                // --------------------------
+            ],
 
             /*
              * Allows to generate specs either for OpenAPI 3.0.0 or OpenAPI 3.1.0.
@@ -175,6 +186,12 @@ return [
                 /*
                  * Examples of Security schemes
                  */
+                
+                'bearerAuth' => [
+                    'type' => 'http',
+                    'scheme' => 'bearer',
+                    'bearerFormat' => 'JWT',
+                ],
                 /*
                 'api_key_security_example' => [ // Unique name of security
                     'type' => 'apiKey', // The type of the security scheme. Valid values are "basic", "apiKey" or "oauth2".
@@ -222,6 +239,7 @@ return [
                 /*
                  * Examples of Securities
                  */
+                ['bearerAuth' => []],
                 [
                     /*
                     'oauth2_security_example' => [

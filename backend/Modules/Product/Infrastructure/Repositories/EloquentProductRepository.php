@@ -15,7 +15,7 @@ class EloquentProductRepository extends EloquentBaseRepository implements Produc
 
     public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = $this->query()->with(['category', 'images']);
+        $query = $this->query()->with(['category', 'images'])->withAvg('reviews', 'rating'); ;
 
         if (!empty($filters['search'])) {
             $q = $filters['search'];
