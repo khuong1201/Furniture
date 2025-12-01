@@ -59,6 +59,11 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function promotions()
+    {
+        return $this->belongsToMany(\Modules\Promotion\Domain\Models\Promotion::class);
+    }
+
     protected static function newFactory()
     {
         return \Modules\Product\Database\factories\ProductFactory::new();

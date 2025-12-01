@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Order\Test\Feature;
+namespace Modules\Order\test\Feature;
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Modules\User\Domain\Models\User; // Use Model đúng namespace
+use Modules\User\Domain\Models\User;
 use Modules\Product\Domain\Models\Product;
 use Modules\Warehouse\Domain\Models\Warehouse;
 use Modules\Inventory\Domain\Models\Inventory;
@@ -14,7 +14,7 @@ use Modules\Order\Domain\Models\Order;
 use Modules\Promotion\Domain\Models\Promotion;
 use Modules\Order\Events\OrderCreated;
 use Modules\Order\Events\OrderCancelled;
-use Modules\Auth\Services\AuthService; // Import AuthService
+use Modules\Auth\Services\AuthService;
 
 class OrderFlowTest extends TestCase
 {

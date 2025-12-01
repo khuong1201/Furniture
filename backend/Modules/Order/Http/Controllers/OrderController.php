@@ -2,12 +2,13 @@
 
 namespace Modules\Order\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Order\Services\OrderService;
 use Modules\Order\Http\Requests\CreateOrderRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+
 class OrderController extends BaseController
 {
     public function __construct(OrderService $service)
@@ -29,20 +30,31 @@ class OrderController extends BaseController
     public function store(Request $request): JsonResponse
     {
         $validatedRequest = app(CreateOrderRequest::class);
-        
-        $order = $this->service->create($request->validated());
+        $order = $this->service->create($validatedRequest->validated());
         return response()->json(ApiResponse::success($order, 'Order created successfully', 201), 201);
+    }
+
+    public function checkout(Request $request): JsonResponse
+    {
+        $request->validate([
+            'address_id' => 'required|exists:addresses,id',
+            'notes' => 'nullable|string'
+        ]);
+
+        $order = $this->service->createFromCart($request->all());
+        
+        return response()->json(ApiResponse::success($order, 'Order placed successfully from cart', 201), 201);
     }
 
     public function show(string $uuid): JsonResponse
     {
         $order = $this->service->findByUuidOrFail($uuid);
         
-        if (!auth()->user()->hasRole('admin') && $order->user_id !== auth()->id()) {
+        if (auth()->check() && !auth()->user()->hasRole('admin') && $order->user_id !== auth()->id()) {
             return response()->json(ApiResponse::error('Unauthorized', 403), 403);
         }
 
-        $order->load(['items.product', 'items.warehouse']);
+        $order->load(['items.product', 'items.warehouse', 'shipping']);
         return response()->json(ApiResponse::success($order));
     }
 
