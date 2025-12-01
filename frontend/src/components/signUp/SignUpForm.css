@@ -1,0 +1,207 @@
+/* SignUpForm.css */
+
+/* Bao quanh toàn màn hình để căn giữa */
+.signup-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #fff;
+  font-family: sans-serif;
+}
+
+/* Thẻ form chính */
+.signup-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 24px;
+  background-color: #fff;
+  border-radius: 12px;
+}
+
+/* Tiêu đề */
+.signup-title {
+  font-size: 2rem;
+  font-family: serif; /* Font có chân giống ảnh */
+  text-align: center;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 32px;
+}
+
+/* Nhóm input (Label + Input + Icon) */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+/* Input styles */
+.form-input {
+  width: 100%;
+  padding: 12px 16px 12px 40px; /* Padding trái 40px để chừa chỗ cho icon */
+  background-color: #F5F2F0; /* Màu nền xám nhạt */
+  color:#727070;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box; /* Quan trọng để padding không làm vỡ layout */
+}
+
+.form-input:focus {
+  border-color: #C8A286; /* Màu viền khi focus */
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(200, 162, 134, 0.2);
+}
+
+/* Icon bên trái (User, Mail, Lock) */
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  width: 20px;
+  height: 20px;
+}
+
+/* Nút ẩn/hiện mật khẩu */
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-password:hover {
+  color: #374151;
+}
+.toggle-password:focus,
+.toggle-password:active,
+.toggle-password:hover {
+  outline: none !important;    
+  border: none !important;    
+  box-shadow: none !important; 
+}
+
+/* Checkbox & Terms */
+.terms-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #C8A286;
+  cursor: pointer;
+}
+
+.terms-text {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.link-highlight {
+  color: #C8A286;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Nút Submit */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background-color: #C8A286;
+  color: white;
+  font-weight: bold;
+  font-size: 1.125rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #b08d74;
+}
+
+/* Divider OR */
+.divider {
+  position: relative;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #e5e7eb;
+  z-index: 0;
+}
+
+.divider span {
+  position: relative;
+  background-color: #fff;
+  padding: 0 10px;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-weight: bold;
+  z-index: 1;
+}
+
+/* Nút Google */
+.btn-google {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-google:hover {
+  background-color: #f9fafb;
+}
+
+/* Footer text */
+.footer-text {
+  text-align: center;
+  color: #4b5563;
+  margin-top: 24px;
+  font-size: 0.95rem;
+}
