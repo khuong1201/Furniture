@@ -6,8 +6,18 @@ use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
 Route::middleware(['api', JwtAuthenticate::class])->group(function () {
     
-    Route::post('orders', [OrderController::class, 'store']);
-    Route::get('orders', [OrderController::class, 'index']);
-    Route::get('orders/{uuid}', [OrderController::class, 'show']);
-    Route::post('orders/{uuid}/cancel', [OrderController::class, 'cancel']);
+    Route::post('orders', [OrderController::class, 'store'])
+        ->middleware('permission:order.create');
+        
+    Route::post('orders/checkout', [OrderController::class, 'checkout'])
+        ->middleware('permission:order.create');
+    
+    Route::get('orders', [OrderController::class, 'index'])
+        ->middleware('permission:order.view');
+
+    Route::get('orders/{uuid}', [OrderController::class, 'show'])
+        ->middleware('permission:order.view');
+
+    Route::post('orders/{uuid}/cancel', [OrderController::class, 'cancel'])
+        ->middleware('permission:order.cancel');
 });

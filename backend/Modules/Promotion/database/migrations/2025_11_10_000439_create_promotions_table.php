@@ -26,7 +26,7 @@ return new class extends Migration
             $table->index(['status', 'start_date', 'end_date']);
         });
 
-        Schema::create('promotion_product', function (Blueprint $table) {
+        Schema::create('product_promotion', function (Blueprint $table) {
             $table->foreignId('promotion_id')->constrained('promotions')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             
@@ -36,7 +36,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('promotion_product');
+        Schema::dropIfExists('product_promotion');
         Schema::dropIfExists('promotions');
     }
 };

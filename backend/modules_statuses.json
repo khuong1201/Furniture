@@ -15,5 +15,6 @@
     "Payment": true,
     "Shipping": true,
     "Log": true,
-    "Notification": true
+    "Notification": true,
+    "Cart": true
 }
