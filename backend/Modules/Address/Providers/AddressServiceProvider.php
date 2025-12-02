@@ -2,6 +2,7 @@
 
 namespace Modules\Address\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
 use Modules\Address\Infrastructure\Repositories\EloquentAddressRepository;
+use Modules\Address\Domain\Models\Address; 
+use Modules\Address\Policies\AddressPolicy;
 
 class AddressServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class AddressServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Address::class, AddressPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

@@ -55,9 +55,13 @@ class OrderService extends BaseService
             }
 
             $orderData = array_merge($data, ['items' => $orderItems]);
+            
             $order = $this->create($orderData);
 
-            $this->cartService->clearCart($userId);
+            $cart = $this->cartService->getRepository()->findByUser($userId);
+            if ($cart) {
+                $this->cartService->clearCart($cart);
+            }
 
             return $order;
         });
@@ -78,7 +82,6 @@ class OrderService extends BaseService
                 'notes' => $data['notes'] ?? null,
                 'total_amount' => 0
             ]);
-
 
             $totalAmount = $this->processOrderItems($order, $data['items']);
 

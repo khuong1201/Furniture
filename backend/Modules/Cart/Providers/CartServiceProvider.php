@@ -2,6 +2,7 @@
 
 namespace Modules\Cart\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Cart\Domain\Repositories\CartRepositoryInterface;
 use Modules\Cart\Infrastructure\Repositories\EloquentCartRepository;
+use Modules\Cart\Domain\Models\CartItem;
+use Modules\Cart\Policies\CartPolicy;
 
 class CartServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,8 @@ class CartServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Cart::class, CartPolicy::class);
+        Gate::policy(CartItem::class, CartPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

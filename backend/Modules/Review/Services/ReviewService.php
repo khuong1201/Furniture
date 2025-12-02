@@ -6,8 +6,9 @@ use Modules\Shared\Services\BaseService;
 use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Eloquent\Model;
+
 class ReviewService extends BaseService
 {
     public function __construct(
@@ -24,13 +25,12 @@ class ReviewService extends BaseService
 
         $data['product_id'] = $product->id;
         $data['user_id'] = auth()->id();
-        
         $data['is_approved'] = false; 
 
         try {
             return $this->repository->create($data);
-        } catch (\Exception $e) {
-            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+        } catch (QueryException $e) {
+            if ($e->errorInfo[1] == 1062) { 
                 throw ValidationException::withMessages(['product_uuid' => 'You have already reviewed this product.']);
             }
             throw $e;
@@ -42,13 +42,12 @@ class ReviewService extends BaseService
         $review = $this->repository->findByUuid($uuid);
         if (!$review) throw ValidationException::withMessages(['uuid' => 'Review not found']);
 
-        if ($review->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
-             throw ValidationException::withMessages(['uuid' => 'Unauthorized']);
+        if (!auth()->user()->hasRole('admin')) {
+            $data['is_approved'] = false;
         }
 
-        if (!auth()->user()->hasRole('admin')) {
+        if (isset($data['is_approved']) && !auth()->user()->hasRole('admin')) {
             unset($data['is_approved']);
-            $data['is_approved'] = false;
         }
 
         return $this->repository->update($review, $data);
@@ -57,12 +56,11 @@ class ReviewService extends BaseService
     public function delete(string $uuid): bool
     {
         $review = $this->repository->findByUuid($uuid);
-        if (!$review) return false;
         
-        if ($review->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
-             return false;
+        if ($review) {
+             return $this->repository->delete($review);
         }
         
-        return $this->repository->delete($review);
+        return false;
     }
 }

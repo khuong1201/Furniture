@@ -15,9 +15,8 @@ class RoleController extends BaseController
         parent::__construct($service);
     }
 
-    public function store(Request $request): \Illuminate\Http\JsonResponse 
+    public function store(StoreRoleRequest $request): \Illuminate\Http\JsonResponse 
     {
-        $request = app(StoreRoleRequest::class);
         $data = $this->service->create($request->validated());
 
         return response()->json([
@@ -27,9 +26,8 @@ class RoleController extends BaseController
         ], 201);
     }
 
-    public function update(Request $request, string $uuid): \Illuminate\Http\JsonResponse
+    public function update(UpdateRoleRequest $request, string $uuid): \Illuminate\Http\JsonResponse
     {
-        $request = app(UpdateRoleRequest::class);
         $data = $this->service->update($uuid, $request->validated());
 
         return response()->json([

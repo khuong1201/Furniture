@@ -2,6 +2,7 @@
 
 namespace Modules\Shipping\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Shipping\Domain\Repositories\ShippingRepositoryInterface;
 use Modules\Shipping\Infrastructure\Repositories\EloquentShippingRepository;
+use Modules\Shipping\Domain\Models\Shipping;
+use Modules\Shipping\Policies\ShippingPolicy;
 
 class ShippingServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class ShippingServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Shipping::class, ShippingPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

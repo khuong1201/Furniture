@@ -9,6 +9,7 @@ use Modules\Payment\Events\PaymentCompleted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Model;
+
 class PaymentService extends BaseService
 {
     public function __construct(
@@ -19,15 +20,23 @@ class PaymentService extends BaseService
         parent::__construct($repository);
     }
 
-    public function initiatePayment(array $data): array 
+    public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {
-            $order = \Modules\Order\Models\Order::where('uuid', $data['order_uuid'])->first();
+            $order = $this->orderRepo->findByUuid($data['order_uuid']);
             
             if (!$order) throw ValidationException::withMessages(['order_uuid' => 'Order not found']);
             
+            if (!auth()->user()->hasRole('admin') && $order->user_id !== auth()->id()) {
+                throw ValidationException::withMessages(['order_uuid' => 'Unauthorized access to this order']);
+            }
+
             if ($order->payment_status === 'paid') {
                 throw ValidationException::withMessages(['order_uuid' => 'Order already paid']);
+            }
+            
+            if ($order->status === 'cancelled') {
+                throw ValidationException::withMessages(['order_uuid' => 'Cannot pay for cancelled order']);
             }
 
             $payment = $this->repository->create([
@@ -44,34 +53,41 @@ class PaymentService extends BaseService
                 ];
             }
 
-            $gateway = $this->gatewayFactory->get($data['method']);
-            $url = $gateway->createPaymentUrl($order->uuid, $order->total_amount);
+            try {
+                $gateway = $this->gatewayFactory->get($data['method']);
+                $url = $gateway->createPaymentUrl($order->uuid, $order->total_amount);
 
-            return [
-                'payment' => $payment,
-                'redirect_url' => $url
-            ];
+                return [
+                    'payment' => $payment,
+                    'redirect_url' => $url
+                ];
+            } catch (\Exception $e) {
+                throw ValidationException::withMessages(['method' => $e->getMessage()]);
+            }
         });
     }
 
-    public function processCallback(string $method, array $payload)
+    public function processCallback(string $provider, array $payload)
     {
-        // ... Logic verify signature của gateway ở đây ...
-        // Giả sử verify thành công và lấy được order_uuid
+        $gateway = $this->gatewayFactory->get($provider);
         
-        // Demo logic update
-        // $payment = ... tìm payment by order_id
-        // $payment->update(['status' => 'paid', 'paid_at' => now()]);
-        // event(new PaymentCompleted($payment));
+        if (!$gateway->verifyWebhook($payload)) {
+             throw new \Exception('Invalid Signature');
+        }
+        
     }
     
     public function update(string $uuid, array $data): Model
     {
         $payment = $this->repository->findByUuid($uuid);
+        if (!$payment) throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Payment not found");
 
         if ($payment->status !== 'paid' && ($data['status'] ?? '') === 'paid') {
             $data['paid_at'] = now();
             $payment->update($data);
+            
+            $payment->order->update(['payment_status' => 'paid']);
+            
             event(new PaymentCompleted($payment));
         } else {
             $payment->update($data);

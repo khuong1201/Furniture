@@ -6,6 +6,8 @@ use Modules\Shared\Services\BaseService;
 use Modules\Cart\Domain\Repositories\CartRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Modules\Inventory\Domain\Models\Inventory;
+use Modules\Cart\Domain\Models\Cart;
+use Modules\Cart\Domain\Models\CartItem;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +19,7 @@ class CartService extends BaseService
     ) {
         parent::__construct($repository);
     }
-
+    
     public function getMyCart(int $userId)
     {
         $cart = $this->repository->findByUser($userId);
@@ -29,6 +31,7 @@ class CartService extends BaseService
 
         foreach ($cart->items as $item) {
             $product = $item->product;
+            if (!$product) continue;
             
             $originalPrice = $product->price;
             $discountAmount = 0;
@@ -115,13 +118,8 @@ class CartService extends BaseService
         });
     }
 
-    public function updateItem(string $itemUuid, int $quantity, int $userId)
+    public function updateItem(CartItem $item, int $quantity, int $userId)
     {
-        $cart = $this->repository->findByUser($userId);
-        $item = $cart->items()->where('uuid', $itemUuid)->first();
-        
-        if (!$item) throw ValidationException::withMessages(['item_uuid' => 'Item not found in cart']);
-
         if ($quantity <= 0) {
             $item->delete();
         } else {
@@ -135,17 +133,15 @@ class CartService extends BaseService
         return $this->getMyCart($userId);
     }
 
-    public function removeItem(string $itemUuid, int $userId)
+    public function removeItem(CartItem $item, int $userId)
     {
-        $cart = $this->repository->findByUser($userId);
-        $cart->items()->where('uuid', $itemUuid)->delete();
+        $item->delete();
         return $this->getMyCart($userId);
     }
 
-    public function clearCart(int $userId)
+    public function clearCart(Cart $cart)
     {
-        $cart = $this->repository->findByUser($userId);
-        if ($cart) $cart->items()->delete();
+        $cart->items()->delete();
         return true;
     }
 }

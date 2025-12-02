@@ -30,10 +30,8 @@ class PermissionController extends BaseController
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StorePermissionRequest $request): JsonResponse
     {
-        $request = app(StorePermissionRequest::class);
-        
         $data = $this->service->create($request->validated());
 
         return response()->json([

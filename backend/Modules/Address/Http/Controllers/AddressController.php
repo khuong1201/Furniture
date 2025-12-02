@@ -25,38 +25,45 @@ class AddressController extends BaseController
         return response()->json(ApiResponse::success($data));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreAddressRequest $request): JsonResponse
     {
-        $validatedRequest = app(StoreAddressRequest::class);
-        
-        $data = $validatedRequest->validated();
-        $data['user_id'] = $request->user()->id; 
+        $validatedData = $request->validated();
 
-        $address = $this->service->create($data);
+        $validatedData['user_id'] = $request->user()->id; 
+
+        $address = $this->service->create($validatedData);
         
         return response()->json(ApiResponse::success($address, 'Address created successfully', 201), 201);
     }
 
-    public function update(Request $request, string $uuid): JsonResponse
+    public function update(UpdateAddressRequest $request, string $uuid): JsonResponse
     {
-        $validatedRequest = app(UpdateAddressRequest::class);
-
-        $userId = $request->user()->id;
-        $address = $this->service->findByUuidOrFail($uuid);
-        if ($address->user_id !== $userId) {
-            return response()->json(ApiResponse::error('Unauthorized access to this address', 403), 403);
+        $address = $this->service->getRepository()->findByUuid($uuid);
+        
+        if (!$address) {
+            return response()->json(ApiResponse::error('Address not found', 404), 404);
         }
 
-        $updated = $this->service->update($uuid, $validatedRequest->validated());
+        $this->authorize('update', $address);
+
+        $validatedData = $request->validated();
+
+        $updated = $this->service->update($uuid, $validatedData);
         
         return response()->json(ApiResponse::success($updated, 'Address updated successfully'));
     }
 
     public function destroy(string $uuid): JsonResponse 
     {
-        $userId = request()->user()->id;
+        $address = $this->service->getRepository()->findByUuid($uuid);
         
-        $this->service->deleteForUser($uuid, $userId);
+        if (!$address) {
+            return response()->json(ApiResponse::error('Address not found', 404), 404);
+        }
+
+        $this->authorize('delete', $address);
+        
+        $this->service->delete($uuid); 
         
         return response()->json(ApiResponse::success(null, 'Address deleted successfully'));
     }

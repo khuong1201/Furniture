@@ -2,6 +2,7 @@
 
 namespace Modules\Inventory\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Inventory\Domain\Repositories\InventoryRepositoryInterface;
 use Modules\Inventory\Infrastructure\Repositories\EloquentInventoryRepository;
+use Modules\Inventory\Domain\Models\Inventory;
+use Modules\Inventory\Policies\InventoryPolicy;
 
 class InventoryServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class InventoryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Inventory::class, InventoryPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

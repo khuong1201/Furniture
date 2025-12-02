@@ -31,7 +31,7 @@ Route::middleware(['api', JwtAuthenticate::class])->prefix('admin')->group(funct
         ->middleware('permission:product.edit')
         ->name('product-images.destroy');
 });
-Route::middleware(['api', JwtAuthenticate::class])->group(function () {
+Route::prefix('public')->group(function () {
     Route::get('products', [ProductController::class, 'index'])
         ->middleware('permission:product.view')
         ->name('products.user.index');

@@ -71,29 +71,29 @@ abstract class BaseController extends Controller
         ]);
     }
     
-    public function store(Request $request): JsonResponse
-    {
-        $validated = $this->validateRequest($request);
-        $data = $this->service->create($validated);
+    // public function store(Request $request): JsonResponse
+    // {
+    //     $validated = $this->validateRequest($request);
+    //     $data = $this->service->create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Created successfully',
-            'data' => $data
-        ], 201);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Created successfully',
+    //         'data' => $data
+    //     ], 201);
+    // }
 
-    public function update(Request $request, string $uuid): JsonResponse
-    {
-        $validated = $this->validateRequest($request);
-        $data = $this->service->update($uuid, $validated);
+    // public function update(Request $request, string $uuid): JsonResponse
+    // {
+    //     $validated = $this->validateRequest($request);
+    //     $data = $this->service->update($uuid, $validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Updated successfully',
-            'data' => $data
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Updated successfully',
+    //         'data' => $data
+    //     ]);
+    // }
 
     public function destroy(string $uuid): JsonResponse
     {

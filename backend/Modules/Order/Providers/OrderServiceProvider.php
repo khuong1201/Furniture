@@ -2,6 +2,7 @@
 
 namespace Modules\Order\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Order\Domain\Repositories\OrderRepositoryInterface;
 use Modules\Order\Infrastructure\Repositories\EloquentOrderRepository;
+use Modules\Order\Domain\Models\Order;
+use Modules\Order\Policies\OrderPolicy;
 
 class OrderServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class OrderServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Order::class, OrderPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

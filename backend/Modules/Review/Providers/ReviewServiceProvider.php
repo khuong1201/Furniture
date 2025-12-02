@@ -2,6 +2,7 @@
 
 namespace Modules\Review\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Review\Infrastructure\Repositories\EloquentReviewRepository;
+use Modules\Review\Policies\ReviewPolicy;
+use Modules\Review\Domain\Models\Review; 
 
 class ReviewServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,8 @@ class ReviewServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Review::class, ReviewPolicy::class);
+
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

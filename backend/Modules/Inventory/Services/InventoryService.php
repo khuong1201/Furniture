@@ -22,17 +22,39 @@ class InventoryService extends BaseService
     public function upsert(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $this->productRepo->findById($data['product_id']) ?? throw ValidationException::withMessages(['product_id' => 'Invalid product']);
-            $this->warehouseRepo->findById($data['warehouse_id']) ?? throw ValidationException::withMessages(['warehouse_id' => 'Invalid warehouse']);
+            $productId = $data['product_id'] ?? null;
+            $warehouseId = $data['warehouse_id'] ?? null;
 
-            $inv = $this->repository->findByProductAndWarehouse($data['product_id'], $data['warehouse_id'], true);
+            if (isset($data['product_uuid'])) {
+                $product = $this->productRepo->findByUuid($data['product_uuid']);
+                if (!$product) throw ValidationException::withMessages(['product_uuid' => 'Invalid product']);
+                $productId = $product->id;
+            }
+
+            if (isset($data['warehouse_uuid'])) {
+                $warehouse = $this->warehouseRepo->findByUuid($data['warehouse_uuid']);
+                if (!$warehouse) throw ValidationException::withMessages(['warehouse_uuid' => 'Invalid warehouse']);
+                $warehouseId = $warehouse->id;
+            }
+
+            if (!$productId || !$warehouseId) {
+                throw ValidationException::withMessages(['inventory' => 'Product and Warehouse identification required']);
+            }
+
+            $inv = $this->repository->findByProductAndWarehouse($productId, $warehouseId, true);
             
             $quantity = $data['quantity'] ?? ($inv?->stock_quantity ?? 0);
             $minThreshold = $data['min_threshold'] ?? ($inv?->min_threshold ?? 0);
             
             $status = $this->calcStatus($quantity, $minThreshold);
             
-            $payload = array_merge($data, ['status' => $status]);
+            $payload = [
+                'product_id' => $productId,
+                'warehouse_id' => $warehouseId,
+                'stock_quantity' => $quantity,
+                'min_threshold' => $minThreshold,
+                'status' => $status
+            ];
 
             if ($inv) {
                 return $this->repository->update($inv, $payload);
@@ -40,6 +62,17 @@ class InventoryService extends BaseService
 
             return $this->repository->create($payload);
         });
+    }
+
+    public function adjustStockByUuid(string $productUuid, string $warehouseUuid, int $delta)
+    {
+        $product = $this->productRepo->findByUuid($productUuid);
+        if (!$product) throw ValidationException::withMessages(['product_uuid' => 'Product not found']);
+
+        $warehouse = $this->warehouseRepo->findByUuid($warehouseUuid);
+        if (!$warehouse) throw ValidationException::withMessages(['warehouse_uuid' => 'Warehouse not found']);
+
+        return $this->adjustStock($product->id, $warehouse->id, $delta);
     }
 
     public function adjustStock(int $productId, int $warehouseId, int $delta)

@@ -13,19 +13,12 @@ class WarehouseService extends BaseService
     {
         parent::__construct($repository);
     }
-    
-    public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
-    {
-        $filters['per_page'] = $perPage;
-        if (method_exists($this->repository, 'filter')) {
-            return $this->repository->filter($filters);
-        }
-        return $this->repository->paginate($perPage);
-    }
 
     protected function beforeDelete(Model $model): void
     {
-        $hasStock = $model->products()->wherePivot('quantity', '>', 0)->exists();
+        $hasStock = \Modules\Inventory\Models\Inventory::where('warehouse_id', $model->id)
+            ->where('stock_quantity', '>', 0)
+            ->exists();
 
         if ($hasStock) {
             throw ValidationException::withMessages([

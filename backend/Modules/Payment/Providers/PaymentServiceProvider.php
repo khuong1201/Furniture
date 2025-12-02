@@ -2,6 +2,7 @@
 
 namespace Modules\Payment\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Payment\Domain\Repositories\PaymentRepositoryInterface;
 use Modules\Payment\Infrastructure\Repositories\EloquentPaymentRepository;
+use Modules\Payment\Domain\Models\Payment;
+use Modules\Payment\Policies\PaymentPolicy;
 
 class PaymentServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class PaymentServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Payment::class, PaymentPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

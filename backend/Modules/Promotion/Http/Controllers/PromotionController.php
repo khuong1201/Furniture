@@ -23,20 +23,17 @@ class PromotionController extends BaseController
         return response()->json(ApiResponse::paginated($data));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StorePromotionRequest $request): JsonResponse
     {
-        $validatedRequest = app(StorePromotionRequest::class);
-        
-        $promotion = $this->service->create($validatedRequest->validated());
+        $promotion = $this->service->create($request->validated());
         
         return response()->json(ApiResponse::success($promotion, 'Promotion created', 201), 201);
     }
 
-    public function update(Request $request, string $uuid): JsonResponse
+    public function update(UpdatePromotionRequest $request, string $uuid): JsonResponse
     {
-        $validatedRequest = app(UpdatePromotionRequest::class);
         
-        $promotion = $this->service->update($uuid, $validatedRequest->validated());
+        $promotion = $this->service->update($uuid, $request->validated());
         
         return response()->json(ApiResponse::success($promotion, 'Promotion updated'));
     }

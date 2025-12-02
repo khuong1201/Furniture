@@ -2,6 +2,7 @@
 
 namespace Modules\Warehouse\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Warehouse\Domain\Repositories\WarehouseRepositoryInterface;
 use Modules\Warehouse\Infrastructure\Repositories\EloquentWarehouseRepository;
+use Modules\Warehouse\Domain\Models\Warehouse;
+use Modules\Warehouse\Policies\WarehousePolicy;
 
 class WarehouseServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class WarehouseServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Warehouse::class, WarehousePolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

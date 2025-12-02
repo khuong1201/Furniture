@@ -22,10 +22,11 @@ class ShippingService extends BaseService
     public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {
-            $order = \Modules\Order\Models\Order::where('uuid', $data['order_uuid'])->first();
+
+            $order = $this->orderRepo->findByUuid($data['order_uuid']);
             
             if (!$order) throw ValidationException::withMessages(['order_uuid' => 'Order not found']);
-            
+
             if (in_array($order->status, ['cancelled', 'delivered'])) {
                 throw ValidationException::withMessages(['order_uuid' => 'Cannot ship a cancelled or delivered order']);
             }
@@ -46,6 +47,7 @@ class ShippingService extends BaseService
                     'shipping_status' => 'shipped'
                 ]);
             }
+            
             event(new ShippingStatusUpdated($shipping));
 
             return $shipping;
@@ -57,6 +59,8 @@ class ShippingService extends BaseService
         return DB::transaction(function () use ($uuid, $data) {
             $shipping = $this->repository->findByUuid($uuid);
             
+            if (!$shipping) throw ValidationException::withMessages(['uuid' => 'Shipping not found']);
+
             $oldStatus = $shipping->status;
             $shipping->update($data);
 
@@ -66,12 +70,15 @@ class ShippingService extends BaseService
                 if ($data['status'] === 'delivered') {
                     $shipping->update(['delivered_at' => now()]);
                     
-                    $order->update([
-                        'status' => 'delivered',
-                        'shipping_status' => 'delivered',
-                    ]);
-                } elseif ($data['status'] === 'cancelled') {
-                }
+                    if ($order) {
+                        $order->update([
+                            'status' => 'delivered',
+                            'shipping_status' => 'delivered',
+                            'payment_status' => 'paid' 
+                        ]);
+                    }
+                } 
+
                 event(new ShippingStatusUpdated($shipping));
             }
 
