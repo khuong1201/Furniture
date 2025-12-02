@@ -1,46 +1,50 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import bellIcon from '../../assets/icons/bell.svg';
-import cartIcon from '../../assets/icons/cart.svg';
-import accountIcon from '../../assets/icons/account.svg';
-import searchIcon from '../../assets/icons/search.svg';
-import './Header.css';
+  import React from 'react';
+  import {useAuth} from '../../hooks/AuthContext'
+  import { Link } from 'react-router-dom';
+  import bellIcon from '../../assets/icons/bell.svg';
+  import cartIcon from '../../assets/icons/cart.svg';
+  import accountIcon from '../../assets/icons/account.svg';
+  import searchIcon from '../../assets/icons/search.svg';
+  import './Header.css';
 
-function Header() {
-  return (
-    <header className="header-wrapper">
-      <div className="header-top">
-        <div className="container top-container">
+  function Header() {
 
-          <div className="search-box">
-            <div className="search-icon-wrapper">
-              <img src={searchIcon} alt="Search" className="search-icon" />
-            </div>
-            <input type="text" placeholder="Search" />
-          </div>
+    const{user} = useAuth();
+    
+    return (
+      <header className="header-wrapper">
+        <div className="header-top">
+          <div className="container top-container">
 
-          <div className="header-actions">
-            
-            <div className="action-item">
-              <img src={bellIcon} alt="Bell" className="svg-icon"/>
+            <div className="search-box">
+              <div className="search-icon-wrapper">
+                <img src={searchIcon} alt="Search" className="search-icon" />
+              </div>
+              <input type="text" placeholder="Search" />
             </div>
 
-            <div className="action-item">
-              <img src={cartIcon} alt="Cart" className="svg-icon"/>
-            </div>
+            <div className="header-actions">
+              
+              <div className="action-item">
+                <img src={bellIcon} alt="Bell" className="svg-icon"/>
+              </div>
 
-            <div className="action-item user-action">
-              <img src={accountIcon} alt="User" className="svg-icon"/>
-              <Link to="/register" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
-                 Log In/ Sign up
-              </Link>
-            </div>
+              <div className="action-item">
+                <img src={cartIcon} alt="Cart" className="svg-icon"/>
+              </div>
 
+              <div className="action-item user-action">
+                <img src={accountIcon} alt="User" className="svg-icon"/>
+                <Link to="/register" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
+                  Log In/ Sign up
+                </Link>
+              </div>
+
+            </div>
           </div>
         </div>
-      </div>
-    </header>
-  );
-}
+      </header>
+    );
+  }
 
-export default Header;
+  export default Header;
