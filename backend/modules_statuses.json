@@ -16,5 +16,7 @@
     "Shipping": true,
     "Log": true,
     "Notification": true,
-    "Cart": true
+    "Cart": true,
+    "Collection": true,
+    "Dashboard": true
 }

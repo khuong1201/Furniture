@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Modules\Shared\Services\BaseService;
 use Illuminate\Foundation\Http\FormRequest;
 use OpenApi\Attributes as OA;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 #[OA\Info(
     version: "1.0.0",
@@ -39,6 +40,7 @@ use OpenApi\Attributes as OA;
 
 abstract class BaseController extends Controller
 {
+    use AuthorizesRequests;
     protected BaseService $service;
 
     public function __construct(BaseService $service)

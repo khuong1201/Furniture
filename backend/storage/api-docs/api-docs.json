@@ -896,6 +896,252 @@
                 }
             }
         },
+        "/public/collections": {
+            "get": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Lấy danh sách bộ sưu tập (Public)",
+                "operationId": "d466028193674eb65822470aadbc65f3",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/admin/collections": {
+            "post": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Tạo bộ sưu tập (Admin)",
+                "operationId": "ebc20aeba9d988fcb7e9bdea1dbc9b6c",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "slug"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "product_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/public/collections/{uuid}": {
+            "get": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Xem chi tiết bộ sưu tập",
+                "operationId": "2b625d099f9641a799646b2dc72f7963",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/admin/collections/{uuid}": {
+            "put": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Cập nhật bộ sưu tập (Admin)",
+                "operationId": "a520f34f6a0255125e4520def87873f9",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "product_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Xóa bộ sưu tập (Admin)",
+                "operationId": "417228e9f43d14bfdd4442395eea2f34",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/dashboard/summary": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Thống kê tổng quan",
+                "operationId": "14ceca394afefb2231852083fc45b254",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/dashboard/revenue": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Biểu đồ doanh thu theo năm",
+                "operationId": "70d0a6e6856a52b5b294796c896b68d2",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 2025
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/inventories": {
             "get": {
                 "tags": [
@@ -2789,6 +3035,14 @@
         {
             "name": "Categories",
             "description": "API quản lý Danh mục sản phẩm (Public xem, Admin quản lý)"
+        },
+        {
+            "name": "Collections",
+            "description": "API quản lý Bộ sưu tập"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Báo cáo thống kê hệ thống (Admin Only)"
         },
         {
             "name": "Inventory",

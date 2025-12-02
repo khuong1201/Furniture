@@ -2,6 +2,7 @@
 
 namespace Modules\Log\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Log\Domain\Repositories\LogRepositoryInterface;
 use Modules\Log\Infrastructure\Repositories\EloquentLogRepository;
+use Modules\Log\Domain\Models\Log; 
+use Modules\Log\Policies\LogPolicy;
 
 class LogServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class LogServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Log::class, LogPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

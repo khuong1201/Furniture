@@ -6,65 +6,114 @@ use Illuminate\Database\Seeder;
 use Modules\Role\Domain\Models\Role;
 use Modules\Permission\Domain\Models\Permission;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        DB::table('permission_role')->truncate();
+        DB::table('permissions')->truncate();
+        DB::table('roles')->truncate();
+        Schema::enableForeignKeyConstraints();
+
         DB::transaction(function () {
-            $permissions = [
-                'user.view', 'user.create', 'user.edit', 'user.delete',
-                'role.view', 'role.create', 'role.edit', 'role.delete',
-                'permission.view', 'permission.create', 'permission.edit', 'permission.delete',
-                
-                'log.view', 
-                
-                'category.view', 'category.create', 'category.edit', 'category.delete',
-                'product.view', 'product.create', 'product.edit', 'product.delete',
-                'review.view', 'review.create', 'review.edit', 'review.delete', 
-                
-                'warehouse.view', 'warehouse.create', 'warehouse.edit', 'warehouse.delete',
-                'inventory.view', 'inventory.adjust',
-                
-                'order.view', 'order.create', 'order.edit', 'order.delete', 
-                'cart.view', 'cart.delete', 
-                'payment.view', 'payment.create', 'payment.edit',
-                'shipping.view', 'shipping.create', 'shipping.edit', 'shipping.delete',
+            $permissionsByModule = [
+                'System' => [
+                    'dashboard.view', 
+                    'log.view',       
+                    'setting.view',    
+                    'setting.edit',     
+                ],
+                'User & Auth' => [
+                    'user.view',    
+                    'user.create',      
+                    'user.edit',     
+                    'user.delete',     
+                    'role.view',       
+                    'role.create',      'role.edit', 'role.delete',
+                ],
+                'Catalog (Sản phẩm)' => [
+                    'product.view',     
+                    'product.create',   'product.edit', 'product.delete',
+                    'category.create',  'category.edit', 'category.delete',
+                    'collection.create','collection.edit','collection.delete', 
+                ],
+                'Sales (Bán hàng)' => [
+                    'order.view',   
+                    'order.edit',      
+                    'order.cancel',    
+                    'payment.view', 
+                    'payment.edit',    
+                    'shipping.view',    'shipping.create', 'shipping.edit', 
+                ],
+                'Marketing' => [
+                    'promotion.view',   'promotion.create', 'promotion.edit', 'promotion.delete',
+                    'review.edit',      
+                    'review.delete',    
+                ],
+                'Inventory (Kho)' => [
+                    'warehouse.view',   'warehouse.create', 'warehouse.edit', 'warehouse.delete',
+                    'inventory.view',   
+                    'inventory.adjust',
+                ],
 
-                'promotion.view', 'promotion.create', 'promotion.edit', 'promotion.delete',
-
-                'address.view', 'address.create', 'address.edit', 'address.delete',
-                'notification.view', 'notification.create', 'notification.delete',
             ];
 
-            foreach ($permissions as $perm) {
-                Permission::firstOrCreate(['name' => $perm], [
-                    'description' => "Quyền thao tác $perm",
-                    'module' => explode('.', $perm)[0] 
-                ]);
+            $allPermissions = [];
+            foreach ($permissionsByModule as $module => $perms) {
+                foreach ($perms as $permName) {
+                    $permission = Permission::create([
+                        'name' => $permName,
+                        'description' => "Quyền $permName thuộc module $module",
+                        'module' => explode('.', $permName)[0] 
+                    ]);
+                    $allPermissions[] = $permission;
+                }
             }
 
-            $adminRole = Role::firstOrCreate(['name' => 'admin'], ['is_system' => true, 'description' => 'Quản trị viên hệ thống']);
-            $staffRole = Role::firstOrCreate(['name' => 'staff'], ['is_system' => false, 'description' => 'Nhân viên vận hành']);
-            $customerRole = Role::firstOrCreate(['name' => 'customer'], ['is_system' => true, 'description' => 'Khách hàng']);
+            $adminRole = Role::create([
+                'name' => 'admin',
+                'description' => 'Quản trị viên cấp cao (Super Admin)',
+                'is_system' => true
+            ]);
 
-            $allPermissions = Permission::all();
-            $adminRole->permissions()->sync($allPermissions);
+            $managerRole = Role::create([
+                'name' => 'manager',
+                'description' => 'Quản lý cửa hàng (Không can thiệp hệ thống)',
+                'is_system' => false
+            ]);
 
-            $staffExcludedModules = ['user', 'role', 'permission', 'log'];
-            
-            $staffPerms = $allPermissions->filter(function ($permission) use ($staffExcludedModules) {
-                $moduleName = explode('.', $permission->name)[0];
-                return !in_array($moduleName, $staffExcludedModules);
+            $staffRole = Role::create([
+                'name' => 'staff',
+                'description' => 'Nhân viên vận hành (Sales/Kho)',
+                'is_system' => false
+            ]);
+
+            $customerRole = Role::create([
+                'name' => 'customer',
+                'description' => 'Khách hàng mua sắm',
+                'is_system' => true
+            ]);
+
+            $adminRole->permissions()->sync(collect($allPermissions)->pluck('id'));
+
+            $managerPermissions = collect($allPermissions)->filter(function ($perm) {
+                return !in_array($perm->module, ['log', 'setting', 'role', 'permission']);
             });
-            
-            $staffRole->permissions()->sync($staffPerms);
+            $managerRole->permissions()->sync($managerPermissions->pluck('id'));
 
-            // 6. Gán quyền cho Customer (Tùy chọn)
-            // Thường Customer không cần gán permission cứng trong DB nếu dùng Policy check user_id
-            // Nhưng nếu cần, có thể gán các quyền cơ bản:
-            // $customerPerms = Permission::whereIn('name', ['product.view', 'category.view', 'review.create'])->get();
-            // $customerRole->permissions()->sync($customerPerms);
+            $staffPermissions = collect($allPermissions)->filter(function ($perm) {
+                $allowModules = ['order', 'product', 'inventory', 'shipping'];
+                $isSafeAction = !str_contains($perm->name, 'delete');
+                
+                return in_array($perm->module, $allowModules) && $isSafeAction;
+            });
+            $warehouseView = Permission::where('name', 'warehouse.view')->first();
+            if ($warehouseView) $staffPermissions->push($warehouseView);
+
+            $staffRole->permissions()->sync($staffPermissions->pluck('id'));
         });
     }
 }

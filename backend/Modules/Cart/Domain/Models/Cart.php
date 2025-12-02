@@ -10,7 +10,7 @@ use Modules\User\Domain\Models\User;
 
 class Cart extends Model
 {
-    use HasFactory; 
+    use HasFactory, Loggable; 
 
     protected $fillable = ['uuid', 'user_id'];
 

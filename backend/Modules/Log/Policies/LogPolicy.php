@@ -1,14 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Modules\Log\Http\Controllers\LogController;
-use Modules\Auth\Http\Middleware\JwtAuthenticate;
+namespace Modules\Log\Policies;
 
-Route::middleware(['api', JwtAuthenticate::class])->prefix('admin/logs')->group(function () {
-    
-    Route::get('/', [LogController::class, 'index'])
-        ->middleware('permission:log.view'); 
-        
-    Route::get('/{uuid}', [LogController::class, 'show'])
-        ->middleware('permission:log.view');
-});
+use Modules\User\Domain\Models\User;
+use Modules\Log\Domain\Models\Log;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class LogPolicy
+{
+    use HandlesAuthorization;
+
+    public function viewAny(User $user): bool
+    {
+        return $user->hasPermissionTo('log.view');
+    }
+
+    public function view(User $user, Log $log): bool
+    {
+        return $user->hasPermissionTo('log.view');
+    }
+
+    public function create(User $user): bool
+    {
+        return false;
+    }
+
+    public function update(User $user, Log $log): bool
+    {
+        return false;
+    }
+
+    public function delete(User $user, Log $log): bool
+    {
+        return false;
+    }
+}

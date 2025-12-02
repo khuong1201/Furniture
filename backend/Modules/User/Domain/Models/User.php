@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection; 
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Role\Domain\Models\Role;
 use Modules\Permission\Domain\Models\Permission;
@@ -41,8 +42,9 @@ class User extends Authenticatable
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'role_user')
-            ->withPivot('assigned_at', 'assigned_by');
+        return $this->belongsToMany(Role::class, 'role_user') 
+            ->withPivot('assigned_at', 'assigned_by') 
+            ->withTimestamps();
     }
 
     public function permissions()
@@ -53,6 +55,39 @@ class User extends Authenticatable
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class, 'user_id');
+    }
+
+    public function allPermissions(): Collection
+    {
+        $permissions = cache()->remember(
+            "user_permissions_{$this->id}",
+            3600, 
+            function() {
+                return $this->roles()->with('permissions')->get()
+                    ->flatMap(function ($role) {
+                        return $role->permissions;
+                    })->unique('id')->values();
+            }
+        );
+
+        return collect($permissions);
+    }
+
+    public function hasPermissionTo($permissionName): bool
+    {
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+        return $this->allPermissions()->contains('name', $permissionName);
+    }
+
+    public function hasRole($roleName): bool
+    {
+        if ($this->relationLoaded('roles')) {
+            return $this->roles->contains('name', $roleName);
+        }
+        
+        return $this->roles()->where('name', $roleName)->exists();
     }
 
     protected static function newFactory()

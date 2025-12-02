@@ -5,9 +5,11 @@ namespace Modules\Cart\Domain\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Modules\Product\Domain\Models\Product;
+use Modules\Shared\Traits\Loggable;
 
 class CartItem extends Model
 {
+    use Loggable;
     protected $fillable = ['uuid', 'cart_id', 'product_id', 'quantity'];
 
     protected static function boot()

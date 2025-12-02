@@ -64,6 +64,11 @@ class Product extends Model
         return $this->belongsToMany(\Modules\Promotion\Domain\Models\Promotion::class);
     }
 
+    public function collections()
+{
+    return $this->belongsToMany(\Modules\Collection\Domain\Models\Collection::class, 'collection_product');
+}
+
     protected static function newFactory()
     {
         return \Modules\Product\Database\factories\ProductFactory::new();
