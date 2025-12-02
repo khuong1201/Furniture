@@ -46,11 +46,7 @@ class ShippingController extends BaseController
 
     public function show(string $uuid): JsonResponse
     {
-        $shipping = $this->service->getRepository()->findByUuid($uuid);
-        
-        if (!$shipping) {
-            return response()->json(ApiResponse::error('Shipping not found', 404), 404);
-        }
+        $shipping = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('view', $shipping);
 
@@ -61,11 +57,7 @@ class ShippingController extends BaseController
 
     public function update(Request $request, string $uuid): JsonResponse
     {
-        $shipping = $this->service->getRepository()->findByUuid($uuid);
-        
-        if (!$shipping) {
-            return response()->json(ApiResponse::error('Shipping not found', 404), 404);
-        }
+        $shipping = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('update', $shipping);
 
@@ -78,11 +70,7 @@ class ShippingController extends BaseController
 
     public function destroy(string $uuid): JsonResponse
     {
-        $shipping = $this->service->getRepository()->findByUuid($uuid);
-        
-        if (!$shipping) {
-            return response()->json(ApiResponse::error('Shipping not found', 404), 404);
-        }
+        $shipping = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('delete', $shipping);
 

@@ -3,19 +3,16 @@
 namespace Modules\Cart\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Cart\Services\CartService;
 use Modules\Cart\Http\Requests\AddToCartRequest;
-use Illuminate\Http\JsonResponse;
 use Modules\Cart\Http\Requests\UpdateCartItemRequest;
 use Modules\Cart\Domain\Models\CartItem;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(
-    name: "Cart",
-    description: "API quản lý Giỏ hàng (Chỉ User đang đăng nhập)"
-)]
+#[OA\Tag(name: "Cart", description: "API quản lý Giỏ hàng")]
 
 class CartController extends BaseController
 {
@@ -25,23 +22,12 @@ class CartController extends BaseController
     }
 
     #[OA\Get(
-        path: "/api/carts",
+        path: "/carts",
         summary: "Xem giỏ hàng của tôi",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
-        responses: [
-            new OA\Response(response: 200, description: "Successful operation", content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: "uuid", type: "string"),
-                    new OA\Property(property: "items", type: "array", items: new OA\Items()),
-                    new OA\Property(property: "total_amount", type: "number"),
-                    new OA\Property(property: "item_count", type: "integer"),
-                ]
-            )),
-            new OA\Response(response: 401, description: "Unauthenticated")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
-
     public function index(Request $request): JsonResponse
     {
         $data = $this->service->getMyCart($request->user()->id);
@@ -49,8 +35,8 @@ class CartController extends BaseController
     }
 
     #[OA\Post(
-        path: "/api/carts",
-        summary: "Thêm sản phẩm vào giỏ hàng",
+        path: "/carts",
+        summary: "Thêm sản phẩm",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         requestBody: new OA\RequestBody(
@@ -63,12 +49,8 @@ class CartController extends BaseController
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 200, description: "Added to cart"),
-            new OA\Response(response: 422, description: "Validation error (stock or product not found)"),
-        ]
+        responses: [ new OA\Response(response: 200, description: "Added") ]
     )]
-
     public function store(AddToCartRequest $request): JsonResponse
     {
         $data = $this->service->addToCart($request->user()->id, $request->validated());
@@ -76,36 +58,26 @@ class CartController extends BaseController
     }
 
     #[OA\Put(
-        path: "/api/carts/{itemUuid}",
-        summary: "Cập nhật số lượng sản phẩm trong giỏ",
+        path: "/carts/{itemUuid}",
+        summary: "Cập nhật số lượng item",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         parameters: [
             new OA\Parameter(name: "itemUuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         requestBody: new OA\RequestBody(
-            required: true,
             content: new OA\JsonContent(
-                required: ["quantity"],
                 properties: [
-                    new OA\Property(property: "quantity", type: "integer", minimum: 0, description: "Set quantity to 0 to remove item"),
+                    new OA\Property(property: "quantity", type: "integer", minimum: 0),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 200, description: "Cart updated"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner)"),
-            new OA\Response(response: 404, description: "Cart item not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
 
     public function update(UpdateCartItemRequest $request, string $itemUuid): JsonResponse
     {
-        $cartItem = CartItem::where('uuid', $itemUuid)->first();
-
-        if (!$cartItem) {
-            return response()->json(ApiResponse::error('Cart item not found', 404), 404);
-        }
+        $cartItem = CartItem::where('uuid', $itemUuid)->firstOrFail();
 
         $this->authorize('update', $cartItem);
 
@@ -115,27 +87,18 @@ class CartController extends BaseController
     }
 
     #[OA\Delete(
-        path: "/api/carts/{uuid}",
-        summary: "Xóa một sản phẩm khỏi giỏ hàng",
+        path: "/carts/{uuid}",
+        summary: "Xóa item",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         parameters: [
-            new OA\Parameter(name: "uuid", in: "path", description: "UUID của Cart Item", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
+            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Item removed"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner)"),
-            new OA\Response(response: 404, description: "Cart item not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Deleted") ]
     )]
-
     public function destroy(string $uuid): JsonResponse
     {
-        $cartItem = CartItem::where('uuid', $uuid)->first();
-
-        if (!$cartItem) {
-            return response()->json(ApiResponse::error('Cart item not found', 404), 404);
-        }
+        $cartItem = CartItem::where('uuid', $uuid)->firstOrFail();
 
         $this->authorize('delete', $cartItem);
         
@@ -145,23 +108,18 @@ class CartController extends BaseController
     }
     
     #[OA\Delete(
-        path: "/api/carts",
-        summary: "Làm trống toàn bộ giỏ hàng",
+        path: "/carts",
+        summary: "Làm trống giỏ hàng",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
-        responses: [
-            new OA\Response(response: 200, description: "Cart cleared"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner)")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Cleared") ]
     )]
-    
     public function clear(Request $request): JsonResponse
     {
         $cart = $this->service->getRepository()->findByUser($request->user()->id);
 
         if ($cart) {
             $this->authorize('clear', $cart);
-
             $this->service->clearCart($cart);
         }
         

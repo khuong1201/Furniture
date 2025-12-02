@@ -10,23 +10,25 @@ class PaymentPolicy
 {
     use HandlesAuthorization;
 
+    public function viewAny(User $user): bool
+    {
+        return true; 
+    }
+
     public function view(User $user, Payment $payment): bool
     {
-        return $user->hasRole('admin') || $user->id === $payment->order->user_id;
+        $ownerId = $payment->user_id ?? $payment->order->user_id;
+        
+        return $user->id === $ownerId || $user->hasPermissionTo('payment.view');
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return true; 
     }
 
     public function update(User $user, Payment $payment): bool
     {
-        return $user->hasRole('admin');
-    }
-
-    public function delete(User $user, Payment $payment): bool
-    {
-        return $user->hasRole('admin');
+        return $user->hasPermissionTo('payment.edit');
     }
 }

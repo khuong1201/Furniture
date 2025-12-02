@@ -11,10 +11,7 @@ use Modules\Review\Http\Requests\StoreReviewRequest;
 use Modules\Review\Http\Requests\UpdateReviewRequest;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(
-    name: "Reviews",
-    description: "API quản lý Đánh giá sản phẩm (User tạo/sửa/xóa của chính mình)"
-)]
+#[OA\Tag(name: "Reviews", description: "API quản lý Đánh giá sản phẩm")]
 
 class ReviewController extends BaseController
 {
@@ -24,28 +21,26 @@ class ReviewController extends BaseController
     }
 
     #[OA\Get(
-        path: "/api/reviews",
+        path: "/reviews",
         summary: "Xem danh sách đánh giá",
         tags: ["Reviews"],
         parameters: [
-            new OA\Parameter(name: "product_uuid", in: "query", description: "Filter theo UUID sản phẩm", required: false, schema: new OA\Schema(type: "string", format: "uuid")),
+            new OA\Parameter(name: "product_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Successful operation")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
-
     public function index(Request $request): JsonResponse
     {
         $filters = $request->all();
+
         $data = $this->service->getRepository()->with(['user'])->paginate($request->get('per_page', 10), $filters);
+        
         return response()->json(ApiResponse::paginated($data));
     }
 
     #[OA\Post(
-        path: "/api/reviews",
+        path: "/reviews",
         summary: "Tạo đánh giá mới",
         security: [['bearerAuth' => []]],
         tags: ["Reviews"],
@@ -56,88 +51,78 @@ class ReviewController extends BaseController
                 properties: [
                     new OA\Property(property: "product_uuid", type: "string", format: "uuid"),
                     new OA\Property(property: "rating", type: "integer", minimum: 1, maximum: 5),
-                    new OA\Property(property: "content", type: "string", nullable: true),
+                    new OA\Property(property: "content", type: "string"),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 201, description: "Review created successfully"),
-            new OA\Response(response: 422, description: "Validation error (e.g., already reviewed this product)"),
-        ]
+        responses: [ new OA\Response(response: 201, description: "Created") ]
     )]
-
     public function store(StoreReviewRequest $request): JsonResponse
     {
-        $review = $this->service->create($request->validated());
+        $data = $request->validated();
         
+        $data['user_id'] = $request->user()->id;
+        
+        $data['is_approved'] = false; 
+
+        $review = $this->service->create($data);
         return response()->json(ApiResponse::success($review, 'Review created successfully', 201), 201);
     }
 
     #[OA\Put(
-        path: "/api/reviews/{uuid}",
-        summary: "Cập nhật đánh giá của mình",
+        path: "/reviews/{uuid}",
+        summary: "Cập nhật đánh giá",
         security: [['bearerAuth' => []]],
         tags: ["Reviews"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         requestBody: new OA\RequestBody(
-            required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "rating", type: "integer", minimum: 1, maximum: 5),
-                    new OA\Property(property: "content", type: "string", nullable: true),
-                    // Admin có thể gửi 'is_approved' nhưng user thường bị bỏ qua
-                    new OA\Property(property: "is_approved", type: "boolean", nullable: true), 
+                    new OA\Property(property: "rating", type: "integer"),
+                    new OA\Property(property: "content", type: "string"),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 200, description: "Review updated successfully"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner or Admin)"),
-            new OA\Response(response: 404, description: "Review not found")
+        responses: [ 
+            new OA\Response(response: 200, description: "Updated"),
+            new OA\Response(response: 403, description: "Forbidden")
         ]
     )]
-
     public function update(UpdateReviewRequest $request, string $uuid): JsonResponse
     {
-        $reviewModel = $this->service->getRepository()->findByUuid($uuid);
+        $review = $this->service->findByUuidOrFail($uuid);
 
-        if (!$reviewModel) {
-            return response()->json(ApiResponse::error('Review not found', 404), 404);
+        $this->authorize('update', $review);
+        
+        $data = $request->validated();
+
+        if (!$request->user()->hasPermissionTo('review.edit')) {
+             unset($data['is_approved']);
         }
 
-        $this->authorize('update', $reviewModel);
+        $updatedReview = $this->service->update($uuid, $data);
         
-        $review = $this->service->update($uuid, $request->validated());
-        
-        return response()->json(ApiResponse::success($review, 'Review updated successfully'));
+        return response()->json(ApiResponse::success($updatedReview, 'Review updated successfully'));
     }
 
     #[OA\Delete(
-        path: "/api/reviews/{uuid}",
-        summary: "Xóa đánh giá của mình",
+        path: "/reviews/{uuid}",
+        summary: "Xóa đánh giá",
         security: [['bearerAuth' => []]],
         tags: ["Reviews"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Review deleted successfully"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner or Admin)"),
-            new OA\Response(response: 404, description: "Review not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Deleted") ]
     )]
     
     public function destroy(string $uuid): JsonResponse
     {
-        $reviewModel = $this->service->getRepository()->findByUuid($uuid);
+        $review = $this->service->findByUuidOrFail($uuid);
 
-        if (!$reviewModel) {
-            return response()->json(ApiResponse::error('Review not found', 404), 404);
-        }
-
-        $this->authorize('delete', $reviewModel);
+        $this->authorize('delete', $review);
 
         $this->service->delete($uuid); 
 

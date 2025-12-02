@@ -14,9 +14,8 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Users (Admin & Self)",
-    description: "API quản lý người dùng (Chủ yếu Admin, User tự sửa profile)"
+    description: "API quản lý người dùng"
 )]
-
 class UserController extends BaseController
 {
     public function __construct(UserService $service)
@@ -25,7 +24,7 @@ class UserController extends BaseController
     }
 
     #[OA\Get(
-        path: "/api/admin/users",
+        path: "/admin/users",
         summary: "Xem danh sách người dùng (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Users (Admin & Self)"],
@@ -34,11 +33,10 @@ class UserController extends BaseController
             new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
         responses: [
-            new OA\Response(response: 200, description: "Successful operation"),
-            new OA\Response(response: 403, description: "Forbidden (Not Admin)")
+            new OA\Response(response: 200, description: "Success"),
+            new OA\Response(response: 403, description: "Forbidden")
         ]
     )]
-
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', User::class);
@@ -47,7 +45,7 @@ class UserController extends BaseController
     }   
 
     #[OA\Post(
-        path: "/api/admin/users",
+        path: "/admin/users",
         summary: "Tạo người dùng mới (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Users (Admin & Self)"],
@@ -56,51 +54,84 @@ class UserController extends BaseController
             content: new OA\JsonContent(
                 required: ["name", "email", "password"],
                 properties: [
-                    new OA\Property(property: "name", type: "string", example: "New Admin"),
-                    new OA\Property(property: "email", type: "string", format: "email", example: "new.admin@example.com"),
-                    new OA\Property(property: "password", type: "string", format: "password", example: "SecureP@ss123"),
-                    new OA\Property(property: "roles", type: "array", description: "Mảng các UUID hoặc tên Role", items: new OA\Items(type: "string", example: "admin")),
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "email", type: "string", format: "email"),
+                    new OA\Property(property: "password", type: "string", format: "password"),
+                    new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string")),
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: "User created"),
-            new OA\Response(response: 403, description: "Forbidden (Not Admin)")
+            new OA\Response(response: 201, description: "Created"),
+            new OA\Response(response: 403, description: "Forbidden")
         ]
     )]
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreUserRequest $request): JsonResponse
     {
         $this->authorize('create', User::class);
 
-        $validatedData = app(StoreUserRequest::class)->validated();
+        $data = $request->validated();
+        
+        $user = $this->service->create($data);
 
-        $data = $this->service->create($validatedData);
-
-        return response()->json(ApiResponse::success($data, 'User created successfully', 201), 201);
+        return response()->json(ApiResponse::success($user, 'User created successfully', 201), 201);
     }
 
     #[OA\Get(
-        path: "/api/admin/users/{uuid}",
-        summary: "Xem chi tiết người dùng (Admin hoặc Chính chủ)",
+        path: "/admin/users/{uuid}",
+        summary: "Xem chi tiết người dùng",
         security: [['bearerAuth' => []]],
         tags: ["Users (Admin & Self)"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         responses: [
-            new OA\Response(response: 200, description: "Successful operation"),
-            new OA\Response(response: 403, description: "Forbidden (Không phải Admin hoặc chính chủ)"),
-            new OA\Response(response: 404, description: "User not found")
+            new OA\Response(response: 200, description: "Success"),
+            new OA\Response(response: 403, description: "Forbidden (Not Owner/Admin)"),
+            new OA\Response(response: 404, description: "Not Found")
         ]
     )]
 
     public function show(string $uuid): JsonResponse
     {
-        $user = $this->service->getRepository()->findByUuid($uuid);
-        if (!$user) {
-            return response()->json(ApiResponse::error('User not found', 404), 404);
-        }
+        $user = $this->service->findByUuidOrFail($uuid);
+
+        $this->authorize('view', $user);
+
+        return response()->json(ApiResponse::success($user));
+    }
+
+    #[OA\Get(
+        path: "/profile",
+        summary: "Xem thông tin người dùng hiện tại",
+        security: [['bearerAuth' => []]],
+        tags: ["Users (Admin & Self)"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Success",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "success", type: "boolean"),
+                        new OA\Property(property: "data", type: "object",
+                            properties: [
+                                new OA\Property(property: "uuid", type: "string"),
+                                new OA\Property(property: "name", type: "string"),
+                                new OA\Property(property: "email", type: "string"),
+                                new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string")),
+                            ]
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: "User not found")
+        ]
+    )]
+    
+    public function profile(Request $request): JsonResponse
+    {
+        $user = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('view', $user);
 
@@ -108,49 +139,48 @@ class UserController extends BaseController
     }
 
     #[OA\Put(
-        path: "/api/admin/users/{uuid}",
-        summary: "Cập nhật thông tin người dùng (Admin hoặc Chính chủ)",
+        path: "/admin/users/{uuid}",
+        summary: "Cập nhật thông tin",
         security: [['bearerAuth' => []]],
         tags: ["Users (Admin & Self)"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         requestBody: new OA\RequestBody(
-            required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "name", type: "string", example: "Jane Doe"),
-                    new OA\Property(property: "phone", type: "string", nullable: true, example: "0901234567"),
-                    new OA\Property(property: "password", type: "string", format: "password", nullable: true, description: "Chỉ điền nếu muốn đổi password"),
-                    new OA\Property(property: "roles", type: "array", description: "Mảng các UUID hoặc tên Role (Chỉ Admin mới được sửa role)", items: new OA\Items(type: "string", example: "editor")),
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string")),
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: "User updated"),
-            new OA\Response(response: 403, description: "Forbidden"),
-            new OA\Response(response: 404, description: "User not found")
+            new OA\Response(response: 200, description: "Updated"),
+            new OA\Response(response: 403, description: "Forbidden")
         ]
     )]
 
-    public function update(Request $request, string $uuid): JsonResponse
+    public function update(UpdateUserRequest $request, string $uuid): JsonResponse
     {
-        $user = $this->service->getRepository()->findByUuid($uuid);
-        if (!$user) {
-            return response()->json(ApiResponse::error('User not found', 404), 404);
-        }
-
+        $user = $this->service->findByUuidOrFail($uuid);
+        
         $this->authorize('update', $user);
 
-        $validatedData = app(UpdateUserRequest::class)->validated();
+        $data = $request->validated();
 
-        $data = $this->service->update($uuid, $validatedData);
+        if (!$request->user()->hasPermissionTo('user.edit')) {
+             unset($data['roles']);   
+             unset($data['is_active']);
+             unset($data['email']);     
+        }
 
-        return response()->json(ApiResponse::success($data, 'User updated successfully'));
+        $updatedUser = $this->service->update($uuid, $data);
+
+        return response()->json(ApiResponse::success($updatedUser, 'User updated successfully'));
     }
 
     #[OA\Delete(
-        path: "/api/admin/users/{uuid}",
+        path: "/admin/users/{uuid}",
         summary: "Xóa người dùng (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Users (Admin & Self)"],
@@ -158,18 +188,12 @@ class UserController extends BaseController
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         responses: [
-            new OA\Response(response: 200, description: "User deleted"),
-            new OA\Response(response: 403, description: "Forbidden (Không phải Admin hoặc đang cố xóa chính mình)"),
-            new OA\Response(response: 404, description: "User not found")
+            new OA\Response(response: 200, description: "Deleted")
         ]
     )]
-    
     public function destroy(string $uuid): JsonResponse
     {
-        $user = $this->service->getRepository()->findByUuid($uuid);
-        if (!$user) {
-            return response()->json(ApiResponse::error('User not found', 404), 404);
-        }
+        $user = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('delete', $user);
 

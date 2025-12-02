@@ -25,7 +25,7 @@ class InventoryController extends BaseController
     }
 
     #[OA\Get(
-        path: "/api/admin/inventories",
+        path: "/admin/inventories",
         summary: "Xem danh sách tồn kho",
         security: [['bearerAuth' => []]],
         tags: ["Inventory"],
@@ -50,7 +50,7 @@ class InventoryController extends BaseController
     }
 
      #[OA\Post(
-        path: "/api/admin/inventories/upsert",
+        path: "/admin/inventories/upsert",
         summary: "Thêm hoặc Cập nhật Tồn kho (Upsert)",
         description: "Tạo record tồn kho mới hoặc ghi đè (overwrite) số lượng nếu đã tồn tại.",
         security: [['bearerAuth' => []]],
@@ -85,7 +85,7 @@ class InventoryController extends BaseController
     }
 
     #[OA\Patch(
-        path: "/api/admin/inventories/{productUuid}/{warehouseUuid}/adjust",
+        path: "/admin/inventories/{productUuid}/{warehouseUuid}/adjust",
         summary: "Điều chỉnh số lượng tồn kho (Tăng/Giảm Delta)",
         description: "Sử dụng để nhập kho (delta > 0) hoặc trừ kho thủ công (delta < 0).",
         security: [['bearerAuth' => []]],

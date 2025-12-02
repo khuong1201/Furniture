@@ -18,15 +18,6 @@ class UserService extends BaseService
         parent::__construct($repo);
     }
 
-    public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
-    {
-        $filters['per_page'] = $perPage;
-        return $this->repository->filter($filters);
-    }
-
-    /**
-     * Override create để xử lý Password và Roles
-     */
     public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {

@@ -3,6 +3,7 @@
 namespace Modules\Category\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Category\Services\CategoryService;
@@ -15,6 +16,7 @@ use OpenApi\Attributes as OA;
     name: "Categories",
     description: "API quản lý Danh mục sản phẩm (Public xem, Admin quản lý)"
 )]
+
 class CategoryController extends BaseController
 {
     public function __construct(CategoryService $service)
@@ -23,18 +25,16 @@ class CategoryController extends BaseController
     }
 
     #[OA\Get(
-        path: "/api/public/categories",
+        path: "/public/categories",
         summary: "Xem danh sách danh mục (Public)",
         tags: ["Categories"],
         parameters: [
-            new OA\Parameter(name: "tree", in: "query", description: "Trả về dưới dạng cây (true/false)", required: false, schema: new OA\Schema(type: "boolean")),
-            new OA\Parameter(name: "page", in: "query", description: "Page number", required: false, schema: new OA\Schema(type: "integer", default: 1)),
+            new OA\Parameter(name: "tree", in: "query", schema: new OA\Schema(type: "boolean")),
+            new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Successful operation")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
-    public function index(Request $request): \Illuminate\Http\JsonResponse
+    public function index(Request $request): JsonResponse
     {
         if ($request->has('tree')) {
             $data = $this->service->getTree();
@@ -45,7 +45,7 @@ class CategoryController extends BaseController
     }
 
     #[OA\Post(
-        path: "/api/admin/categories",
+        path: "/admin/categories",
         summary: "Tạo danh mục mới (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Categories"],
@@ -54,18 +54,15 @@ class CategoryController extends BaseController
             content: new OA\JsonContent(
                 required: ["name", "slug"],
                 properties: [
-                    new OA\Property(property: "name", type: "string", example: "Điện thoại thông minh"),
-                    new OA\Property(property: "slug", type: "string", example: "dien-thoai-thong-minh"),
-                    new OA\Property(property: "parent_uuid", type: "string", format: "uuid", nullable: true, description: "UUID của danh mục cha"),
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "slug", type: "string"),
+                    new OA\Property(property: "parent_uuid", type: "string", format: "uuid"),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 201, description: "Category created"),
-            new OA\Response(response: 403, description: "Forbidden (Not Admin)")
-        ]
+        responses: [ new OA\Response(response: 201, description: "Created") ]
     )]
-    public function store(StoreCategoryRequest $request): \Illuminate\Http\JsonResponse
+    public function store(StoreCategoryRequest $request): JsonResponse
     {
         $this->authorize('create', Category::class);
         
@@ -75,7 +72,7 @@ class CategoryController extends BaseController
     }
 
     #[OA\Put(
-        path: "/api/admin/categories/{uuid}",
+        path: "/admin/categories/{uuid}",
         summary: "Cập nhật danh mục (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Categories"],
@@ -83,27 +80,19 @@ class CategoryController extends BaseController
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         requestBody: new OA\RequestBody(
-            required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "name", type: "string", example: "Điện thoại thông minh (Updated)"),
-                    new OA\Property(property: "slug", type: "string", example: "dien-thoai-thong-minh-updated"),
-                    new OA\Property(property: "parent_uuid", type: "string", format: "uuid", nullable: true),
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "parent_uuid", type: "string", format: "uuid"),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 200, description: "Category updated"),
-            new OA\Response(response: 403, description: "Forbidden"),
-            new OA\Response(response: 404, description: "Category not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
-    public function update(UpdateCategoryRequest $request, string $uuid): \Illuminate\Http\JsonResponse
+    public function update(UpdateCategoryRequest $request, string $uuid): JsonResponse
     {
-        $category = $this->service->getRepository()->findByUuid($uuid);
-        if (!$category) {
-             return response()->json(ApiResponse::error('Category not found', 404), 404);
-        }
+        $category = $this->service->findByUuidOrFail($uuid);
+
         $this->authorize('update', $category);
         
         $data = $this->service->update($uuid, $request->validated());
@@ -112,45 +101,35 @@ class CategoryController extends BaseController
     }
     
     #[OA\Get(
-        path: "/api/public/categories/{uuid}",
+        path: "/public/categories/{uuid}",
         summary: "Xem chi tiết danh mục (Public)",
         tags: ["Categories"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Successful operation"),
-            new OA\Response(response: 404, description: "Category not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
-    public function show(string $uuid): \Illuminate\Http\JsonResponse
+    public function show(string $uuid): JsonResponse
     {
         $category = $this->service->findByUuidOrFail($uuid);
-        $this->authorize('view', $category);
-
+        
         return response()->json(ApiResponse::success($category));
     }
 
     #[OA\Delete(
-        path: "/api/admin/categories/{uuid}",
+        path: "/admin/categories/{uuid}",
         summary: "Xóa danh mục (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Categories"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Category deleted"),
-            new OA\Response(response: 403, description: "Forbidden"),
-            new OA\Response(response: 404, description: "Category not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Deleted") ]
     )]
-    public function destroy(string $uuid): \Illuminate\Http\JsonResponse
+    public function destroy(string $uuid): JsonResponse
     {
-        $category = $this->service->getRepository()->findByUuid($uuid);
-        if (!$category) {
-             return response()->json(ApiResponse::error('Category not found', 404), 404);
-        }
+        $category = $this->service->findByUuidOrFail($uuid);
+        
         $this->authorize('delete', $category);
 
         $this->service->delete($uuid);

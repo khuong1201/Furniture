@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -11,6 +12,9 @@ use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductImageRepositoryInterface;
 use Modules\Product\Infrastructure\Repositories\EloquentProductRepository;
 use Modules\Product\Infrastructure\Repositories\EloquentProductImageRepository;
+use Modules\Product\Domain\Models\Product;
+use Modules\Product\Domain\Models\ProductImage;
+use Modules\Product\Policies\ProductPolicy;
 
 class ProductServiceProvider extends ServiceProvider
 {
@@ -25,6 +29,8 @@ class ProductServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Product::class, ProductPolicy::class);
+        Gate::policy(ProductImage::class, ProductPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

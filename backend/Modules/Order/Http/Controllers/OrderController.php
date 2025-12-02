@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Orders",
-    description: "API quản lý Đơn hàng (User xem của mình, Admin quản lý tất cả)"
+    description: "API quản lý Đơn hàng"
 )]
 
 class OrderController extends BaseController
@@ -23,35 +23,35 @@ class OrderController extends BaseController
     }
     
     #[OA\Get(
-        path: "/api/orders",
-        summary: "Xem danh sách đơn hàng (User chỉ xem của mình, Admin xem tất cả)",
+        path: "/orders",
+        summary: "Xem danh sách đơn hàng",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         parameters: [
-            new OA\Parameter(name: "status", in: "query", description: "Filter theo trạng thái (pending, shipped, delivered, cancelled)", required: false, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string")),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Successful operation")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
-
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', \Modules\Order\Domain\Models\Order::class);
+
         $filters = $request->all();
-        
-        if (!auth()->user()->hasRole('admin')) { 
-            $filters['user_id'] = auth()->id();
+        $user = $request->user();
+
+        if (!$user->hasPermissionTo('order.view')) { 
+            $filters['user_id'] = $user->id;
         }
 
         $data = $this->service->paginate($request->get('per_page', 15), $filters);
         return response()->json(ApiResponse::paginated($data));
     }
 
-     #[OA\Post(
-        path: "/api/orders",
-        summary: "Tạo đơn hàng mới (Chủ yếu dùng bởi Admin)",
+    #[OA\Post(
+        path: "/orders",
+        summary: "Tạo đơn hàng mới (Admin/Staff)",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         requestBody: new OA\RequestBody(
@@ -59,33 +59,29 @@ class OrderController extends BaseController
             content: new OA\JsonContent(
                 required: ["address_id", "items"],
                 properties: [
-                    new OA\Property(property: "address_id", type: "integer", description: "ID của địa chỉ giao hàng"),
-                    new OA\Property(property: "notes", type: "string", nullable: true),
-                    new OA\Property(property: "items", type: "array", items: new OA\Items(
-                        required: ["product_uuid", "quantity"],
-                        properties: [
-                            new OA\Property(property: "product_uuid", type: "string"),
-                            new OA\Property(property: "quantity", type: "integer", minimum: 1),
-                        ]
-                    )),
+                    new OA\Property(property: "address_id", type: "integer"),
+                    new OA\Property(property: "items", type: "array", items: new OA\Items(type: "object")),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 201, description: "Order created successfully"),
-            new OA\Response(response: 422, description: "Validation error (stock issue, invalid address)"),
-        ]
+        responses: [ new OA\Response(response: 201, description: "Created") ]
     )]
 
     public function store(CreateOrderRequest $request): JsonResponse
     {
-        $order = $this->service->create($request->validated());
+        $data = $request->validated();
+        
+        if (!isset($data['user_id'])) {
+            $data['user_id'] = $request->user()->id;
+        }
+
+        $order = $this->service->create($data);
         return response()->json(ApiResponse::success($order, 'Order created successfully', 201), 201);
     }
     
     #[OA\Post(
-        path: "/api/orders/checkout",
-        summary: "Đặt hàng từ giỏ hàng",
+        path: "/orders/checkout",
+        summary: "Đặt hàng từ giỏ hàng (User)",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         requestBody: new OA\RequestBody(
@@ -93,31 +89,29 @@ class OrderController extends BaseController
             content: new OA\JsonContent(
                 required: ["address_id"],
                 properties: [
-                    new OA\Property(property: "address_id", type: "integer", description: "ID của địa chỉ giao hàng"),
-                    new OA\Property(property: "notes", type: "string", nullable: true),
+                    new OA\Property(property: "address_id", type: "integer"),
+                    new OA\Property(property: "notes", type: "string"),
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 201, description: "Order placed successfully"),
-            new OA\Response(response: 422, description: "Validation error (Empty cart, stock issue, invalid address)"),
-        ]
+        responses: [ new OA\Response(response: 201, description: "Order placed") ]
     )]
-
     public function checkout(Request $request): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'address_id' => 'required|exists:addresses,id',
             'notes' => 'nullable|string'
         ]);
+        
+        $validated['user_id'] = $request->user()->id;
 
-        $order = $this->service->createFromCart($request->all());
+        $order = $this->service->createFromCart($validated);
         
         return response()->json(ApiResponse::success($order, 'Order placed successfully from cart', 201), 201);
     }
 
     #[OA\Get(
-        path: "/api/orders/{uuid}",
+        path: "/orders/{uuid}",
         summary: "Xem chi tiết đơn hàng",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
@@ -125,12 +119,10 @@ class OrderController extends BaseController
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         responses: [
-            new OA\Response(response: 200, description: "Successful operation"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner or Admin)"),
-            new OA\Response(response: 404, description: "Order not found")
+            new OA\Response(response: 200, description: "Success"),
+            new OA\Response(response: 403, description: "Forbidden")
         ]
     )]
-
     public function show(string $uuid): JsonResponse
     {
         $order = $this->service->findByUuidOrFail($uuid);
@@ -142,28 +134,18 @@ class OrderController extends BaseController
     }
 
     #[OA\Post(
-        path: "/api/orders/{uuid}/cancel",
+        path: "/orders/{uuid}/cancel",
         summary: "Hủy đơn hàng",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Order cancelled successfully"),
-            new OA\Response(response: 403, description: "Forbidden (Not owner or Admin)"),
-            new OA\Response(response: 422, description: "Cannot cancel shipped/delivered order"),
-            new OA\Response(response: 404, description: "Order not found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Cancelled") ]
     )]
-    
     public function cancel(string $uuid): JsonResponse
     {
-        $order = $this->service->getRepository()->findByUuid($uuid);
-        
-        if (!$order) {
-            return response()->json(ApiResponse::error('Order not found', 404), 404);
-        }
+        $order = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('cancel', $order);
 

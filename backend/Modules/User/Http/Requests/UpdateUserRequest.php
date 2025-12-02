@@ -10,14 +10,13 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
-        $uuid = $this->route('user');
         return [
-            'name' => 'sometimes|string|max:255',
-            'email' => "sometimes|email|unique:users,email,{$uuid},uuid", 
-            'phone' => 'nullable|string|max:20',
-            'password' => 'nullable|string|min:6',
-            'is_active' => 'boolean',
-            'roles' => 'nullable|array',
+            'name'     => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:6|confirmed',
+            'phone'    => 'nullable|string|max:20',
+            
+            'roles'    => 'nullable|array',
+            'roles.*'  => 'exists:roles,name',
         ];
     }
 }
