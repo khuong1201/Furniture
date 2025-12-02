@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import {useAuth} from '../../hooks/AuthContext'
+import {Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import './SignUpForm.css';
+import './RegisterForm.css';
 
-const SignUpForm = () => {
+const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const navigate = useNavigate();
+  
+  const [localError, setLocalError] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -15,23 +20,68 @@ const SignUpForm = () => {
     agreeTerms: false,
   });
 
+
+  const { register, loading, error: apiError } = useAuth();
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
+
+    if (localError) setLocalError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Submitted:', formData);
+    
+    setLocalError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setLocalError("Authentication passwords do not match!");
+      return;
+    }
+
+    if (!formData.agreeTerms) {
+      setLocalError("You must agree to the Terms of Use.");
+      return;
+    }
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      password_confirmation: formData.confirmPassword,
+      device_name: 'web_browser'
+    };
+    
+    const isSuccess = await register(payload);
+
+    if (isSuccess) {
+        alert("Create account success");
+        navigate('/login'); 
+    }
   };
 
   return (
     <div className="signup-wrapper">
       <div className="signup-card">
         <h2 className="signup-title">SIGN UP</h2>
+
+        {(localError || apiError) && (
+            <div style={{ 
+                backgroundColor: '#ffebee', 
+                color: '#c62828', 
+                padding: '10px', 
+                borderRadius: '4px', 
+                marginBottom: '15px', 
+                fontSize: '14px',
+                textAlign: 'center',
+                border: '1px solid #ffcdd2'
+            }}>
+                {localError || apiError}
+            </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           
@@ -131,8 +181,13 @@ const SignUpForm = () => {
           </div>
 
           {/* Submit Button */}
-          <button type="submit" className="btn-primary">
-            Create Account
+          <button 
+            type="submit" 
+            className="btn-primary" 
+            disabled={loading}
+            style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+          >
+            {loading ? 'Processing...' : 'Create Account'}
           </button>
         </form>
 
@@ -155,7 +210,7 @@ const SignUpForm = () => {
         <p className="footer-text">
           Already have an account?{' '}
           <Link to='/login' className='link-highlight'>
-            Sign up
+            Login   
           </Link>
         </p>
       </div>
@@ -163,4 +218,4 @@ const SignUpForm = () => {
   );
 };
 
-export default SignUpForm;
+export default RegisterForm;

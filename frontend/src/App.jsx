@@ -3,7 +3,7 @@ import './App.css'
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/header/Header';
 import HomePage from './components/homePage/HomePage';
-import SignUp from './components/signUp/SignUpForm';
+import Register from './components/register/RegisterForm';
 import LogIn from './components/login/LoginForm';
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
       <Header/>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/login" element={<LogIn />} />
       </Routes>
     </div>

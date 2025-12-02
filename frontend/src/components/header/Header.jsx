@@ -31,7 +31,7 @@ function Header() {
 
             <div className="action-item user-action">
               <img src={accountIcon} alt="User" className="svg-icon"/>
-              <Link to="/signup" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
+              <Link to="/register" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
                  Log In/ Sign up
               </Link>
             </div>

@@ -149,6 +149,13 @@
   background-color: #b08d74;
 }
 
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:hover {
+  outline: none !important;    
+  border: none !important;    
+  box-shadow: none !important; 
+}
 /* Divider OR */
 .divider {
   position: relative;
