@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import './HomePage.css';
 import { useProduct } from '../../hooks/useProducts';
+import {Link, useNavigate } from 'react-router-dom';
 
 import bedIcon from '../../assets/icons/categories/bed.svg';
 import tableIcon from '../../assets/icons/categories/table.svg';
@@ -56,7 +57,6 @@ function HomePage() {
           <a href="#" className="view-all">View all</a>
         </div>
         
-        {/* 3. Kiểm tra trạng thái tải trang */}
         {loading && <div className="loading-state">Đang tải sản phẩm...</div>}
         {error && <div className="error-state">{error}</div>}
 
@@ -64,28 +64,39 @@ function HomePage() {
         {!loading && !error && (
           <div className="product-grid">
             {products.map((item) => (
-              // Lưu ý: Dùng item.id làm key thay vì item index
+       
               <div key={item.id} className="product-card">
-                <div className="product-img">
-                  <span className="discount-tag">-50%</span>
-                  
-                  {/* 5. Xử lý ảnh động từ API */}
-                  {/* Nếu API trả về link full thì dùng item.image, nếu chỉ tên file thì nối chuỗi */}
-                  <img 
-                    src={item.image ? `http://localhost:8000/storage/${item.image}` : 'https://placehold.co/300x250?text=No+Image'} 
-                    alt={item.name} 
-                    onError={(e) => { e.target.src = 'https://placehold.co/300x250?text=Error'; }} // Fallback nếu ảnh lỗi
-                  />
-                </div>
-                
+                <Link to={`/product/${item.uuid || item.id}`}>
+                  <div className="product-img">
+                    <span className="discount-tag">-50%</span>
+                    <img 
+                      src={item.image ? `http://localhost:8000/storage/${item.image}` : 'https://placehold.co/300x250?text=No+Image'} 
+                      alt={item.name} 
+                      onError={(e) => { e.target.src = 'https://placehold.co/300x250?text=Error'; }}
+                    />
+                  </div>
+                </Link>  
                 <div className="product-info">
-                  {/* 6. Hiển thị Tên sản phẩm */}
-                  <h4>{item.name}</h4> 
                   
-                  <div className="rating">★ 4.5 | 155 sold</div>
+                  <Link to={`/product/${item.uuid || item.id}`} className="product-link">
+                    <h4>{item.name}</h4> 
+                  </Link>
+                  
+                  <div className="rating">
+                    
+                    <span className="rating-star">★</span>
+                    
+                    <span className='rating-number'>{item.rating || 4.5}</span>
+                    
+                    
+                    {/* 4. Số lượt bán */}
+                    <span className="rating-separator">|</span>
+                    <span className="rating-sold">
+                      {item.sold || 155} sold
+                    </span>
+                  </div>
                   
                   <div className="price-row">
-                    {/* 7. Format giá tiền VND */}
                     <span className="price">
                       {Number(item.price).toLocaleString('vi-VN')} VND
                     </span>

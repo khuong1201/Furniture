@@ -2,12 +2,11 @@
 .pd-wrapper {
   background-color: #f9f9f9; /* Nền xám rất nhẹ */
   min-height: 100vh;
-  padding: 20px;
+  padding: 40px;
   font-family: 'Arial', sans-serif;
 }
 
 .breadcrumb {
-  max-width: 1200px;
   margin: 0 auto 15px;
   color: #666;
   font-size: 14px;
@@ -18,7 +17,6 @@
 
 /* --- KHUNG SẢN PHẨM CHÍNH --- */
 .pd-container {
-  max-width: 1200px;
   margin: 0 auto;
   background: white;
   padding: 30px;
@@ -102,11 +100,11 @@
   gap: 4px;
   color: #Cfb986;
   font-weight: bold;
-  border-bottom: 1px solid #Cfb986;
+  /* border-bottom: 1px solid #Cfb986; */
 }
 
 .divider {
-  color: #ddd;
+  color: #9E9D9D;
 }
 
 .price-section {
@@ -158,9 +156,10 @@
 }
 
 .label {
-  width: 100px; /* Cố định chiều rộng nhãn */
-  color: #777;
+  width: 100px;
+  color: #2D2A29;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .options-row {
@@ -171,22 +170,23 @@
 
 .option-btn {
   padding: 8px 16px;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid #9E9D9D;
+  background: #FDFDFD;
   cursor: pointer;
   border-radius: 2px;
-  color: #555;
+  color: #2D2A29;
   transition: all 0.2s;
 }
 
 .option-btn:hover {
-  border-color: #Cfb986;
+  border: 1px solid #CBA890;
+  color: #CBA890; 
 }
 
 .option-btn.selected {
-  border-color: #Cfb986;
-  color: #Cfb986;
-  background-color: #fff9e6; /* Màu nền vàng rất nhạt */
+  border: 1px solid #CBA890;
+  color: #CBA890;
+  background-color: #EFE4DD; /* Màu nền vàng rất nhạt */
 }
 
 /* --- QUANTITY --- */
@@ -198,69 +198,70 @@
 
 .qty-control {
   display: flex;
-  border: 1px solid #ddd;
-  border-radius: 2px;
+  border: 1px solid #9E9D9D;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .qty-control button {
-  background: #f8f8f8;
+  width: 36px;
+  height: 36px;
+  background: transparent;
   border: none;
-  width: 32px;
-  height: 32px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #2D2A29;
+  transition: all 0.2s ease;
+  padding: 4px;
 }
 
 .qty-control input {
-  width: 50px;
+  width: 32px;
   text-align: center;
   border: none;
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
   outline: none;
-}
-
-.stock-available {
-  margin-left: 15px;
-  font-size: 13px;
-  color: #888;
+  background-color:transparent;
+  color: #2D2A29;
+  font-weight: 700;
+  font-size: 18px
 }
 
 /* --- NÚT ACTION --- */
 .action-buttons {
   display: flex;
-  gap: 15px;
+  gap: 24px;
 }
 
 .btn-add-cart {
-  padding: 12px 24px;
-  background: #fff9e6;
-  border: 1px solid #Cfb986;
+  padding: 16px 24px;
+  background: transparent;
+  border: 2px solid #CBA890;
   color: #Cfb986;
   font-weight: bold;
-  cursor: pointer;
+  cursor: pointer;  
   display: flex;
   align-items: center;
   gap: 8px;
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
 .btn-buy-now {
   padding: 12px 40px;
-  background: #Cfb986;
+  background: #CBA890;
   border: none;
   color: white;
   font-weight: bold;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
 /* --- SHOP SECTION --- */
 .shop-section {
-  max-width: 1200px;
-  margin: 20px auto 0;
+  margin: 40px 0;
   background: white;
   padding: 20px;
   border-radius: 4px;
@@ -309,4 +310,56 @@
 
 .shop-actions .btn-shop-view {
   background: #f9f9f9;
+}
+
+/* --- PRODUCT DESCRIPTION & SPECS --- */
+.product-description-section {
+  margin: 30px auto;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+}
+
+.desc-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2D2A29;
+  
+}
+
+/* --- BẢNG THÔNG SỐ (Specifications Table) --- */
+.specs-table {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.spec-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.spec-row:last-child {
+  border-bottom: none;
+}
+
+/* Màu nền xen kẽ cho các dòng */
+.spec-row:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.spec-label {
+  width: 200px; /* Cột bên trái cố định */
+  padding: 12px 20px;
+  font-weight: 600;
+  color: #444;
+  border-right: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.spec-value {
+  padding: 12px 20px;
+  color: #666;
+  flex-grow: 1;
 }
