@@ -35,15 +35,19 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      // GỌI QUA AUTH SERVICE
+      
       const data = await AuthService.login(email, password, device_name);
 
       // Lưu trữ
-      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('access_token', data.data.access_token);
       localStorage.setItem('user_info', JSON.stringify(data.user));
 
+      console.log('🔑 Access Token:', data.data.access_token);
       console.log('✅Login success:', data)
+
+      AuthService.instance.setToken(loginData.access_token);
       setUser(data.user);
+      
       return true; // Báo thành công về View
     } catch (err) {
       setError(err.message || '❌Đăng nhập thất bại');

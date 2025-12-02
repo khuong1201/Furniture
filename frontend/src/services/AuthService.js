@@ -54,10 +54,6 @@ class AuthService {
     }
   }
 
-  // ============================================================
-  // 5. CÁC HÀM GỌI API (Instance Methods - Logic chính)
-  // ============================================================
-
   async login(email, password,device_name) {
     const data = await this._request('/auth/login', {
       method: 'POST',

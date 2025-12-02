@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {useAuth} from '../../hooks/AuthContext'
-import {Link,  } from 'react-router-dom';
+import {Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import './RegisterForm.css';
 

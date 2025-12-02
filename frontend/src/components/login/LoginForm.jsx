@@ -99,7 +99,7 @@ function LoginForm () {
             disabled={loading}
             style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
-            {loading ? 'Processing...' : 'Create Account'}
+            {loading ? 'Processing...' : 'LOG IN'}
           </button>
         </form>
 
