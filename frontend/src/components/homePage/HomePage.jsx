@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './HomePage.css';
-import useProducts from '../../hooks/useProducts';
+import { useProduct } from '../../hooks/useProducts';
 
 import bedIcon from '../../assets/icons/categories/bed.svg';
 import tableIcon from '../../assets/icons/categories/table.svg';
@@ -13,7 +13,11 @@ import outdoorIcon from '../../assets/icons/categories/outdoor.svg';
 
 function HomePage() {
 
-  const { products, loading, error } = useProducts();
+  const { products, loading, error, getAllProduct } = useProduct();
+
+  useEffect(() => {
+    getAllProduct();
+  }, [getAllProduct]);
 
   const categories = [
     { name: "Bed", img: bedIcon },
