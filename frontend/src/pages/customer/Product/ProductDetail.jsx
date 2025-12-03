@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProduct } from '../../hooks/useProducts';
-import { useOrder } from '../../hooks/useOrder';
+import { useProduct } from '../../../hooks/useProducts';
+import { useOrder } from '../../../hooks/useOrder';
 import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin, ThumbsUp } from 'lucide-react';
 import './ProductDetail.css';
 
@@ -12,7 +12,7 @@ const ProductDetail = () => {
   const { productDetail, loading, error, getDetail } = useProduct();
   const { createOrder, loading: orderLoading } = useOrder();
 
-  const [activeImage, setActiveImage] = useState('');
+  const [activeImage, setActiveImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState('');
   const [selectedColor, setSelectedColor] = useState('');

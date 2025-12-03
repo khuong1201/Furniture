@@ -232,13 +232,53 @@
     background: #b08d6e; /* Màu đậm hơn khi hover */
   } 
 
-  .loading-state, .error-state {
-    text-align: center;
-    padding: 40px;
-    font-size: 16px;
-    color: #888;
-    width: 100%;
-  }
-  .error-state {
-    color: red;
-  }
+  /* --- Loading --- */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  font-size: 18px;
+  color: #555;
+  background: #f0f8ff;
+  border-radius: 12px;
+  margin: 20px 0;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-icon {
+  font-size: 24px;
+  color: #007bff;
+  animation: spin 1s linear infinite;
+}
+
+/* --- Error --- */
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  font-size: 18px;
+  color: #d9534f;
+  background: #fde2e2;
+  border-radius: 12px;
+  margin: 20px 0;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-icon {
+  font-size: 24px;
+}
+
+/* --- Animations --- */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

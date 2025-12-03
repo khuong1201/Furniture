@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {useAuth} from '../../hooks/AuthContext'
+import {useAuth} from '../../../hooks/AuthContext'
 import {Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import './RegisterForm.css';
@@ -59,7 +59,7 @@ const RegisterForm = () => {
 
     if (isSuccess) {
         alert("Create account success");
-        navigate('/login'); 
+        navigate('/customer/login'); 
     }
   };
 
@@ -209,7 +209,7 @@ const RegisterForm = () => {
         {/* Footer Login Link */}
         <p className="footer-text">
           Already have an account?{' '}
-          <Link to='/login' className='link-highlight'>
+          <Link to='/customer/login' className='link-highlight'>
             Login   
           </Link>
         </p>

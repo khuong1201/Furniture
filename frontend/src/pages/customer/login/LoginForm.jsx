@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {useAuth} from '../../hooks/AuthContext'
+import {useAuth} from '@/hooks/AuthContext'
 import {Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import '../register/RegisterForm';
@@ -16,7 +16,7 @@ function LoginForm () {
     device_name:''
   });
 
-  const { login, loading, error: apiError } = useAuth();
+  const { login, loading, error } = useAuth();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,14 +40,15 @@ function LoginForm () {
     const isSuccess = await login (formData.email, formData.password, formData.device_name);
 
     if (isSuccess) {
-        navigate('/'); 
+        navigate('/customer'); 
     }
   };
 
+  
   return (
     <div className="signup-wrapper">
       <div className="signup-card">
-        <h2 className="signup-title">SIGN UP</h2>
+        <h2 className="signup-title">LOG IN</h2>
 
         <form onSubmit={handleSubmit}>
 
