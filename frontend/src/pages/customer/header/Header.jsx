@@ -1,10 +1,10 @@
   import React from 'react';
-  import {useAuth} from '../../hooks/AuthContext'
+  import {useAuth} from '@/hooks/AuthContext'
   import { Link } from 'react-router-dom';
-  import bellIcon from '../../assets/icons/bell.svg';
-  import cartIcon from '../../assets/icons/cart.svg';
-  import accountIcon from '../../assets/icons/account.svg';
-  import searchIcon from '../../assets/icons/search.svg';
+  import bellIcon from '@/assets/icons/bell.svg';
+  import cartIcon from '@/assets/icons/cart.svg';
+  import accountIcon from '@/assets/icons/account.svg';
+  import searchIcon from '@/assets/icons/search.svg';
   import './Header.css';
 
   function Header() {
@@ -35,7 +35,7 @@
 
               <div className="action-item user-action">
                 <img src={accountIcon} alt="User" className="svg-icon"/>
-                <Link to="/register" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
+                <Link to="/customer/register" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
                   Log In/ Sign up
                 </Link>
               </div>

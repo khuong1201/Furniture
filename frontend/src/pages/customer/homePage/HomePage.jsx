@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
 import './HomePage.css';
-import { useProduct } from '../../hooks/useProducts';
+import { useProduct } from '@/hooks/useProducts';
 import {Link, useNavigate } from 'react-router-dom';
+import { AiOutlineLoading3Quarters, AiOutlineWarning } from 'react-icons/ai';
 
-import bedIcon from '../../assets/icons/categories/bed.svg';
-import tableIcon from '../../assets/icons/categories/table.svg';
-import sofaIcon from '../../assets/icons/categories/sofa.svg';
-import chairIcon from '../../assets/icons/categories/chair.svg';
-import wardrobesIcon from '../../assets/icons/categories/wardrobes.svg';
-import lightIcon from '../../assets/icons/categories/light.svg';
-import shelfIcon from '../../assets/icons/categories/shelf.svg';
-import outdoorIcon from '../../assets/icons/categories/outdoor.svg';
+import bedIcon from '@/assets/icons/categories/bed.svg';
+import tableIcon from '@/assets/icons/categories/table.svg';
+import sofaIcon from '@/assets/icons/categories/sofa.svg';
+import chairIcon from '@/assets/icons/categories/chair.svg';
+import wardrobesIcon from '@/assets/icons/categories/wardrobes.svg';
+import lightIcon from '@/assets/icons/categories/light.svg';
+import shelfIcon from '@/assets/icons/categories/shelf.svg';
+import outdoorIcon from '@/assets/icons/categories/outdoor.svg';
 
 function HomePage() {
 
@@ -34,6 +35,20 @@ function HomePage() {
   return (
     <div className="home-container">
 
+      {loading && (
+        <div className="loading-state">
+          <AiOutlineLoading3Quarters className="loading-icon" />
+          <span>Đang tải sản phẩm...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="error-state">
+          <AiOutlineWarning className="error-icon" />
+          <span>{error}</span>
+        </div>
+      )}
+      
       {/* --- PHẦN 2: CATEGORIES --- */}
       <section className="categories-section">
         <h3>Categories</h3>
@@ -56,9 +71,6 @@ function HomePage() {
           <h3>Flash Sale <span className="timer">01 : 23 : 20</span></h3>
           <a href="#" className="view-all">View all</a>
         </div>
-        
-        {loading && <div className="loading-state">Đang tải sản phẩm...</div>}
-        {error && <div className="error-state">{error}</div>}
 
         {/* 4. Hiển thị dữ liệu khi đã tải xong */}
         {!loading && !error && (
@@ -66,7 +78,7 @@ function HomePage() {
             {products.map((item) => (
        
               <div key={item.id} className="product-card">
-                <Link to={`/product/${item.uuid || item.id}`}>
+                <Link to={`/customer/product/${item.uuid || item.id}`}>
                   <div className="product-img">
                     <span className="discount-tag">-50%</span>
                     <img 
@@ -78,7 +90,7 @@ function HomePage() {
                 </Link>  
                 <div className="product-info">
                   
-                  <Link to={`/product/${item.uuid || item.id}`} className="product-link">
+                  <Link to={`/customer/product/${item.uuid || item.id}`} className="product-link">
                     <h4>{item.name}</h4> 
                   </Link>
                   
@@ -107,6 +119,17 @@ function HomePage() {
             ))}
           </div>
         )}
+
+        {/* Top Trending */}
+        <div className="section-header">
+          <h3>Top Trending</h3>
+          <a href="#" className="view-all">View all</a>
+        </div>
+
+        {/* Today's Suggestions */}
+        <div className="section-header">
+          <h3>Today's Suggestions</h3>
+        </div>
       </section>  
 
     </div>

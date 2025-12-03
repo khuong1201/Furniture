@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import AuthService from '../services/AuthService';
+import AuthService from '@/services/AuthService';
 
 const AuthContext = createContext();
 
@@ -45,10 +45,10 @@ export const AuthProvider = ({ children }) => {
       console.log('🔑 Access Token:', data.data.access_token);
       console.log('✅Login success:', data)
 
-      AuthService.instance.setToken(loginData.access_token);
+      AuthService.instance.setToken(data.access_token);
       setUser(data.user);
       
-      return true; // Báo thành công về View
+      return true;
     } catch (err) {
       setError(err.message || '❌Đăng nhập thất bại');
       return false;

@@ -1,30 +1,31 @@
-import { useState } from 'react'
-import './App.css'
 import { Routes, Route } from 'react-router-dom';
-import Header from './components/header/Header';
-import HomePage from './components/homePage/HomePage';
-import Register from './components/register/RegisterForm';
-import LogIn from './components/login/LoginForm';
-import ProductDetail from './components/Product/ProductDetail';
+import './App.css'
+import CustomerLayout from './layouts/CustomerLayout';
+import AdminLayout from './layouts/AdminLayout';
+import HomePage from './pages/customer/homePage/HomePage';
+import Register from './pages/customer/register/RegisterForm';
+import LogIn from './pages/customer/login/LoginForm';
+import ProductDetail from './pages/customer/Product/ProductDetail';
 
 function App() {
-  const [count, setCount] = useState(0)
   return (
-    <div>
-      <Header/>
-      <Routes>x
-        {/* HomePage */}
-        <Route path="/" element={<HomePage />} />
+    <Routes>
 
-        {/* Auth */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<LogIn />} />
-        
-        {/* Product */}
-        <Route path="/product/:id" element={<ProductDetail/>} />
-      </Routes>
-    </div>
-  )
+      {/*CUSTOMER */}
+      <Route path="/customer" element={<CustomerLayout />}>
+
+        <Route index element={<HomePage />} />
+        <Route path="register" element={<Register />} />
+        <Route path="login" element={<LogIn />} />
+        <Route path="product/:id" element={<ProductDetail />} />
+
+      </Route>
+
+      <Route path='/admin' element={<AdminLayout/>}>
+
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;
