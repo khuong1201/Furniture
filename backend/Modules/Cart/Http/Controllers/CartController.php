@@ -9,11 +9,9 @@ use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Cart\Services\CartService;
 use Modules\Cart\Http\Requests\AddToCartRequest;
 use Modules\Cart\Http\Requests\UpdateCartItemRequest;
-use Modules\Cart\Domain\Models\CartItem;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Cart", description: "API quản lý Giỏ hàng")]
-
 class CartController extends BaseController
 {
     public function __construct(CartService $service)
@@ -36,15 +34,15 @@ class CartController extends BaseController
 
     #[OA\Post(
         path: "/carts",
-        summary: "Thêm sản phẩm",
+        summary: "Thêm sản phẩm (Biến thể) vào giỏ",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ["product_uuid", "quantity"],
+                required: ["variant_uuid", "quantity"],
                 properties: [
-                    new OA\Property(property: "product_uuid", type: "string", format: "uuid"),
+                    new OA\Property(property: "variant_uuid", type: "string", format: "uuid"),
                     new OA\Property(property: "quantity", type: "integer", minimum: 1),
                 ]
             )
@@ -74,10 +72,9 @@ class CartController extends BaseController
         ),
         responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
-
     public function update(UpdateCartItemRequest $request, string $itemUuid): JsonResponse
     {
-        $cartItem = CartItem::where('uuid', $itemUuid)->firstOrFail();
+        $cartItem = $this->service->findCartItemOrFail($itemUuid);
 
         $this->authorize('update', $cartItem);
 
@@ -98,7 +95,7 @@ class CartController extends BaseController
     )]
     public function destroy(string $uuid): JsonResponse
     {
-        $cartItem = CartItem::where('uuid', $uuid)->firstOrFail();
+        $cartItem = $this->service->findCartItemOrFail($uuid);
 
         $this->authorize('delete', $cartItem);
         

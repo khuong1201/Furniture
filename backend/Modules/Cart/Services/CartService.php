@@ -4,38 +4,53 @@ namespace Modules\Cart\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Cart\Domain\Repositories\CartRepositoryInterface;
-use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Modules\Inventory\Domain\Models\Inventory;
 use Modules\Cart\Domain\Models\Cart;
 use Modules\Cart\Domain\Models\CartItem;
+use Modules\Product\Domain\Models\ProductVariant;
+use Modules\Product\Domain\Models\InventoryStock;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CartService extends BaseService
 {
-    public function __construct(
-        CartRepositoryInterface $repository,
-        protected ProductRepositoryInterface $productRepo
-    ) {
+    public function __construct(CartRepositoryInterface $repository)
+    {
         parent::__construct($repository);
     }
     
+    public function findCartItemOrFail(string $uuid): CartItem
+    {
+        $item = CartItem::where('uuid', $uuid)->first();
+
+        if (!$item) {
+            throw new ModelNotFoundException("Cart Item with UUID [{$uuid}] not found.");
+        }
+
+        return $item;
+    }
+
     public function getMyCart(int $userId)
     {
         $cart = $this->repository->findByUser($userId);
         
-        if (!$cart) return ['items' => [], 'total' => 0];
+        if (!$cart) return ['items' => [], 'total_amount' => 0, 'item_count' => 0];
 
         $totalAmount = 0;
         $cartItems = [];
 
         foreach ($cart->items as $item) {
-            $product = $item->product;
-            if (!$product) continue;
+            $variant = $item->variant;
             
-            $originalPrice = $product->price;
+            if (!$variant || !$variant->product) {
+                $item->delete(); 
+                continue; 
+            }
+            
+            $product = $variant->product;
+            $originalPrice = $variant->price; 
+
             $discountAmount = 0;
-            
             $activePromotions = $product->promotions->filter(function ($p) {
                 return $p->status && $p->start_date <= now() && $p->end_date >= now();
             });
@@ -56,24 +71,29 @@ class CartService extends BaseService
             $subtotal = $finalPrice * $item->quantity;
             $totalAmount += $subtotal;
 
-            $totalStock = Inventory::where('product_id', $product->id)->sum('stock_quantity');
+            $totalStock = InventoryStock::where('product_variant_id', $variant->id)->sum('quantity');
             
             $cartItems[] = [
                 'uuid' => $item->uuid,
                 'product' => [
-                    'uuid' => $product->uuid,
                     'name' => $product->name,
-                    'image' => $product->images->first()?->image_url,
-                    'sku' => $product->sku
+                    'sku' => $variant->sku,
+                    'image' => $variant->image_url ?? $product->images->first()?->image_url,
+                    'attributes' => $variant->attributeValues->map(function($val) {
+                        return [
+                            'name' => $val->attribute->name,
+                            'value' => $val->value
+                        ];
+                    })
                 ],
                 'quantity' => $item->quantity,
-                'stock_available' => $totalStock,
+                'stock_available' => (int)$totalStock,
                 'is_stock_sufficient' => $totalStock >= $item->quantity,
                 'price' => [
-                    'original' => $originalPrice,
-                    'discount' => $discountAmount,
-                    'final' => $finalPrice,
-                    'subtotal' => $subtotal
+                    'original' => (float)$originalPrice,
+                    'discount' => (float)$discountAmount,
+                    'final' => (float)$finalPrice,
+                    'subtotal' => (float)$subtotal
                 ]
             ];
         }
@@ -91,15 +111,16 @@ class CartService extends BaseService
         return DB::transaction(function () use ($userId, $data) {
             $cart = $this->repository->firstOrCreateByUser($userId);
             
-            $product = $this->productRepo->findByUuid($data['product_uuid']);
-            if (!$product) throw ValidationException::withMessages(['product_uuid' => 'Product not found']);
+            $variant = ProductVariant::where('uuid', $data['variant_uuid'])->first();
+            if (!$variant) throw ValidationException::withMessages(['variant_uuid' => 'Variant not found']);
 
-            $totalStock = Inventory::where('product_id', $product->id)->sum('stock_quantity');
+            $totalStock = InventoryStock::where('product_variant_id', $variant->id)->sum('quantity');
+            
             if ($totalStock < $data['quantity']) {
                 throw ValidationException::withMessages(['quantity' => 'Not enough stock available']);
             }
 
-            $cartItem = $cart->items()->where('product_id', $product->id)->first();
+            $cartItem = $cart->items()->where('product_variant_id', $variant->id)->first();
 
             if ($cartItem) {
                 $newQty = $cartItem->quantity + $data['quantity'];
@@ -109,8 +130,9 @@ class CartService extends BaseService
                 $cartItem->update(['quantity' => $newQty]);
             } else {
                 $cart->items()->create([
-                    'product_id' => $product->id,
-                    'quantity' => $data['quantity']
+                    'product_variant_id' => $variant->id,
+                    'quantity' => $data['quantity'],
+                    'price' => $variant->price
                 ]);
             }
 
@@ -123,7 +145,8 @@ class CartService extends BaseService
         if ($quantity <= 0) {
             $item->delete();
         } else {
-            $totalStock = Inventory::where('product_id', $item->product_id)->sum('stock_quantity');
+            $totalStock = InventoryStock::where('product_variant_id', $item->product_variant_id)->sum('quantity');
+            
             if ($totalStock < $quantity) {
                 throw ValidationException::withMessages(['quantity' => 'Not enough stock']);
             }

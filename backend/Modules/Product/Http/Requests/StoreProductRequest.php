@@ -1,31 +1,36 @@
-<?php
+<?php 
 
-namespace Modules\Product\Http\Requests;
+namespace Modules\Product\Http\Requests; 
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProductRequest extends FormRequest
-{
+class StoreProductRequest extends FormRequest {
+    
     public function authorize(): bool { return true; }
-
-    public function rules(): array
-    {
+    
+    public function rules(): array {
         return [
             'name' => 'required|string|max:150',
+            'category_uuid' => 'required|exists:categories,uuid',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'nullable|exists:categories,id',
-            'sku' => 'required|string|max:100|unique:products,sku',
-            'weight' => 'nullable|numeric|min:0',
-            'dimensions' => 'nullable|string|max:100',
-            'material' => 'nullable|string|max:100',
-            'color' => 'nullable|string|max:50',
-            'status' => 'boolean',
-            'warehouse_stock' => 'required|array|min:1',
-            'warehouse_stock.*.warehouse_id' => 'required|exists:warehouses,id',
-            'warehouse_stock.*.quantity' => 'required|integer|min:0',
+            'is_active' => 'boolean',
+            'has_variants' => 'boolean',
+
+            'price' => 'required_if:has_variants,false|numeric|min:0',
+            'sku' => 'required_if:has_variants,false|string|unique:products,sku|unique:product_variants,sku',
+            'warehouse_stock' => 'required_if:has_variants,false|array',
+            'warehouse_stock.*.warehouse_uuid' => 'exists:warehouses,uuid',
+            'warehouse_stock.*.quantity' => 'integer|min:0',
+
+            'variants' => 'required_if:has_variants,true|array',
+            'variants.*.sku' => 'required|string|distinct|unique:product_variants,sku',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.attributes' => 'required|array', 
+            'variants.*.attributes.*' => 'exists:attribute_values,uuid',
+            'variants.*.stock' => 'array',
+            'variants.*.stock.*.warehouse_uuid' => 'exists:warehouses,uuid',
+            'variants.*.stock.*.quantity' => 'integer|min:0',
             'images' => 'nullable|array',
-            'images.*' => 'file|image|max:5120',
         ];
     }
 }

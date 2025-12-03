@@ -6,17 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Modules\Product\Models\Product;
-use Modules\User\Domain\Models\User;
 use Modules\Shared\Traits\Loggable;
+use Modules\Inventory\Domain\Models\InventoryStock; 
 
 class Warehouse extends Model
 {
     use HasFactory, SoftDeletes, Loggable;
 
-    protected $fillable = [
-        'uuid', 'name', 'location', 'manager_id'
-    ];
+    protected $fillable = ['uuid', 'name', 'location', 'manager_id'];
 
     protected static function boot()
     {
@@ -24,25 +21,13 @@ class Warehouse extends Model
         static::creating(fn($model) => $model->uuid = (string) Str::uuid());
     }
 
-    public function manager()
+    public function stocks()
     {
-        return $this->belongsTo(User::class, 'manager_id');
-    }
-
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'warehouse_product')
-                    ->withPivot('quantity')
-                    ->withTimestamps();
+        return $this->hasMany(InventoryStock::class, 'warehouse_id');
     }
 
     public function getTotalItemsAttribute()
     {
-        return $this->products()->sum('quantity');
-    }
-
-    protected static function newFactory()
-    {
-        return \Modules\Warehouse\Database\factories\WarehouseFactory::new();
+        return $this->stocks()->sum('quantity');
     }
 }

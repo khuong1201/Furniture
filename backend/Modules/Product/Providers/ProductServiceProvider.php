@@ -15,6 +15,7 @@ use Modules\Product\Infrastructure\Repositories\EloquentProductImageRepository;
 use Modules\Product\Domain\Models\Product;
 use Modules\Product\Domain\Models\ProductImage;
 use Modules\Product\Policies\ProductPolicy;
+use Modules\Product\Policies\AttributePolicy;
 
 class ProductServiceProvider extends ServiceProvider
 {
@@ -24,13 +25,12 @@ class ProductServiceProvider extends ServiceProvider
 
     protected string $nameLower = 'product';
 
-    /**
-     * Boot the application events.
-     */
+
     public function boot(): void
     {
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductImage::class, ProductPolicy::class);
+        Gate::policy(Attribute::class, AttributePolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
@@ -44,6 +44,10 @@ class ProductServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(
+            \Modules\Product\Domain\Repositories\AttributeRepositoryInterface::class,
+            \Modules\Product\Infrastructure\Repositories\EloquentAttributeRepository::class
+        );
         $this->app->bind(ProductRepositoryInterface::class, EloquentProductRepository::class);
         $this->app->bind(ProductImageRepositoryInterface::class, EloquentProductImageRepository::class);
         $this->app->register(EventServiceProvider::class);

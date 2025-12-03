@@ -15,7 +15,11 @@ class EloquentOrderRepository extends EloquentBaseRepository implements OrderRep
 
     public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = $this->query()->with(['items.product', 'user']);
+        $query = $this->query()->with([
+            'items.variant.product.images',
+            'items.variant.attributeValues.attribute',
+            'user'
+        ]);
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);

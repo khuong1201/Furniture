@@ -1,20 +1,27 @@
 <?php
+
 namespace Modules\Inventory\Policies;
+
 use Modules\User\Domain\Models\User;
+use Modules\Inventory\Domain\Models\InventoryStock;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class InventoryPolicy {
+class InventoryPolicy
+{
     use HandlesAuthorization;
 
-    public function viewAny(User $user): bool {
+    public function viewAny(User $user): bool
+    {
         return $user->hasPermissionTo('inventory.view');
     }
 
-    public function view(User $user): bool {
+    public function view(User $user, InventoryStock $stock): bool
+    {
         return $user->hasPermissionTo('inventory.view');
     }
-    
-    public function adjust(User $user): bool {
-        return $user->hasPermissionTo('inventory.adjust');
+
+    public function create(User $user): bool 
+    {
+        return $user->hasPermissionTo('inventory.edit'); 
     }
 }

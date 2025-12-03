@@ -2,44 +2,45 @@
 
 namespace Modules\Product\Services;
 
-use Modules\Product\Domain\Models\Product;
+use Modules\Product\Domain\Models\ProductVariant;
+use Modules\Product\Domain\Models\InventoryStock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class StockService
 {
-    public function allocate(Product $product, int $qty)
+    public function allocate(string $variantUuid, int $qty)
     {
-        $warehouse = $product->warehouses()
-            ->wherePivot('quantity', '>=', $qty)
-            ->orderByPivot('quantity', 'desc') 
+        $variant = ProductVariant::where('uuid', $variantUuid)->firstOrFail();
+
+        $stock = InventoryStock::where('product_variant_id', $variant->id)
+            ->where('quantity', '>=', $qty)
+            ->orderBy('quantity', 'desc')
             ->first();
 
-        if (!$warehouse) {
+        if (!$stock) {
             throw ValidationException::withMessages([
-                'stock' => ["Sản phẩm {$product->name} không đủ hàng trong bất kỳ kho nào."]
+                'stock' => ["Sản phẩm (SKU: {$variant->sku}) không đủ hàng trong bất kỳ kho nào."]
             ]);
         }
 
-        $product->warehouses()->updateExistingPivot($warehouse->id, [
-            'quantity' => DB::raw("quantity - {$qty}")
-        ]);
+        $stock->decrement('quantity', $qty);
 
-        return $warehouse;
+        return $stock; 
     }
 
-    public function restore(Product $product, int $qty, ?int $warehouseId = null)
+    public function restore(string $variantUuid, int $qty, int $warehouseId)
     {
-        if (!$warehouseId) {
-            $warehouseId = $product->warehouses()->first()?->id;
-            
-            if (!$warehouseId) {
-                 throw new \RuntimeException("Không tìm thấy kho để hoàn tồn cho sản phẩm {$product->name}");
-            }
-        }
+        $variant = ProductVariant::where('uuid', $variantUuid)->firstOrFail();
 
-        $product->warehouses()->updateExistingPivot($warehouseId, [
-            'quantity' => DB::raw("quantity + {$qty}")
-        ]);
+        $stock = InventoryStock::where('product_variant_id', $variant->id)
+            ->where('warehouse_id', $warehouseId)
+            ->first();
+
+        if ($stock) {
+            $stock->increment('quantity', $qty);
+        } else {
+            throw new \RuntimeException("Không tìm thấy kho (ID: $warehouseId) để hoàn tồn cho SKU {$variant->sku}");
+        }
     }
 }

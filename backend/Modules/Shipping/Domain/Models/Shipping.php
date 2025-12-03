@@ -14,13 +14,20 @@ class Shipping extends Model
     use HasFactory, SoftDeletes, Loggable;
 
     protected $fillable = [
-        'uuid', 'order_id', 'provider', 'tracking_number', 
-        'status', 'shipped_at', 'delivered_at',
+        'uuid', 
+        'order_id', 
+        'provider', 
+        'tracking_number', 
+        'status', 
+        'fee',      
+        'shipped_at', 
+        'delivered_at',
     ];
 
     protected $casts = [
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'fee' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -36,6 +43,6 @@ class Shipping extends Model
 
     protected static function newFactory()
     {
-        return \Modules\Shipping\Database\factories\Shpi::new();
+        return \Modules\Shipping\Database\factories\ShippingFactory::new();
     }
 }

@@ -5,7 +5,7 @@ namespace Modules\Order\Domain\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Modules\Product\Domain\Models\Product;
+use Modules\Product\Domain\Models\ProductVariant;
 use Modules\Warehouse\Domain\Models\Warehouse;
 
 class OrderItem extends Model
@@ -13,8 +13,13 @@ class OrderItem extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'uuid', 'order_id', 'product_id', 'warehouse_id', 
-        'quantity', 'unit_price', 'subtotal', 'original_price', 'discount_amount'
+        'uuid', 'order_id', 'product_variant_id', 'warehouse_id', 
+        'quantity', 'unit_price', 'subtotal', 'original_price', 
+        'discount_amount', 'product_snapshot'
+    ];
+
+    protected $casts = [
+        'product_snapshot' => 'array'
     ];
 
     protected static function boot()
@@ -23,9 +28,10 @@ class OrderItem extends Model
         static::creating(fn($model) => $model->uuid = (string) Str::uuid());
     }
 
-    public function product()
+    // Relationship đổi sang Variant
+    public function variant()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
     public function warehouse()

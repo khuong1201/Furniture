@@ -13,107 +13,108 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-        DB::table('permission_role')->truncate();
-        DB::table('permissions')->truncate();
-        DB::table('roles')->truncate();
+        
+        $tables = ['permission_role', 'role_has_permissions', 'role_user', 'model_has_roles', 'permissions', 'roles'];
+        foreach ($tables as $table) {
+            if (Schema::hasTable($table)) DB::table($table)->truncate();
+        }
+
         Schema::enableForeignKeyConstraints();
 
         DB::transaction(function () {
             $permissionsByModule = [
-                'System' => [
-                    'dashboard.view', 
-                    'log.view',       
-                    'setting.view',    
-                    'setting.edit',     
+                'System & Dashboard' => [
+                    'dashboard.view',  
+                    'log.view',        
+                    'setting.view',     
+                    'setting.edit',   
                 ],
                 'User & Auth' => [
-                    'user.view',    
-                    'user.create',      
-                    'user.edit',     
-                    'user.delete',     
-                    'role.view',       
-                    'role.create',      'role.edit', 'role.delete',
+                    'user.view', 'user.create', 'user.edit', 'user.delete',
+                    'role.view', 'role.create', 'role.edit', 'role.delete',
                 ],
                 'Catalog (Sản phẩm)' => [
-                    'product.view',     
-                    'product.create',   'product.edit', 'product.delete',
-                    'category.create',  'category.edit', 'category.delete',
-                    'collection.create','collection.edit','collection.delete', 
+                    'product.view',  
+                    'product.create',   
+                    'product.edit',    
+                    'product.delete',   
+                    
+                    'category.create', 'category.edit', 'category.delete', 
+                    
+                    'attribute.view',   
+                    'attribute.create', 
+                    'attribute.edit', 
+                    'attribute.delete',
+                    
+                    'collection.create', 'collection.edit', 'collection.delete',
                 ],
                 'Sales (Bán hàng)' => [
-                    'order.view',   
-                    'order.edit',      
+                    'order.view',      
+                    'order.edit',       
                     'order.cancel',    
-                    'payment.view', 
-                    'payment.edit',    
-                    'shipping.view',    'shipping.create', 'shipping.edit', 
+                    
+                    'payment.view',    
+                    'payment.edit',  
+                    
+                    'shipping.view',   
+                    'shipping.create', 
+                    'shipping.edit',  
                 ],
                 'Marketing' => [
-                    'promotion.view',   'promotion.create', 'promotion.edit', 'promotion.delete',
-                    'review.edit',      
+                    'promotion.view', 'promotion.create', 'promotion.edit', 'promotion.delete',
+                    'review.edit',     
                     'review.delete',    
                 ],
                 'Inventory (Kho)' => [
                     'warehouse.view',   'warehouse.create', 'warehouse.edit', 'warehouse.delete',
-                    'inventory.view',   
+                    'inventory.view',  
                     'inventory.adjust',
+                    'inventory.edit',   
                 ],
-
             ];
 
             $allPermissions = [];
             foreach ($permissionsByModule as $module => $perms) {
                 foreach ($perms as $permName) {
+
+                    $moduleKey = explode('.', $permName)[0];
+                    
                     $permission = Permission::create([
                         'name' => $permName,
-                        'description' => "Quyền $permName thuộc module $module",
-                        'module' => explode('.', $permName)[0] 
+                        'description' => "Quyền $permName ($module)",
+                        'module' => $moduleKey
                     ]);
                     $allPermissions[] = $permission;
                 }
             }
 
-            $adminRole = Role::create([
-                'name' => 'admin',
-                'description' => 'Quản trị viên cấp cao (Super Admin)',
-                'is_system' => true
-            ]);
-
-            $managerRole = Role::create([
-                'name' => 'manager',
-                'description' => 'Quản lý cửa hàng (Không can thiệp hệ thống)',
-                'is_system' => false
-            ]);
-
-            $staffRole = Role::create([
-                'name' => 'staff',
-                'description' => 'Nhân viên vận hành (Sales/Kho)',
-                'is_system' => false
-            ]);
-
-            $customerRole = Role::create([
-                'name' => 'customer',
-                'description' => 'Khách hàng mua sắm',
-                'is_system' => true
-            ]);
+            $adminRole = Role::create(['name' => 'admin', 'is_system' => true, 'description' => 'Super Admin']);
+            $managerRole = Role::create(['name' => 'manager', 'is_system' => false, 'description' => 'Store Manager']);
+            $staffRole = Role::create(['name' => 'staff', 'is_system' => false, 'description' => 'Operational Staff']);
+            $customerRole = Role::create(['name' => 'customer', 'is_system' => true, 'description' => 'End User']);
 
             $adminRole->permissions()->sync(collect($allPermissions)->pluck('id'));
 
             $managerPermissions = collect($allPermissions)->filter(function ($perm) {
-                return !in_array($perm->module, ['log', 'setting', 'role', 'permission']);
+
+                return !in_array($perm->module, ['log', 'role', 'setting']);
             });
             $managerRole->permissions()->sync($managerPermissions->pluck('id'));
 
             $staffPermissions = collect($allPermissions)->filter(function ($perm) {
-                $allowModules = ['order', 'product', 'inventory', 'shipping'];
+
+                $allowModules = ['order', 'product', 'inventory', 'shipping', 'attribute', 'collection', 'category', 'promotion'];
+
                 $isSafeAction = !str_contains($perm->name, 'delete');
                 
                 return in_array($perm->module, $allowModules) && $isSafeAction;
             });
-            $warehouseView = Permission::where('name', 'warehouse.view')->first();
-            if ($warehouseView) $staffPermissions->push($warehouseView);
+
+            $dashboardView = Permission::where('name', 'dashboard.view')->first();
+            if ($dashboardView) $staffPermissions->push($dashboardView);
 
             $staffRole->permissions()->sync($staffPermissions->pluck('id'));
+
         });
     }
 }

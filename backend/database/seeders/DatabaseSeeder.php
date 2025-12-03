@@ -4,18 +4,20 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema; // <--- ĐÃ THÊM DÒNG NAY (Quan trọng)
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Modules\Role\database\seeders\RolePermissionSeeder;
 
-// Import Models từ Modules
 use Modules\User\Domain\Models\User;
 use Modules\Role\Domain\Models\Role;
 use Modules\Category\Domain\Models\Category;
 use Modules\Product\Domain\Models\Product;
+use Modules\Product\Domain\Models\ProductVariant; 
+use Modules\Product\Domain\Models\Attribute;
+use Modules\Product\Domain\Models\AttributeValue;
 use Modules\Product\Domain\Models\ProductImage;
 use Modules\Warehouse\Domain\Models\Warehouse;
-use Modules\Inventory\Domain\Models\Inventory;
+use Modules\Inventory\Domain\Models\InventoryStock; 
 use Modules\Address\Domain\Models\Address;
 use Modules\Collection\Domain\Models\Collection;
 
@@ -23,21 +25,20 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Dọn dẹp dữ liệu cũ (Reset Database)
-        // Tắt check khóa ngoại để truncate được các bảng có quan hệ
+        // 1. Dọn dẹp DB
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         
         $tables = [
             'users', 'roles', 'permissions', 'model_has_roles', 'permission_role',
-            'categories', 'products', 'product_images', 
-            'warehouses', 'inventories', 
+            'categories', 'products', 'product_variants', 'product_images', 
+            'attributes', 'attribute_values', 'variant_attribute_values',
+            'warehouses', 'inventory_stocks', 
             'orders', 'order_items', 'carts', 'cart_items', 
-            'addresses', 'collections', 'collection_product'
+            'addresses', 'collections', 'collection_product', 'shippings', 'payments'
         ];
 
         foreach ($tables as $table) {
-            // Kiểm tra bảng tồn tại trước khi truncate
-            if (Schema::hasTable($table)) { // <--- Đã sửa: Dùng Schema Facade đã import
+            if (Schema::hasTable($table)) {
                 DB::table($table)->truncate();
             }
         }
@@ -46,148 +47,100 @@ class DatabaseSeeder extends Seeder
 
         echo "🚀 Starting System Seeding...\n";
 
-        // 2. Roles & Permissions (Quan trọng nhất - Phải chạy trước)
         $this->call(RolePermissionSeeder::class);
 
-        // 3. Tạo Admin System
-        echo "👤 Creating Admin & Users...\n";
         $admin = User::create([
-            'uuid' => Str::uuid(),
-            'name' => 'Super Admin',
-            'email' => 'admin@system.com',
-            'password' => bcrypt('123456'),
-            'email_verified_at' => now(),
-            'is_active' => true
+            'uuid' => Str::uuid(), 'name' => 'Super Admin', 'email' => 'admin@system.com',
+            'password' => bcrypt('123456'), 'is_active' => true
         ]);
-        
-        // Gán Role Admin
         $adminRole = Role::where('name', 'admin')->first();
-        if ($adminRole) {
-            // Lưu ý: Nếu dùng package spatie/laravel-permission thì dùng $admin->assignRole('admin');
-            // Nếu dùng quan hệ M-M tự viết:
-            $admin->roles()->sync([$adminRole->id]);
+        if ($adminRole) $admin->roles()->sync([$adminRole->id]);
+
+        $customer = User::create([
+            'uuid' => Str::uuid(), 'name' => 'Test Customer', 'email' => 'customer@test.com',
+            'password' => bcrypt('123456'), 'is_active' => true
+        ]);
+        $customerRole = Role::where('name', 'customer')->first();
+        if ($customerRole) $customer->roles()->sync([$customerRole->id]);
+
+        // Address
+        if (Schema::hasTable('addresses')) {
+            Address::create(['uuid' => Str::uuid(), 'user_id' => $customer->id, 'full_name' => 'Khách Hàng A', 'phone' => '0909123456', 'province' => 'Hà Nội', 'district' => 'Cầu Giấy', 'ward' => 'Dịch Vọng', 'street' => '123 Xuân Thủy', 'is_default' => true]);
         }
 
-        // 4. Tạo Khách hàng mẫu
-        $customer = User::create([
+        // 4. Warehouse
+        echo "🏭 Creating Warehouses...\n";
+        $whHN = Warehouse::create(['uuid' => Str::uuid(), 'name' => 'Kho Hà Nội', 'location' => 'Hà Nội', 'manager_id' => $admin->id]);
+        $whHCM = Warehouse::create(['uuid' => Str::uuid(), 'name' => 'Kho HCM', 'location' => 'Hồ Chí Minh', 'manager_id' => $admin->id]);
+
+        // 5. Categories
+        echo "📂 Creating Categories...\n";
+        $catFashion = Category::create(['uuid' => Str::uuid(), 'name' => 'Thời trang', 'slug' => 'thoi-trang']);
+        $catElec = Category::create(['uuid' => Str::uuid(), 'name' => 'Điện tử', 'slug' => 'dien-tu']);
+
+        // 6. Attributes (Mới)
+        echo "🎨 Creating Attributes...\n";
+        $attrColor = Attribute::create(['uuid' => Str::uuid(), 'name' => 'Màu sắc', 'slug' => 'color', 'type' => 'color']);
+        $valRed = $attrColor->values()->create(['uuid' => Str::uuid(), 'value' => 'Đỏ', 'code' => '#FF0000']);
+        $valBlue = $attrColor->values()->create(['uuid' => Str::uuid(), 'value' => 'Xanh', 'code' => '#0000FF']);
+
+        $attrSize = Attribute::create(['uuid' => Str::uuid(), 'name' => 'Kích thước', 'slug' => 'size', 'type' => 'select']);
+        $valS = $attrSize->values()->create(['uuid' => Str::uuid(), 'value' => 'S']);
+        $valM = $attrSize->values()->create(['uuid' => Str::uuid(), 'value' => 'M']);
+
+        echo "📦 Creating Products & Inventory...\n";
+
+        $tshirt = Product::create([
             'uuid' => Str::uuid(),
-            'name' => 'Test Customer',
-            'email' => 'customer@test.com',
-            'password' => bcrypt('123456'),
-            'email_verified_at' => now(),
+            'name' => 'Áo Thun Basic',
+            'category_id' => $catFashion->id,
+            'has_variants' => true, 
             'is_active' => true
         ]);
-        
-        $customerRole = Role::where('name', 'customer')->first();
-        if ($customerRole) {
-            $customer->roles()->sync([$customerRole->id]);
-        }
 
-        // 5. Tạo địa chỉ cho khách
-        if (Schema::hasTable('addresses')) {
-            Address::create([
-                'uuid' => Str::uuid(),
-                'user_id' => $customer->id,
-                'full_name' => 'Khách Hàng A',
-                'phone' => '0909123456',
-                'province' => 'Hà Nội',
-                'district' => 'Cầu Giấy',
-                'ward' => 'Dịch Vọng',
-                'street' => '123 Xuân Thủy',
-                'is_default' => true
-            ]);
-        }
+        $var1 = ProductVariant::create([
+            'uuid' => Str::uuid(), 'product_id' => $tshirt->id,
+            'sku' => 'TSHIRT-RED-S', 'price' => 100000, 'weight' => 0.2
+        ]);
+        $var1->attributeValues()->sync([$valRed->id, $valS->id]);
+        InventoryStock::create(['uuid' => Str::uuid(), 'warehouse_id' => $whHN->id, 'product_variant_id' => $var1->id, 'quantity' => 50, 'min_threshold' => 5]);
+        $var2 = ProductVariant::create([
+            'uuid' => Str::uuid(), 'product_id' => $tshirt->id,
+            'sku' => 'TSHIRT-BLUE-M', 'price' => 120000, 'weight' => 0.25
+        ]);
+        $var2->attributeValues()->sync([$valBlue->id, $valM->id]);
+        InventoryStock::create(['uuid' => Str::uuid(), 'warehouse_id' => $whHN->id, 'product_variant_id' => $var2->id, 'quantity' => 30, 'min_threshold' => 5]);
 
-        // 6. Tạo Kho hàng
-        echo "🏭 Creating Warehouses...\n";
-        if (Schema::hasTable('warehouses')) {
-            $whHN = Warehouse::create([
-                'uuid' => Str::uuid(), 
-                'name' => 'Kho Trung Tâm Hà Nội', 
-                'location' => 'Hà Nội',
-                'manager_id' => $admin->id
-            ]);
-            
-            $whHCM = Warehouse::create([
-                'uuid' => Str::uuid(), 
-                'name' => 'Kho Hồ Chí Minh', 
-                'location' => 'Hồ Chí Minh',
-                'manager_id' => $admin->id
-            ]);
-        }
 
-        // 7. Tạo Danh mục
-        echo "📂 Creating Categories...\n";
-        $catPhone = Category::create([
-            'uuid' => Str::uuid(), 
-            'name' => 'Điện thoại', 
-            'slug' => 'dien-thoai',
-            'description' => 'Smartphone chính hãng'
+        $iphone = Product::create([
+            'uuid' => Str::uuid(),
+            'name' => 'iPhone 15 Pro Max',
+            'category_id' => $catElec->id,
+            'has_variants' => false,
+            'price' => 30000000, 
+            'sku' => 'IP15PM',
+            'is_active' => true
+        ]);
+        $iphoneVar = ProductVariant::create([
+            'uuid' => Str::uuid(), 'product_id' => $iphone->id,
+            'sku' => 'IP15PM', 'price' => 30000000, 'weight' => 0.5
         ]);
         
-        $catLaptop = Category::create([
-            'uuid' => Str::uuid(), 
-            'name' => 'Laptop', 
-            'slug' => 'laptop',
-            'description' => 'Laptop văn phòng & Gaming'
+        InventoryStock::create([
+            'uuid' => Str::uuid(),
+            'warehouse_id' => $whHN->id,
+            'product_variant_id' => $iphoneVar->id,
+            'quantity' => 10,
+            'min_threshold' => 2
         ]);
 
-        // 8. Tạo Collection
-        echo "🔥 Creating Collections...\n";
         if (Schema::hasTable('collections')) {
-            $colFlashSale = Collection::create([
-                'uuid' => Str::uuid(),
-                'name' => 'Flash Sale Tháng 12',
-                'slug' => 'flash-sale-dec',
-                'is_active' => true
-            ]);
-        }
-
-        // 9. Tạo Sản phẩm & Nhập kho
-        echo "📦 Creating Products & Inventory...\n";
-        
-        for ($i = 1; $i <= 10; $i++) {
-            $isPhone = $i <= 5;
-            $product = Product::create([
-                'uuid' => Str::uuid(),
-                'name' => $isPhone ? "iPhone 15 Pro Max V$i" : "Macbook Pro M3 V$i",
-                'description' => "Mô tả chi tiết cho sản phẩm $i...",
-                'price' => rand(1000, 3000) * 1000, 
-                'category_id' => $isPhone ? $catPhone->id : $catLaptop->id,
-                'sku' => "SP-00$i",
-                'status' => true 
-            ]);
-
-            // Tạo ảnh
-            ProductImage::create([
-                'uuid' => Str::uuid(), 
-                'product_id' => $product->id, 
-                'image_url' => 'https://via.placeholder.com/400x400.png?text=Product+' . $i, 
-                'is_primary' => true
-            ]);
-
-            // Nhập kho HN (Nếu bảng tồn tại)
-            if (isset($whHN) && Schema::hasTable('inventories')) {
-                Inventory::create([
-                    'uuid' => Str::uuid(),
-                    'product_id' => $product->id,
-                    'warehouse_id' => $whHN->id,
-                    'stock_quantity' => 50, 
-                    'min_threshold' => 5,  
-                    'status' => 'in_stock'
-                ]);
-            }
-
-            // Gán vào Collection (Nếu có)
-            if ($i <= 3 && isset($colFlashSale)) {
-                $colFlashSale->products()->attach($product->id);
-            }
+            $colFlashSale = Collection::create(['uuid' => Str::uuid(), 'name' => 'Flash Sale', 'slug' => 'flash-sale', 'is_active' => true]);
+            $colFlashSale->products()->attach($tshirt->id);
         }
 
         echo "✅ SEEDING COMPLETE! \n";
-        echo "------------------------------------------------\n";
-        echo "Admin:    admin@system.com / 123456 \n";
+        echo "Admin: admin@system.com / 123456 \n";
         echo "Customer: customer@test.com / 123456 \n";
-        echo "------------------------------------------------\n";
     }
 }

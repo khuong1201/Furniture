@@ -3,112 +3,75 @@
 namespace Modules\Inventory\Services;
 
 use Modules\Shared\Services\BaseService;
+use Modules\Inventory\Domain\Repositories\InventoryRepositoryInterface;
+use Modules\Product\Domain\Models\ProductVariant;
+use Modules\Warehouse\Domain\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Modules\Inventory\Domain\Repositories\InventoryRepositoryInterface;
-use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Modules\Warehouse\Domain\Repositories\WarehouseRepositoryInterface; 
+use Illuminate\Database\Eloquent\Model;
 
 class InventoryService extends BaseService
 {
-    public function __construct(
-        InventoryRepositoryInterface $repository,
-        protected ProductRepositoryInterface $productRepo,
-        protected WarehouseRepositoryInterface $warehouseRepo
-    ) {
+    public function __construct(InventoryRepositoryInterface $repository)
+    {
         parent::__construct($repository);
     }
 
-    public function upsert(array $data)
+    public function adjust(string $variantUuid, string $warehouseUuid, int $delta, string $reason = 'manual'): Model
     {
-        return DB::transaction(function () use ($data) {
-            $productId = $data['product_id'] ?? null;
-            $warehouseId = $data['warehouse_id'] ?? null;
+        return DB::transaction(function () use ($variantUuid, $warehouseUuid, $delta) {
+            $variant = ProductVariant::where('uuid', $variantUuid)->firstOrFail();
+            $warehouse = Warehouse::where('uuid', $warehouseUuid)->firstOrFail();
 
-            if (isset($data['product_uuid'])) {
-                $product = $this->productRepo->findByUuid($data['product_uuid']);
-                if (!$product) throw ValidationException::withMessages(['product_uuid' => 'Invalid product']);
-                $productId = $product->id;
-            }
+            $stock = $this->repository->findByVariantAndWarehouse($variant->id, $warehouse->id, lock: true);
 
-            if (isset($data['warehouse_uuid'])) {
-                $warehouse = $this->warehouseRepo->findByUuid($data['warehouse_uuid']);
-                if (!$warehouse) throw ValidationException::withMessages(['warehouse_uuid' => 'Invalid warehouse']);
-                $warehouseId = $warehouse->id;
-            }
-
-            if (!$productId || !$warehouseId) {
-                throw ValidationException::withMessages(['inventory' => 'Product and Warehouse identification required']);
-            }
-
-            $inv = $this->repository->findByProductAndWarehouse($productId, $warehouseId, true);
-            
-            $quantity = $data['quantity'] ?? ($inv?->stock_quantity ?? 0);
-            $minThreshold = $data['min_threshold'] ?? ($inv?->min_threshold ?? 0);
-            
-            $status = $this->calcStatus($quantity, $minThreshold);
-            
-            $payload = [
-                'product_id' => $productId,
-                'warehouse_id' => $warehouseId,
-                'stock_quantity' => $quantity,
-                'min_threshold' => $minThreshold,
-                'status' => $status
-            ];
-
-            if ($inv) {
-                return $this->repository->update($inv, $payload);
-            }
-
-            return $this->repository->create($payload);
-        });
-    }
-
-    public function adjustStockByUuid(string $productUuid, string $warehouseUuid, int $delta)
-    {
-        $product = $this->productRepo->findByUuid($productUuid);
-        if (!$product) throw ValidationException::withMessages(['product_uuid' => 'Product not found']);
-
-        $warehouse = $this->warehouseRepo->findByUuid($warehouseUuid);
-        if (!$warehouse) throw ValidationException::withMessages(['warehouse_uuid' => 'Warehouse not found']);
-
-        return $this->adjustStock($product->id, $warehouse->id, $delta);
-    }
-
-    public function adjustStock(int $productId, int $warehouseId, int $delta)
-    {
-        return DB::transaction(function () use ($productId, $warehouseId, $delta) {
-            $inv = $this->repository->findByProductAndWarehouse($productId, $warehouseId, lock: true);
-
-            if (!$inv) {
-                if ($delta < 0) throw ValidationException::withMessages(['stock' => 'Inventory not found for deduction']);
-                
-                return $this->upsert([
-                    'product_id' => $productId,
-                    'warehouse_id' => $warehouseId,
-                    'quantity' => $delta
+            if (!$stock) {
+                if ($delta < 0) {
+                    throw ValidationException::withMessages(['quantity' => 'Kho chưa có sản phẩm này để xuất.']);
+                }
+                $stock = $this->repository->create([
+                    'product_variant_id' => $variant->id,
+                    'warehouse_id' => $warehouse->id,
+                    'quantity' => 0
                 ]);
             }
 
-            $newQty = $inv->stock_quantity + $delta;
+            $newQty = $stock->quantity + $delta;
 
             if ($newQty < 0) {
-                throw ValidationException::withMessages(['stock' => "Insufficient stock. Current: {$inv->stock_quantity}, Requested deduction: " . abs($delta)]);
+                throw ValidationException::withMessages([
+                    'quantity' => "Tồn kho không đủ để xuất. Hiện tại: {$stock->quantity}, Yêu cầu trừ: " . abs($delta)
+                ]);
             }
 
-            $status = $this->calcStatus($newQty, $inv->min_threshold);
+            $this->repository->update($stock->id, ['quantity' => $newQty]);
 
-            return $this->repository->update($inv, [
-                'stock_quantity' => $newQty,
-                'status' => $status,
-            ]);
+            return $stock->load(['variant.product', 'warehouse']);
         });
     }
 
-    protected function calcStatus(int $quantity, int $minThreshold): string
+    public function upsert(array $data): Model
     {
-        if ($quantity <= 0) return 'out_of_stock';
-        if ($quantity <= $minThreshold) return 'low_stock';
-        return 'in_stock';
+        return DB::transaction(function () use ($data) {
+            $variant = ProductVariant::where('uuid', $data['variant_uuid'])->firstOrFail();
+            $warehouse = Warehouse::where('uuid', $data['warehouse_uuid'])->firstOrFail();
+
+            $stock = $this->repository->findByVariantAndWarehouse($variant->id, $warehouse->id);
+
+            $payload = [
+                'quantity' => $data['quantity'],
+                'min_threshold' => $data['min_threshold'] ?? ($stock->min_threshold ?? 0),
+            ];
+
+            if ($stock) {
+                $this->repository->update($stock->id, $payload);
+            } else {
+                $payload['product_variant_id'] = $variant->id;
+                $payload['warehouse_id'] = $warehouse->id;
+                $stock = $this->repository->create($payload);
+            }
+
+            return $stock->load(['variant', 'warehouse']);
+        });
     }
 }

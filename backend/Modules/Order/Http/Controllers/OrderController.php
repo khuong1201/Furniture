@@ -8,13 +8,10 @@ use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Order\Services\OrderService;
 use Modules\Order\Http\Requests\CreateOrderRequest;
+use Modules\Order\Domain\Models\Order;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(
-    name: "Orders",
-    description: "API quản lý Đơn hàng"
-)]
-
+#[OA\Tag(name: "Orders", description: "API quản lý Đơn hàng")]
 class OrderController extends BaseController
 {
     public function __construct(OrderService $service)
@@ -36,7 +33,7 @@ class OrderController extends BaseController
     )]
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', \Modules\Order\Domain\Models\Order::class);
+        $this->authorize('viewAny', Order::class);
 
         $filters = $request->all();
         $user = $request->user();
@@ -60,21 +57,25 @@ class OrderController extends BaseController
                 required: ["address_id", "items"],
                 properties: [
                     new OA\Property(property: "address_id", type: "integer"),
-                    new OA\Property(property: "items", type: "array", items: new OA\Items(type: "object")),
+                    new OA\Property(property: "items", type: "array", items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: "variant_uuid", type: "string", format: "uuid"),
+                            new OA\Property(property: "quantity", type: "integer")
+                        ]
+                    )),
                 ]
             )
         ),
         responses: [ new OA\Response(response: 201, description: "Created") ]
     )]
-
     public function store(CreateOrderRequest $request): JsonResponse
     {
         $data = $request->validated();
-        
+
         if (!isset($data['user_id'])) {
             $data['user_id'] = $request->user()->id;
         }
-
+        
         $order = $this->service->create($data);
         return response()->json(ApiResponse::success($order, 'Order created successfully', 201), 201);
     }
@@ -102,8 +103,6 @@ class OrderController extends BaseController
             'address_id' => 'required|exists:addresses,id',
             'notes' => 'nullable|string'
         ]);
-        
-        $validated['user_id'] = $request->user()->id;
 
         $order = $this->service->createFromCart($validated);
         
@@ -118,10 +117,7 @@ class OrderController extends BaseController
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [
-            new OA\Response(response: 200, description: "Success"),
-            new OA\Response(response: 403, description: "Forbidden")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
     public function show(string $uuid): JsonResponse
     {
@@ -129,7 +125,8 @@ class OrderController extends BaseController
         
         $this->authorize('view', $order);
 
-        $order->load(['items.product', 'items.warehouse', 'shipping']);
+        $order->load(['items.variant.product.images', 'items.variant.attributeValues.attribute']);
+        
         return response()->json(ApiResponse::success($order));
     }
 

@@ -4,7 +4,7 @@ namespace Modules\Inventory\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpsertInventoryRequest extends FormRequest
+class AdjustInventoryRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
@@ -13,8 +13,8 @@ class UpsertInventoryRequest extends FormRequest
         return [
             'variant_uuid' => 'required|exists:product_variants,uuid',
             'warehouse_uuid' => 'required|exists:warehouses,uuid',
-            'quantity' => 'required|integer|min:0',
-            'min_threshold' => 'nullable|integer|min:0',
+            'quantity' => 'required|integer|not_in:0', 
+            'reason' => 'nullable|string|max:255',
         ];
     }
 }

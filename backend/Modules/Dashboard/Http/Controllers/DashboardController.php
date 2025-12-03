@@ -4,14 +4,14 @@ namespace Modules\Dashboard\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Modules\Shared\Http\Controllers\BaseController; // Kế thừa BaseController cho đồng bộ
+use Illuminate\Routing\Controller;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Dashboard\Services\DashboardService;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Dashboard", description: "Báo cáo thống kê hệ thống (Admin Only)")]
 
-class DashboardController extends BaseController
+class DashboardController extends Controller
 {
     public function __construct(protected DashboardService $dashboardService)
     {
@@ -31,12 +31,12 @@ class DashboardController extends BaseController
     )]
     public function summary(Request $request): JsonResponse
     {
-        // Check permission thủ công
         if (!$request->user()->hasPermissionTo('dashboard.view')) {
             return response()->json(ApiResponse::error('Forbidden', 403), 403);
         }
 
         $data = $this->dashboardService->getSummaryStats();
+        
         return response()->json(ApiResponse::success($data));
     }
 

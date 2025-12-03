@@ -5,6 +5,7 @@ namespace Modules\Shipping\Services;
 use Modules\Shared\Services\BaseService;
 use Modules\Shipping\Domain\Repositories\ShippingRepositoryInterface;
 use Modules\Order\Domain\Repositories\OrderRepositoryInterface;
+use Modules\Order\Domain\Models\Order;
 use Modules\Shipping\Events\ShippingStatusUpdated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,21 +23,19 @@ class ShippingService extends BaseService
     public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {
-
             $order = $this->orderRepo->findByUuid($data['order_uuid']);
-            
             if (!$order) throw ValidationException::withMessages(['order_uuid' => 'Order not found']);
 
             if (in_array($order->status, ['cancelled', 'delivered'])) {
                 throw ValidationException::withMessages(['order_uuid' => 'Cannot ship a cancelled or delivered order']);
             }
-
             $shippingData = [
                 'order_id' => $order->id,
                 'provider' => $data['provider'],
                 'tracking_number' => $data['tracking_number'],
-                'status' => 'shipped', 
+                'status' => 'shipped',
                 'shipped_at' => now(),
+                'fee' => $data['fee'] ?? $this->calculateShippingFee($order), 
             ];
 
             $shipping = $this->repository->create($shippingData);
@@ -57,11 +56,9 @@ class ShippingService extends BaseService
     public function update(string $uuid, array $data): Model
     {
         return DB::transaction(function () use ($uuid, $data) {
-            $shipping = $this->repository->findByUuid($uuid);
-            
-            if (!$shipping) throw ValidationException::withMessages(['uuid' => 'Shipping not found']);
-
+            $shipping = $this->findByUuidOrFail($uuid);
             $oldStatus = $shipping->status;
+
             $shipping->update($data);
 
             if (isset($data['status']) && $data['status'] !== $oldStatus) {
@@ -74,15 +71,38 @@ class ShippingService extends BaseService
                         $order->update([
                             'status' => 'delivered',
                             'shipping_status' => 'delivered',
-                            'payment_status' => 'paid' 
                         ]);
                     }
                 } 
+                elseif ($data['status'] === 'returned') {
+                    if ($order) {
+                        $order->update(['status' => 'cancelled', 'shipping_status' => 'returned']);
+                    }
+                }
 
                 event(new ShippingStatusUpdated($shipping));
             }
 
             return $shipping;
         });
+    }
+
+    public function calculateShippingFee(Order $order): float
+    {
+        $totalWeight = 0; // Gram
+
+        foreach ($order->items as $item) {
+            $variant = $item->variant; 
+            
+            if ($variant) {
+                $weight = $variant->weight > 0 ? $variant->weight : 500; 
+                $totalWeight += ($weight * $item->quantity);
+            }
+        }
+
+        if ($totalWeight <= 2000) return 30000;
+        
+        $extraKg = ceil(($totalWeight - 2000) / 1000);
+        return 30000 + ($extraKg * 5000);
     }
 }

@@ -19,13 +19,16 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('cart_id')->constrained('carts')->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            
+            $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
             
             $table->integer('quantity')->default(1);
+
+            $table->decimal('price', 12, 2)->default(0); 
             
             $table->timestamps();
-            
-            $table->unique(['cart_id', 'product_id']); 
+
+            $table->unique(['cart_id', 'product_variant_id']); 
         });
     }
 

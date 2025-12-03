@@ -7,7 +7,7 @@ use Modules\Auth\Http\Middleware\JwtAuthenticate;
 Route::middleware(['api', JwtAuthenticate::class])->prefix('carts')->group(function() {
     Route::get('/', [CartController::class, 'index']);   
     Route::post('/', [CartController::class, 'store']);   
-    Route::put('/{uuid}', [CartController::class, 'update']);
+    Route::put('/{itemUuid}', [CartController::class, 'update']);
     Route::delete('/{uuid}', [CartController::class, 'destroy']); 
     Route::delete('/', [CartController::class, 'clear']); 
 });

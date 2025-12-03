@@ -6,12 +6,10 @@ use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
 Route::prefix('public/collections')->group(function () {
     Route::get('/', [CollectionController::class, 'index']);
-
     Route::get('/{uuid}', [CollectionController::class, 'show']);
 });
 
 Route::middleware(['api', JwtAuthenticate::class])->prefix('admin/collections')->group(function () {
-    
     Route::post('/', [CollectionController::class, 'store'])
         ->middleware('permission:collection.create');
 

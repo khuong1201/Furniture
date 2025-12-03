@@ -6,28 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('shippings', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
+            
+            $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
+            
             $table->string('provider');
-            $table->string('tracking_number')->unique();
-            $table->enum('status', ['pending', 'shipped', 'delivered', 'cancelled'])->default('pending');
+            $table->string('tracking_number')->unique(); 
+
+            $table->enum('status', ['pending', 'shipped', 'delivered', 'returned', 'cancelled'])->default('pending');
+
+            $table->decimal('fee', 12, 2)->default(0); 
+            
             $table->timestamp('shipped_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
+            
             $table->softDeletes();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('shippings');

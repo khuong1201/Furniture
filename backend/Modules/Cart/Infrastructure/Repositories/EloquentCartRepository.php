@@ -15,9 +15,13 @@ class EloquentCartRepository extends EloquentBaseRepository implements CartRepos
 
     public function findByUser(int $userId): ?Cart
     {
-        return $this->model->with(['items.product.images', 'items.product.promotions'])
-                    ->where('user_id', $userId)
-                    ->first();
+        return $this->model->with([
+            'items.variant.product.images',     
+            'items.variant.attributeValues.attribute', 
+            'items.variant.stock'               
+        ])
+        ->where('user_id', $userId)
+        ->first();
     }
 
     public function firstOrCreateByUser(int $userId): Cart

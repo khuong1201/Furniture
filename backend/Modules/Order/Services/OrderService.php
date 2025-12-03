@@ -4,11 +4,11 @@ namespace Modules\Order\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Order\Domain\Repositories\OrderRepositoryInterface;
-use Modules\Inventory\Services\InventoryService;
-use Modules\Inventory\Domain\Repositories\InventoryRepositoryInterface;
-use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
+use Modules\Product\Services\StockService; 
+use Modules\Product\Domain\Models\ProductVariant;
+use Modules\Product\Domain\Models\InventoryStock;
 use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
-use Modules\Cart\Services\CartService; 
+use Modules\Cart\Services\CartService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Order\Events\OrderCreated;
@@ -20,11 +20,9 @@ class OrderService extends BaseService
 {
     public function __construct(
         OrderRepositoryInterface $repository,
-        protected InventoryService $inventoryService,
-        protected InventoryRepositoryInterface $inventoryRepo,
-        protected ProductRepositoryInterface $productRepo,
+        protected StockService $stockService,
         protected AddressRepositoryInterface $addressRepo,
-        protected CartService $cartService 
+        protected CartService $cartService
     ) {
         parent::__construct($repository);
     }
@@ -33,7 +31,7 @@ class OrderService extends BaseService
     {
         return DB::transaction(function () use ($data) {
             $userId = auth()->id();
-            
+
             $cartData = $this->cartService->getMyCart($userId);
             
             if (empty($cartData['items'])) {
@@ -42,14 +40,12 @@ class OrderService extends BaseService
 
             $orderItems = [];
             foreach ($cartData['items'] as $item) {
-                if (!$item['is_stock_sufficient']) {
-                    throw ValidationException::withMessages([
-                        'stock' => "Sản phẩm {$item['product']['name']} không đủ số lượng tồn kho."
-                    ]);
-                }
+
+                $cartItemModel = \Modules\Cart\Domain\Models\CartItem::where('uuid', $item['uuid'])->first();
+                if (!$cartItemModel) continue;
 
                 $orderItems[] = [
-                    'product_uuid' => $item['product']['uuid'],
+                    'variant_uuid' => $cartItemModel->variant->uuid,
                     'quantity' => $item['quantity']
                 ];
             }
@@ -87,7 +83,7 @@ class OrderService extends BaseService
 
             $order->update(['total_amount' => $totalAmount]);
 
-            return $order->load('items.product');
+            return $order->load('items.variant.product');
         });
 
         event(new OrderCreated($order));
@@ -100,48 +96,52 @@ class OrderService extends BaseService
         $totalAmount = 0;
 
         foreach ($itemsData as $item) {
-            $product = $this->productRepo->findByUuid($item['product_uuid']);
-            $product->load(['promotions' => fn($q) => $q->active()]);
 
-            $qty = (int) $item['quantity'];
+            $inventoryStock = $this->stockService->allocate($item['variant_uuid'], $item['quantity']);
 
-            $inventory = \Modules\Inventory\Models\Inventory::where('product_id', $product->id)
-                ->where('stock_quantity', '>=', $qty)
-                ->where('status', '!=', 'out_of_stock')
-                ->lockForUpdate() 
-                ->first();
+            $variant = $inventoryStock->variant; 
+            $product = $variant->product;
 
-            if (!$inventory) {
-                throw ValidationException::withMessages(['items' => "Sản phẩm {$product->name} đã hết hàng hoặc không đủ số lượng."]);
-            }
-
-            $this->inventoryService->adjustStock($product->id, $inventory->warehouse_id, -$qty);
-
-            $pricing = $this->calculateItemPrice($product);
+            $pricing = $this->calculateItemPrice($variant, $product);
             
+            $qty = (int) $item['quantity'];
             $lineSubtotal = $pricing['unit_price'] * $qty;
             $totalAmount += $lineSubtotal;
 
             $order->items()->create([
-                'product_id' => $product->id,
-                'warehouse_id' => $inventory->warehouse_id,
+                'product_variant_id' => $variant->id,
+                'warehouse_id' => $inventoryStock->warehouse_id,
                 'quantity' => $qty,
                 'original_price' => $pricing['original_price'],
                 'discount_amount' => $pricing['discount_amount'],
                 'unit_price' => $pricing['unit_price'],
-                'subtotal' => $lineSubtotal
+                'subtotal' => $lineSubtotal,
+
+                'product_snapshot' => [
+                    'name' => $product->name,
+                    'sku' => $variant->sku,
+                    'attributes' => $variant->attributeValues->map(fn($v) => [
+                        'name' => $v->attribute->name,
+                        'value' => $v->value
+                    ])->toArray()
+                ]
             ]);
         }
 
         return $totalAmount;
     }
 
-    protected function calculateItemPrice($product): array
+    protected function calculateItemPrice(ProductVariant $variant, $product): array
     {
-        $originalPrice = $product->price;
+        $originalPrice = $variant->price;
         $discountAmount = 0;
 
-        $bestPromotion = $product->promotions->sortByDesc(function ($promo) use ($originalPrice) {
+        $activePromotions = $product->promotions()->where('status', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->get();
+
+        $bestPromotion = $activePromotions->sortByDesc(function ($promo) use ($originalPrice) {
             return ($promo->type === 'percentage')
                 ? $originalPrice * ($promo->value / 100)
                 : $promo->value;
@@ -172,10 +172,11 @@ class OrderService extends BaseService
             }
 
             foreach ($order->items as $item) {
-                $this->inventoryService->adjustStock(
-                    $item->product_id,
-                    $item->warehouse_id,
-                    $item->quantity
+
+                $this->stockService->restore(
+                    $item->variant->uuid, 
+                    $item->quantity, 
+                    $item->warehouse_id
                 );
             }
 

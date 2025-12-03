@@ -1,76 +1,25 @@
 <?php
-
 namespace Modules\Product\Domain\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Modules\Review\Domain\Models\Review;
-use Modules\Category\Domain\Models\Category;
-use Modules\Warehouse\Domain\Models\Warehouse; 
 use Modules\Shared\Traits\Loggable;
+use Modules\Category\Domain\Models\Category;
+use Modules\Promotion\Domain\Models\Promotion; 
+use Modules\Review\Domain\Models\Review;
 
-class Product extends Model
-{
-    use HasFactory, SoftDeletes, Loggable;
-
-    protected $fillable = [
-        'uuid', 'name', 'description', 'price', 'category_id',
-        'sku', 'weight', 'dimensions', 'material', 'color', 'status'
-    ];
-
-    protected $casts = [
-        'status' => 'boolean',
-        'price' => 'decimal:2',
-        'weight' => 'decimal:2',
-    ];
-
-    protected static function boot()
-    {
+class Product extends Model {
+    use SoftDeletes, Loggable;
+    protected $fillable = ['uuid', 'name', 'description', 'category_id', 'has_variants', 'is_active', 'price', 'sku'];
+    protected $casts = ['is_active' => 'boolean', 'has_variants' => 'boolean', 'price' => 'decimal:2'];
+    protected static function boot() {
         parent::boot();
-        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
+        static::creating(fn($m) => $m->uuid = (string) Str::uuid());
     }
+    public function category() { return $this->belongsTo(Category::class); }
+    public function variants() { return $this->hasMany(ProductVariant::class); }
+    public function images() { return $this->hasMany(ProductImage::class)->orderByDesc('is_primary'); }
 
-    public function images()
-    {
-        return $this->hasMany(ProductImage::class)->orderByDesc('is_primary');
-    }
-    
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function warehouses()
-    {
-        return $this->belongsToMany(Warehouse::class, 'warehouse_product')
-                    ->withPivot('quantity')
-                    ->withTimestamps();
-    }
-    
-    public function getTotalStockAttribute(): int
-    {
-        return $this->warehouses->sum('pivot.quantity');
-    }
-
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function promotions()
-    {
-        return $this->belongsToMany(\Modules\Promotion\Domain\Models\Promotion::class);
-    }
-
-    public function collections()
-{
-    return $this->belongsToMany(\Modules\Collection\Domain\Models\Collection::class, 'collection_product');
-}
-
-    protected static function newFactory()
-    {
-        return \Modules\Product\Database\factories\ProductFactory::new();
-    }
+    public function promotions() { return $this->belongsToMany(Promotion::class, 'product_promotion');}
+    public function reviews() { return $this->hasMany(Review::class);}
 }

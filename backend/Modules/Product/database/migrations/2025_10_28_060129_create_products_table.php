@@ -7,24 +7,58 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        // 1. Products Table
+        Schema::create('attributes', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name'); 
+            $table->string('slug')->unique(); 
+            $table->string('type')->default('select'); 
+            $table->timestamps();
+        });
+
+        Schema::create('attribute_values', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('attribute_id')->constrained()->cascadeOnDelete();
+            $table->string('value'); 
+            $table->string('code')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->string('name', 150)->index(); 
+            $table->string('name', 150)->index();
             $table->text('description')->nullable();
-            $table->decimal('price', 12, 2); 
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
-            $table->string('sku', 100)->unique();
             
-            $table->decimal('weight', 10, 2)->nullable();
-            $table->string('dimensions', 100)->nullable();
-            $table->string('material', 100)->nullable();
-            $table->string('color', 50)->nullable();
+            $table->boolean('has_variants')->default(false);
+            $table->boolean('is_active')->default(true)->index();
+
+            $table->decimal('price', 12, 2)->nullable();
+            $table->string('sku', 100)->unique()->nullable();
             
-            $table->boolean('status')->default(true)->index();
             $table->softDeletes();
             $table->timestamps();
+        });
+
+        Schema::create('product_variants', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            
+            $table->string('sku', 100)->unique();
+            $table->decimal('price', 12, 2);
+            $table->decimal('weight', 10, 2)->nullable();
+            $table->string('image_url')->nullable();
+            
+            $table->timestamps();
+        });
+
+        Schema::create('variant_attribute_values', function (Blueprint $table) {
+            $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
+            $table->foreignId('attribute_value_id')->constrained('attribute_values')->cascadeOnDelete();
+            $table->primary(['product_variant_id', 'attribute_value_id'], 'var_attr_pk');
         });
 
         Schema::create('product_images', function (Blueprint $table) {
@@ -35,24 +69,16 @@ return new class extends Migration {
             $table->string('public_id')->nullable();
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
-            
-            $table->index(['product_id', 'is_primary']);
-        });
-
-        Schema::create('warehouse_product', function (Blueprint $table) {
-            $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->integer('quantity')->default(0);
-            $table->timestamps();
-            
-            $table->primary(['warehouse_id', 'product_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('warehouse_product');
         Schema::dropIfExists('product_images');
+        Schema::dropIfExists('variant_attribute_values');
+        Schema::dropIfExists('product_variants');
         Schema::dropIfExists('products');
+        Schema::dropIfExists('attribute_values');
+        Schema::dropIfExists('attributes');
     }
 };

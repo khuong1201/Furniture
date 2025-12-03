@@ -30,8 +30,10 @@ class Cart extends Model
         return $this->hasMany(CartItem::class);
     }
 
-    protected static function newFactory()
+    public function getTotalAmountAttribute()
     {
-        return \Modules\Cart\Database\factories\CartFactory::new();
+        return $this->items->sum(function ($item) {
+            return $item->quantity * $item->price;
+        });
     }
 }

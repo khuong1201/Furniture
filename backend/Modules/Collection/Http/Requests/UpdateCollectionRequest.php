@@ -4,6 +4,7 @@ namespace Modules\Collection\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Modules\Collection\Domain\Models\Collection;
 
 class UpdateCollectionRequest extends FormRequest
 {
@@ -11,15 +12,14 @@ class UpdateCollectionRequest extends FormRequest
 
     public function rules(): array
     {
-        $uuid = $this->route('uuid'); 
+        $uuid = $this->route('collection');
+        $id = Collection::where('uuid', $uuid)->value('id');
 
         return [
-            'name' => 'sometimes|required|string|max:255',
-            'slug' => [
-                'sometimes', 'required', 'string', 'max:255',
-                Rule::unique('collections', 'slug')->ignore($uuid, 'uuid')
-            ],
+            'name' => 'sometimes|string|max:255',
+            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('collections', 'slug')->ignore($id)],
             'description' => 'nullable|string',
+            'banner_image' => 'nullable|string',
             'is_active' => 'boolean',
             'product_ids' => 'nullable|array',
             'product_ids.*' => 'integer|exists:products,id',

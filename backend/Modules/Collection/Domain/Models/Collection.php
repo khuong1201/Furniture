@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 use Modules\Product\Domain\Models\Product;
+use Modules\Shared\Traits\Loggable;
 
 class Collection extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Loggable;
 
     protected $fillable = [
         'uuid', 'name', 'slug', 'description', 'banner_image', 'is_active'

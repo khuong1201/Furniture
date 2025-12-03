@@ -34,18 +34,20 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            
+
+            $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
+
             $table->foreignId('warehouse_id')->constrained('warehouses')->restrictOnDelete(); 
             
             $table->integer('quantity');
 
-            $table->decimal('original_price', 12, 2)->comment('Giá gốc của sản phẩm tại thời điểm mua');
-            $table->decimal('discount_amount', 12, 2)->default(0)->comment('Số tiền giảm giá trên 1 sản phẩm');
-
-            $table->decimal('unit_price', 12, 2)->comment('Giá thực tế phải trả (Original - Discount)');
-            $table->decimal('subtotal', 12, 2)->comment('Quantity * Unit Price'); 
+            $table->decimal('original_price', 12, 2)->comment('Giá gốc của biến thể');
+            $table->decimal('discount_amount', 12, 2)->default(0);
+            $table->decimal('unit_price', 12, 2)->comment('Giá sau giảm');
+            $table->decimal('subtotal', 12, 2); 
             
+            $table->json('product_snapshot')->nullable();
+
             $table->softDeletes();
             $table->timestamps();
         });

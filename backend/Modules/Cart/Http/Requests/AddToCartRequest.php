@@ -14,7 +14,7 @@ class AddToCartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_uuid' => 'required|string|uuid|exists:products,uuid',
+            'variant_uuid' => 'required|string|uuid|exists:product_variants,uuid',
             'quantity' => 'required|integer|min:1',
         ];
     }
@@ -22,7 +22,7 @@ class AddToCartRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'product_uuid.exists' => 'Sản phẩm không tồn tại.',
+            'variant_uuid.exists' => 'Sản phẩm (biến thể) không tồn tại.',
             'quantity.min' => 'Số lượng phải lớn hơn 0.',
         ];
     }

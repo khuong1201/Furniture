@@ -4,32 +4,28 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        Schema::create('inventories', function (Blueprint $table) {
+        Schema::create('inventory_stocks', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete();
             
-            $table->integer('stock_quantity')->default(0);
-
-            $table->integer('min_threshold')->default(0);
-            $table->integer('max_threshold')->nullable();
+            $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
             
-            $table->enum('status', ['in_stock','low_stock','out_of_stock', 'over_stock'])->default('in_stock');
+            $table->integer('quantity')->default(0);
+            $table->integer('min_threshold')->default(0); 
             
-            $table->softDeletes();
             $table->timestamps();
 
-            $table->unique(['product_id', 'warehouse_id']);
+            $table->unique(['warehouse_id', 'product_variant_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('inventories');
+        Schema::dropIfExists('inventory_stocks');
     }
 };

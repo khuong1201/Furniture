@@ -32,7 +32,7 @@ class CollectionService extends BaseService
         return DB::transaction(function () use ($uuid, $data) {
             $collection = $this->findByUuidOrFail($uuid);
             
-            $this->repository->update($collection->id, $data);
+            $collection->update($data);
 
             if (isset($data['product_ids'])) {
                 $collection->products()->sync($data['product_ids']);

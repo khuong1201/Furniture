@@ -13,9 +13,9 @@ Route::middleware(['api', JwtAuthenticate::class])->group(function () {
         Route::post('/checkout', [OrderController::class, 'checkout']);
 
         Route::get('/', [OrderController::class, 'index']); 
-        
+ 
         Route::get('/{uuid}', [OrderController::class, 'show']);
-        
+
         Route::post('/{uuid}/cancel', [OrderController::class, 'cancel']);
     });
 });
