@@ -107,6 +107,17 @@ function HomePage() {
             ))}
           </div>
         )}
+
+        {/* Top Trending */}
+        <div className="section-header">
+          <h3>Top Trending</h3>
+          <a href="#" className="view-all">View all</a>
+        </div>
+
+        {/* Today's Suggestions */}
+        <div className="section-header">
+          <h3>Today's Suggestions</h3>
+        </div>
       </section>  
 
     </div>
