@@ -131,6 +131,29 @@ class OrderService extends BaseService
         return $totalAmount;
     }
 
+    public function getOrderStats()
+    {
+        return $this->repository->countByStatus();
+    }
+
+    public function updateStatus(string $uuid, string $status): Model
+    {
+        $order = $this->findByUuidOrFail($uuid);
+        
+        if ($status === 'cancelled' && !in_array($order->status, ['pending', 'processing'])) {
+            throw ValidationException::withMessages(['status' => 'Cannot cancel order at this stage']);
+        }
+
+        if ($status === 'cancelled' && $order->status !== 'cancelled') {
+            foreach ($order->items as $item) {
+                $this->stockService->restore($item->variant->uuid, $item->quantity, $item->warehouse_id);
+            }
+        }
+
+        $order->update(['status' => $status]);
+        return $order;
+    }
+
     protected function calculateItemPrice(ProductVariant $variant, $product): array
     {
         $originalPrice = $variant->price;

@@ -10,7 +10,7 @@ use Modules\Review\Domain\Models\Review;
 
 class Product extends Model {
     use SoftDeletes, Loggable;
-    protected $fillable = ['uuid', 'name', 'description', 'category_id', 'has_variants', 'is_active', 'price', 'sku'];
+    protected $fillable = ['uuid', 'name', 'description', 'category_id', 'has_variants', 'is_active', 'price', 'sku', 'sold_count', 'rating_avg', 'rating_count'];
     protected $casts = ['is_active' => 'boolean', 'has_variants' => 'boolean', 'price' => 'decimal:2'];
     protected static function boot() {
         parent::boot();

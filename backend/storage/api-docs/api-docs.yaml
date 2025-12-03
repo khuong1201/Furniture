@@ -1081,6 +1081,46 @@ paths:
       security:
         -
           bearerAuth: []
+  /orders/stats:
+    get:
+      tags:
+        - Orders
+      summary: 'Thống kê số lượng đơn theo trạng thái (Admin)'
+      operationId: 6bc5373615bc0e5df32a8291aefd91c3
+      responses:
+        200:
+          description: Success
+      security:
+        -
+          bearerAuth: []
+  '/orders/{uuid}/status':
+    put:
+      tags:
+        - Orders
+      summary: 'Cập nhật trạng thái đơn hàng (Admin)'
+      description: 'Dùng để Duyệt đơn (pending -> processing), Giao hàng (shipped)...'
+      operationId: 2da87d031f5ba61349c98a9c8105c22e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - processing
+                    - shipped
+                    - delivered
+                    - cancelled
+              type: object
+      responses:
+        200:
+          description: Updated
+      security:
+        -
+          bearerAuth: []
   '/orders/{uuid}/cancel':
     post:
       tags:
@@ -1413,6 +1453,17 @@ paths:
           in: query
           schema:
             type: number
+        -
+          name: sort_by
+          in: query
+          description: 'Sắp xếp danh sách'
+          schema:
+            type: string
+            enum:
+              - best_selling
+              - latest
+              - price_asc
+              - price_desc
       responses:
         200:
           description: Success

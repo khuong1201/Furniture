@@ -130,6 +130,54 @@ class OrderController extends BaseController
         return response()->json(ApiResponse::success($order));
     }
 
+    #[OA\Get(
+        path: "/orders/stats",
+        summary: "Thống kê số lượng đơn theo trạng thái (Admin)",
+        security: [['bearerAuth' => []]],
+        tags: ["Orders"],
+        responses: [ new OA\Response(response: 200, description: "Success") ]
+    )]
+    
+    public function stats(Request $request): JsonResponse
+    {
+        if (!$request->user()->hasPermissionTo('order.view')) {
+             return response()->json(ApiResponse::error('Forbidden', 403), 403);
+        }
+
+        $stats = $this->service->getOrderStats();
+        return response()->json(ApiResponse::success($stats));
+    }
+
+    #[OA\Put(
+        path: "/orders/{uuid}/status",
+        summary: "Cập nhật trạng thái đơn hàng (Admin)",
+        description: "Dùng để Duyệt đơn (pending -> processing), Giao hàng (shipped)...",
+        security: [['bearerAuth' => []]],
+        tags: ["Orders"],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ["status"],
+                properties: [
+                    new OA\Property(property: "status", type: "string", enum: ["processing", "shipped", "delivered", "cancelled"])
+                ]
+            )
+        ),
+        responses: [ new OA\Response(response: 200, description: "Updated") ]
+    )]
+
+    public function updateStatus(Request $request, string $uuid): JsonResponse
+    {
+        $this->authorize('update', \Modules\Order\Domain\Models\Order::class); // Check quyền order.edit
+
+        $request->validate([
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
+        ]);
+
+        $order = $this->service->updateStatus($uuid, $request->input('status'));
+        
+        return response()->json(ApiResponse::success($order, 'Order status updated'));
+    }
+
     #[OA\Post(
         path: "/orders/{uuid}/cancel",
         summary: "Hủy đơn hàng",
