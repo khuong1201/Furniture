@@ -2,7 +2,7 @@
 
 namespace Modules\Product\Infrastructure\Repositories;
 
-use Modules\Shared\Infrastructure\Repositories\EloquentBaseRepository;
+use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Modules\Product\Domain\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
