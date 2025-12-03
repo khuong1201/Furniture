@@ -431,17 +431,51 @@
                                             "properties": {
                                                 "data": {
                                                     "properties": {
+                                                        "user": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "uuid": {
+                                                                    "type": "string",
+                                                                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                                                                },
+                                                                "email": {
+                                                                    "type": "string",
+                                                                    "example": "admin@system.com"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "example": "Super Admin"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        },
                                                         "access_token": {
                                                             "type": "string"
                                                         },
                                                         "refresh_token": {
                                                             "type": "string"
                                                         },
+                                                        "roles": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": [
+                                                                "admin"
+                                                            ]
+                                                        },
                                                         "permissions": {
                                                             "type": "array",
                                                             "items": {
                                                                 "type": "string"
                                                             }
+                                                        },
+                                                        "expires_in": {
+                                                            "type": "integer",
+                                                            "example": 3600
                                                         }
                                                     },
                                                     "type": "object"

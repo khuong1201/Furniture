@@ -1,0 +1,99 @@
+/* Product Detail Styles */
+.product-detail {
+    max-width: 1200px;
+}
+
+/* Image Grid */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.image-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-item .badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.badge-primary {
+    background: #6366f1;
+    color: #fff;
+}
+
+/* Variants Table */
+.variants-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.variants-table thead {
+    background: #f9fafb;
+}
+
+.variants-table th {
+    text-align: left;
+    padding: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.variants-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: #374151;
+}
+
+.variants-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Promotions */
+.promotions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.promo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .variants-table {
+        font-size: 12px;
+    }
+
+    .variants-table th,
+    .variants-table td {
+        padding: 8px;
+    }
+}

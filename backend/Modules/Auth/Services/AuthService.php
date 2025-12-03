@@ -9,13 +9,14 @@ use Illuminate\Support\Str;
 use Modules\User\Domain\Models\User;
 use Modules\Auth\Domain\Models\RefreshToken;
 use Modules\Auth\Domain\Repositories\AuthRepositoryInterface;
-use Modules\Role\Domain\Repositories\RoleRepositoryInterface; 
+use Modules\Role\Domain\Repositories\RoleRepositoryInterface;
 use Modules\Auth\Events\UserRegistered;
-class AuthService 
+class AuthService
 {
     public function __construct(
         protected AuthRepositoryInterface $authRepo
-    ) {}
+    ) {
+    }
 
     public function register(array $data, ?string $ip, ?string $userAgent): array
     {
@@ -28,7 +29,7 @@ class AuthService
                 'password' => Hash::make($data['password']),
                 'verification_code' => $otp,
                 'verification_expires_at' => now()->addMinutes(10),
-                'is_active' => false, 
+                'is_active' => false,
             ]);
 
             if (interface_exists(RoleRepositoryInterface::class)) {
@@ -37,7 +38,7 @@ class AuthService
                     $user->roles()->attach($role->id);
                 }
             }
-            
+
             event(new UserRegistered($user));
 
             return [
@@ -57,7 +58,7 @@ class AuthService
         }
 
         if ($user->is_active) {
-             return ['message' => 'Account already verified.'];
+            return ['message' => 'Account already verified.'];
         }
 
         if ($user->verification_code !== $otp) {
@@ -96,6 +97,13 @@ class AuthService
         $accessToken = $this->createAccessToken($user);
         $refreshToken = $this->createRefreshToken($user, $deviceName, $ip, $userAgent);
 
+        // Load roles
+        $roles = [];
+        if (method_exists($user, 'roles')) {
+            $roles = $user->roles()->pluck('name')->toArray();
+        }
+
+        // Load permissions
         $permissions = [];
         if (method_exists($user, 'permissions')) {
             $permissions = $user->permissions->pluck('name')->unique()->values()->toArray();
@@ -105,6 +113,7 @@ class AuthService
             'user' => $user->only(['id', 'uuid', 'email', 'name']),
             'access_token' => $accessToken,
             'refresh_token' => $refreshToken->token,
+            'roles' => $roles,
             'permissions' => $permissions,
             'expires_in' => config('jwt.ttl'),
         ];
@@ -145,11 +154,11 @@ class AuthService
         $rt = RefreshToken::where('token', $token)->first();
 
         if (!$rt || $rt->expires_at < now()) {
-             throw new \Illuminate\Auth\AuthenticationException('Invalid or expired refresh token');
+            throw new \Illuminate\Auth\AuthenticationException('Invalid or expired refresh token');
         }
 
         $user = $rt->user;
-        
+
         $rt->delete();
 
         return $this->generateAuthResponse($user, $rt->device_name, $rt->ip, $rt->user_agent);

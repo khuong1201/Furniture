@@ -35,23 +35,31 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      
+
       const data = await AuthService.login(email, password, device_name);
 
       // Lưu trữ
       localStorage.setItem('access_token', data.data.access_token);
-      localStorage.setItem('user_info', JSON.stringify(data.user));
+      localStorage.setItem('refresh_token', data.data.refresh_token);
+
+      // Lưu user info cùng với roles
+      const userInfo = {
+        ...data.data.user,
+        roles: data.data.roles || []
+      };
+      localStorage.setItem('user_info', JSON.stringify(userInfo));
 
       console.log('🔑 Access Token:', data.data.access_token);
-      console.log('✅Login success:', data)
+      console.log('👤 User Roles:', data.data.roles);
+      console.log('✅Login success:', data);
 
-      AuthService.instance.setToken(data.access_token);
-      setUser(data.user);
-      
-      return true;
+      AuthService.instance.setToken(data.data.access_token);
+      setUser(userInfo);
+
+      return { success: true, user: userInfo };
     } catch (err) {
       setError(err.message || '❌Đăng nhập thất bại');
-      return false;
+      return { success: false };
     } finally {
       setLoading(false);
     }
@@ -77,9 +85,9 @@ export const AuthProvider = ({ children }) => {
   // 4. Hàm Logout
   const logout = async () => {
     try {
-        await AuthService.logout();
+      await AuthService.logout();
     } catch (e) {
-        console.log('Lỗi logout server, vẫn clear client');
+      console.log('Lỗi logout server, vẫn clear client');
     }
     // Xóa sạch client
     AuthService.instance.setToken(null);

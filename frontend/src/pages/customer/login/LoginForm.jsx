@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import {useAuth} from '@/hooks/AuthContext'
-import {Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/AuthContext'
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import '../register/RegisterForm';
 
-function LoginForm () {
+function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const [localError, setLocalError] = useState('');
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    device_name:''
+    device_name: ''
   });
 
   const { login, loading, error } = useAuth();
@@ -29,7 +29,7 @@ function LoginForm () {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     setLocalError('');
 
     if (!formData.email || !formData.password) {
@@ -37,14 +37,21 @@ function LoginForm () {
       return;
     }
 
-    const isSuccess = await login (formData.email, formData.password, formData.device_name);
+    const result = await login(formData.email, formData.password, formData.device_name);
 
-    if (isSuccess) {
-        navigate('/customer'); 
+    if (result.success) {
+      // Check user role and redirect accordingly
+      const userRoles = result.user?.roles || [];
+
+      if (userRoles.includes('admin')) {
+        navigate('/admin');
+      } else {
+        navigate('/customer');
+      }
     }
   };
 
-  
+
   return (
     <div className="signup-wrapper">
       <div className="signup-card">
@@ -94,9 +101,9 @@ function LoginForm () {
 
 
           {/* Submit Button */}
-          <button 
-            type="submit" 
-            className="btn-primary" 
+          <button
+            type="submit"
+            className="btn-primary"
             disabled={loading}
             style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
@@ -111,9 +118,9 @@ function LoginForm () {
 
         {/* Google Button */}
         <button className="btn-google">
-          <img 
-            src="https://www.svgrepo.com/show/475656/google-color.svg" 
-            alt="Google Logo" 
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google Logo"
             width="24" height="24"
           />
           Sign up with Google
