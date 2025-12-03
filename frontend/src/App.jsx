@@ -6,6 +6,8 @@ import HomePage from './pages/customer/homePage/HomePage';
 import Register from './pages/customer/register/RegisterForm';
 import LogIn from './pages/customer/login/LoginForm';
 import ProductDetail from './pages/customer/Product/ProductDetail';
+import SearchPage from './pages/customer/SearchPage';
+import CartPage from './pages/customer/cart/CartPage';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="login" element={<LogIn />} />
         <Route path="product/:id" element={<ProductDetail />} />
+        <Route path="product" element={<SearchPage />} />
+        <Route path="cart" element={<CartPage />} />
 
       </Route>
 

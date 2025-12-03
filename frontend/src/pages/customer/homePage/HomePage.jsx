@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import './HomePage.css';
-import { useProduct } from '@/hooks/useProducts';
-import {Link, useNavigate } from 'react-router-dom';
+import { useProduct } from '@/hooks/useProduct';
+import {Link, useNavigate} from 'react-router-dom';
 import { AiOutlineLoading3Quarters, AiOutlineWarning } from 'react-icons/ai';
 
 import bedIcon from '@/assets/icons/categories/bed.svg';
@@ -15,11 +15,11 @@ import outdoorIcon from '@/assets/icons/categories/outdoor.svg';
 
 function HomePage() {
 
-  const { products, loading, error, getAllProduct } = useProduct();
+  const { products, loading, error, fetchProducts } = useProduct();
 
   useEffect(() => {
-    getAllProduct();
-  }, [getAllProduct]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   const categories = [
     { name: "Bed", img: bedIcon },
@@ -66,17 +66,17 @@ function HomePage() {
       </section>
 
       {/* --- PHẦN 3: FLASH SALE (DÙNG API TỪ HOOK) --- */}
-      <section className="product-section">
-        <div className="section-header">
-          <h3>Flash Sale <span className="timer">01 : 23 : 20</span></h3>
-          <a href="#" className="view-all">View all</a>
-        </div>
+      {!loading && !error && (
+        <section className="product-section">
+          <div className="section-header">
+            <h3>Flash Sale <span className="timer">01 : 23 : 20</span></h3>
+            <a href="#" className="view-all">View all</a>
+          </div>
 
-        {/* 4. Hiển thị dữ liệu khi đã tải xong */}
-        {!loading && !error && (
+          {/* 4. Hiển thị dữ liệu khi đã tải xong */}
           <div className="product-grid">
             {products.map((item) => (
-       
+              
               <div key={item.id} className="product-card">
                 <Link to={`/customer/product/${item.uuid || item.id}`}>
                   <div className="product-img">
@@ -85,7 +85,7 @@ function HomePage() {
                       src={item.image ? `http://localhost:8000/storage/${item.image}` : 'https://placehold.co/300x250?text=No+Image'} 
                       alt={item.name} 
                       onError={(e) => { e.target.src = 'https://placehold.co/300x250?text=Error'; }}
-                    />
+                      />
                   </div>
                 </Link>  
                 <div className="product-info">
@@ -118,20 +118,19 @@ function HomePage() {
               </div>
             ))}
           </div>
-        )}
+    
+          {/* Top Trending */}
+          <div className="section-header">
+            <h3>Top Trending</h3>
+            <a href="#" className="view-all">View all</a>
+          </div>
 
-        {/* Top Trending */}
-        <div className="section-header">
-          <h3>Top Trending</h3>
-          <a href="#" className="view-all">View all</a>
-        </div>
-
-        {/* Today's Suggestions */}
-        <div className="section-header">
-          <h3>Today's Suggestions</h3>
-        </div>
-      </section>  
-
+          {/* Today's Suggestions */}
+          <div className="section-header">
+            <h3>Today's Suggestions</h3>
+          </div>
+        </section>  
+      )}
     </div>
   );
 }

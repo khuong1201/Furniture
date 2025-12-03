@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProduct } from '../../../hooks/useProducts';
+import { useProduct } from '../../../hooks/useProduct';
 import { useOrder } from '../../../hooks/useOrder';
 import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin, ThumbsUp } from 'lucide-react';
 import './ProductDetail.css';
@@ -63,7 +63,7 @@ const ProductDetail = () => {
     if (!address.trim()) return alert('Please enter your delivery address!');
 
     const orderPayload = {
-      address_id: 1, // ⚠️ TẠM THỜI - sau này map từ Address API
+      address_id: 1,
       notes: `Color: ${selectedColor}, Size: ${selectedSize}, Address: ${address}`,
       items: [
         {
