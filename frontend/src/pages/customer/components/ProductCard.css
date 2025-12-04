@@ -80,13 +80,13 @@
 
 
   /* --- INFO --- */
-  .product-info {
+  .product-info-cart {
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
-  .product-info h4 {
+  .product-info-cart h4 {
     font-size: 24px;
     font-weight: 600;
     margin: 0;
@@ -95,7 +95,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .rating {
+  .rating-info {
     display: flex;
     align-items: center;
   }
@@ -129,12 +129,12 @@
     align-items: center;
   }
 
-  .price {
+  .price-info {
     color: #E82525;
     font-size: 18px;
     font-weight: 600;
   }
-  .btn-add {
+  .btn-add-cart1 {
     min-width: 100px;
     background: #CBA890;    
     border: none;

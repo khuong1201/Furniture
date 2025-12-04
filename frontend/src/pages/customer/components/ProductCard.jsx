@@ -34,12 +34,12 @@ const ProductCard = ({ item, variant = "default" }) => {
           />
         </div>
       </Link>  
-      <div className="product-info">
+      <div className="product-info-cart">
         <Link to={`/customer/product/${item.uuid || item.id}`} className="product-link">
           <h4>{item.name}</h4> 
         </Link>
         
-        <div className="rating">
+        <div className="rating-info">
           <img src={star} alt="star" className="rating-star" />
           <span className='rating-number'>{rating || 4.5}</span>
           <span className="rating-separator">|</span>
@@ -47,10 +47,10 @@ const ProductCard = ({ item, variant = "default" }) => {
         </div>
         
         <div className="price-row">
-          <span className="price">
+          <span className="price-info">
             {price} VND
           </span>
-          <button className="btn-add">Add to cart</button>
+          <button className="btn-add-cart1">Add to cart</button>
         </div>
       </div>
     </div>

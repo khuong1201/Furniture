@@ -86,7 +86,6 @@
 .product-header {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
  
 }
 
@@ -103,19 +102,30 @@
   gap: 10px;
   font-size: 14px;
   color: #666;
+  margin: 32px 0;
 }
 
 .rating {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: #Cfb986;
+  gap: 6px;
+  color: #2D2A29;
   font-weight: bold;
-  /* border-bottom: 1px solid #Cfb986; */
+  font-size: 24px;
+  font-weight: 600;
+
 }
 
 .divider {
   color: #9E9D9D;
+  font-size: 24px;
+}
+
+.reviews,
+.sold {
+  font-size: 20px;
+  font-weight: 500;
+  color: #575554
 }
 
 .price-section {
@@ -162,19 +172,20 @@
 .product-body{
  display: flex;
  flex-direction: column;
- gap: 20px;
+ gap: 40px;
 }
 
 .variant-section {
   display: flex;
   align-items: center; 
   padding: 12px 0;
+  gap: 24px
 }
 
 .label {
   width: 100px;
   color: #2D2A29;
-  font-size: 14px;
+  font-size: 28px;
   font-weight: 500;
 }
 
@@ -196,10 +207,8 @@
     border: none;
     outline: none;
     background: transparent;
-    font-size: 14px;
-    color: #555;
-    /* Thêm gạch chân mờ để người dùng biết chỗ nhập (tuỳ chọn) */
-    border-bottom: 1px dashed #ccc; 
+    font-size: 20px;
+    color: #727070;
 }
 
 .addr-input::placeholder {
@@ -221,6 +230,8 @@
   border-radius: 2px;
   color: #2D2A29;
   transition: all 0.2s;
+  font-size: 20px;
+  font-weight: 500;
 }
 
 .option-btn:hover {
@@ -288,6 +299,8 @@
   align-items: center;
   gap: 8px;
   border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .btn-buy-now {
@@ -299,6 +312,8 @@
   font-weight: bold;
   cursor: pointer;
   border-radius: 8px;
+  font-size: 18px;
+
 }
 
 /* --- SHOP SECTION --- */

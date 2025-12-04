@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import OrderService from '@/services/OrderService';
+import OrderService from '@/services/customer/OrderService';
 
 export const useOrder = () => {
   // ===============================
