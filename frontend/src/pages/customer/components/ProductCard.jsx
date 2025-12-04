@@ -1,12 +1,32 @@
 import React from 'react';
+import './ProductCard.css';
 import { Link } from 'react-router-dom';
+import fireSale from '@/assets/icons/flashSale.svg';
+import star from '@/assets/icons/star.svg';
+import top from '@/assets/icons/top.svg';
 
-const ProductCard = ({ item }) => {
+
+const ProductCard = ({ item, variant = "default" }) => {
+
+  const price = Number(item.price || 0).toLocaleString('vi-VN');
+  const rating = Number(item.rating_avg || 0).toFixed(1);
+  const sold = item.sold_count || 0;
+
   return (
-    <div className="product-card">
+    <div className={`product-card ${variant}`}> 
       <Link to={`/customer/product/${item.uuid || item.id}`}>
         <div className="product-img">
-          <span className="discount-tag">-50%</span>
+          {variant === "top" && 
+            <img src={top} alt="top" className="tag-top" />
+          }
+          {variant === "flash" && (
+            <>
+              <img src={fireSale} alt="Fire Sale" className="fire-icon" />
+              <span className="discount-tag">
+                <span className="discount-text">-66%</span>
+              </span>
+            </>
+          )}
           <img 
              src={item.image ? `http://localhost:8000/storage/${item.image}` : 'https://placehold.co/300x250?text=No+Image'} 
              alt={item.name} 
@@ -20,15 +40,15 @@ const ProductCard = ({ item }) => {
         </Link>
         
         <div className="rating">
-          <span className="rating-star">★</span>
-          <span className='rating-number'>{item.rating || 4.5}</span>
+          <img src={star} alt="star" className="rating-star" />
+          <span className='rating-number'>{rating || 4.5}</span>
           <span className="rating-separator">|</span>
-          <span className="rating-sold">{item.sold || 155} sold</span>
+          <span className="rating-sold">{sold || 155} sold</span>
         </div>
         
         <div className="price-row">
           <span className="price">
-            {Number(item.price).toLocaleString('vi-VN')} VND
+            {price} VND
           </span>
           <button className="btn-add">Add to cart</button>
         </div>

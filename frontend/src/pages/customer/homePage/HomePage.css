@@ -8,15 +8,14 @@
   /* --- PHẦN 2: CATEGORIES SECTION --- */
 
   .categories-section {
-    margin-bottom: 16px;
+    margin-bottom: 40px;
   }
 
   .categories-section h3 {
-    font-family: 'Times New Roman', serif;
-    font-size: 24px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 30px; 
+    font-size: 40px;
+    font-weight: 700;
+    color: #2D2A29;
+    margin-bottom: 40px; 
     text-align: left;    
   }
 
@@ -58,9 +57,9 @@
   }
 
   .cat-item span {
-    font-family: 'Arial', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
+
+    font-size: 28px;
+    font-weight: 600;
     color: #2D2A29;
     text-align: center;
   }
@@ -91,20 +90,35 @@
     }
   }
 
-  /* --- 3. PRODUCT GRID --- */
-  .section-header {
+  .pd-sale-section,
+  .pd-trending-section,
+  .pd-suggestion-section {
+    margin-bottom: 40px;
+  }
+  .flash-header,
+  .trending-header,
+  .suggestion-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 32px;
   }
-  .section-header h3 {
-    color: #E82525;
+  .flash-header h3,
+  .trending-header h3,
+  .suggestion-header h3 {
     display: flex;
     align-items: center;
     gap: 15px;
     font-size: 40px;
-    font-weight: 700;
+    font-weight: 600;
+    margin: 0;
+  }
+  .flash-header h3,
+  .trending-header h3{
+    color: #E82525;
+  }
+  .suggestion-header h3{
+    color: #2D2A29;
   }
   .timer {
     background: #333;
@@ -114,184 +128,95 @@
     border-radius: 4px;
   }
 
-  .product-grid {
+  .view-all {
+    color: #CBA890;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  /* --- 3. PRODUCT HORIZONTAL && GRID --- */
+  .product-horizontal {
     display: flex;
     gap: 24px;
     overflow-x: auto;
-    padding: 20px;
+    padding: 16px 0;
     scroll-behavior: smooth;
   }
+  
+  .product-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    padding: 16px 0;
+    scroll-behavior: smooth;  
+    overflow-x: hidden;   /* chặn scroll ngang */
+    box-sizing: border-box;
+  }
 
-  .product-grid::-webkit-scrollbar {
+  .product-horizontal::-webkit-scrollbar {
     display: none;
   }
 
-  .product-card {
-    min-width: 220px;   
-    max-width: 280px; 
-    flex-shrink: 0;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: all 0.3s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-  .product-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    transform: translateY(-10px);
-  }
-  .product-img {
-    position: relative;
-    height: 256px;
-  }
-  .product-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .discount-tag {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #FFCCBC; 
-    color: #FF5722;     
-    padding: 4px 10px;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .product-info {
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .product-info h4 {
-    font-family: 'Arial', sans-serif;
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0;
-    color: #2D2A29;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .rating {
-    display: flex;
-  }
-
-  .rating-star {
-    font-size: 16px;
-    color: #FFBB00; 
-  }
-  .rating-number {
-    font-size: 20px;
-    color: #2D2A29; 
-  }
-
-  .rating-separator {
-    color: #727070; 
-    margin: 0 8px; 
-    font-weight: 300;
-  }
-  .rating-sold {
-    color: #727070; 
-    font-weight: 500;
-  }
-  .price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .price {
-    color: #E82525; /* Màu đỏ đậm giống ảnh */
-    font-size: 18px;
-    font-weight: 700;
-  }
-  .btn-add {
-    background: #CBA890;    
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #2D2A29; /* Chữ màu đen/nâu đậm */
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-add:hover {
-    background: #b08d6e; /* Màu đậm hơn khi hover */
-  } 
-
   /* --- Loading --- */
-.loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 20px;
-  font-size: 18px;
-  color: #555;
-  background: #f0f8ff;
-  border-radius: 12px;
-  margin: 20px 0;
-  animation: fadeIn 0.3s ease-in-out;
-}
+  .loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    font-size: 18px;
+    color: #555;
+    background: #f0f8ff;
+    border-radius: 12px;
+    margin: 20px 0;
+    animation: fadeIn 0.3s ease-in-out;
+  }
 
-.loading-icon {
-  font-size: 24px;
-  color: #007bff;
-  animation: spin 1s linear infinite;
-}
+  .loading-icon {
+    font-size: 24px;
+    color: #007bff;
+    animation: spin 1s linear infinite;
+  }
 
-/* --- Error --- */
-.error-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 20px;
-  font-size: 18px;
-  color: #d9534f;
-  background: #fde2e2;
-  border-radius: 12px;
-  margin: 20px 0;
-  animation: fadeIn 0.3s ease-in-out;
-}
+  /* --- Error --- */
+  .error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    font-size: 18px;
+    color: #d9534f;
+    background: #fde2e2;
+    border-radius: 12px;
+    margin: 20px 0;
+    animation: fadeIn 0.3s ease-in-out;
+  }
 
-.error-icon {
-  font-size: 24px;
-}
+  .error-icon {
+    font-size: 24px;
+  }
 
-/* --- Animations --- */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+  /* --- Animations --- */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-.empty-state {
-  width: 100%;
-  text-align: center;
-  padding: 40px 0;
-  color: #888;
-  font-size: 16px;
-}
+  .empty-state {
+    width: 100%;
+    text-align: center;
+    padding: 40px 0;
+    color: #888;
+    font-size: 16px;
+  }
 
-.empty-icon {
-  font-size: 28px;
-  margin-bottom: 8px;
-}
+  .empty-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
