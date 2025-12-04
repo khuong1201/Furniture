@@ -10,12 +10,12 @@ use RecursiveIteratorIterator;
 use Modules\Auth\Services\AuthService;
 use Modules\Auth\Domain\Repositories\AuthRepositoryInterface;
 use Modules\Auth\Infrastructure\Repositories\EloquentAuthRepository;
+
 class AuthServiceProvider extends ServiceProvider
 {
     use PathNamespace;
 
     protected string $name = 'Auth';
-
     protected string $nameLower = 'auth';
 
     /**
@@ -28,15 +28,29 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
+
+        // Load migrations
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
-        $config = __DIR__ . '/../Config/jwt.php';
-        if (file_exists($config)) {
-            $this->mergeConfigFrom($config, 'jwt');
+
+        // Load jwt.php config if exists
+        $configPath = module_path($this->name, 'config/jwt.php');
+        if (file_exists($configPath)) {
+            $this->mergeConfigFrom($configPath, 'jwt');
         }
-        $routes = __DIR__ . '/../Routes/api.php';
-        if (file_exists($routes)) {
-            $this->loadRoutesFrom($routes);
+
+        // Load routes
+        $routesPath = module_path($this->name, 'routes/api.php');
+        if (file_exists($routesPath)) {
+            $this->loadRoutesFrom($routesPath);
         }
+
+        // Bind AuthService **safely** after all providers loaded
+        // $this->app->booted(function () {
+        //     $this->app->singleton(AuthService::class, function ($app) {
+        //         // $app->make('cache') sẽ luôn tồn tại
+        //         return new AuthService($app->make('cache'));
+        //     });
+        // });
     }
 
     /**
@@ -44,15 +58,22 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Bind repository
         $this->app->bind(AuthRepositoryInterface::class, EloquentAuthRepository::class);
-        $this->app->singleton(AuthService::class);
+
+        // Register module service providers
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
-        $this->mergeConfigFrom(__DIR__.'/../Config/jwt.php', 'jwt');
+
+        // Merge jwt config
+        $configPath = base_path('Modules/Auth/config/jwt.php');
+        if (file_exists($configPath)) {
+            $this->mergeConfigFrom($configPath, 'jwt');
+        }
     }
 
     /**
-     * Register commands in the format of Command::class
+     * Register commands
      */
     protected function registerCommands(): void
     {
@@ -60,14 +81,11 @@ class AuthServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register command Schedules.
+     * Register command schedules.
      */
     protected function registerCommandSchedules(): void
     {
-        // $this->app->booted(function () {
-        //     $schedule = $this->app->make(Schedule::class);
-        //     $schedule->command('inspire')->hourly();
-        // });
+        // $this->app->booted(function () { ... });
     }
 
     /**
@@ -75,7 +93,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function registerTranslations(): void
     {
-        $langPath = resource_path('lang/modules/'.$this->nameLower);
+        $langPath = resource_path('lang/modules/' . $this->nameLower);
 
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, $this->nameLower);
@@ -87,67 +105,42 @@ class AuthServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register config.
+     * Register config files
      */
     protected function registerConfig(): void
     {
-        $configPath = module_path($this->name, config('modules.paths.generator.config.path'));
+        $configPath = module_path($this->name, config('modules.paths.generator.config.path', 'config'));
 
         if (is_dir($configPath)) {
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($configPath));
 
             foreach ($iterator as $file) {
                 if ($file->isFile() && $file->getExtension() === 'php') {
-                    $config = str_replace($configPath.DIRECTORY_SEPARATOR, '', $file->getPathname());
-                    $config_key = str_replace([DIRECTORY_SEPARATOR, '.php'], ['.', ''], $config);
-                    $segments = explode('.', $this->nameLower.'.'.$config_key);
+                    $configKey = str_replace([$configPath . DIRECTORY_SEPARATOR, '.php'], ['', ''], $file->getPathname());
+                    $configKey = $this->nameLower . '.' . strtolower(str_replace(DIRECTORY_SEPARATOR, '.', $configKey));
 
-                    // Remove duplicated adjacent segments
-                    $normalized = [];
-                    foreach ($segments as $segment) {
-                        if (end($normalized) !== $segment) {
-                            $normalized[] = $segment;
-                        }
-                    }
-
-                    $key = ($config === 'config.php') ? $this->nameLower : implode('.', $normalized);
-
-                    $this->publishes([$file->getPathname() => config_path($config)], 'config');
-                    $this->merge_config_from($file->getPathname(), $key);
+                    $this->publishes([$file->getPathname() => config_path(basename($file))], 'config');
+                    $this->mergeConfigFrom($file->getPathname(), $configKey);
                 }
             }
         }
     }
 
     /**
-     * Merge config from the given path recursively.
-     */
-    protected function merge_config_from(string $path, string $key): void
-    {
-        $existing = config($key, []);
-        $module_config = require $path;
-
-        config([$key => array_replace_recursive($existing, $module_config)]);
-    }
-
-    /**
-     * Register views.
+     * Register views
      */
     public function registerViews(): void
     {
-        $viewPath = resource_path('views/modules/'.$this->nameLower);
+        $viewPath = resource_path('views/modules/' . $this->nameLower);
         $sourcePath = module_path($this->name, 'resources/views');
 
-        $this->publishes([$sourcePath => $viewPath], ['views', $this->nameLower.'-module-views']);
+        $this->publishes([$sourcePath => $viewPath], ['views', $this->nameLower . '-module-views']);
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->nameLower);
 
-        Blade::componentNamespace(config('modules.namespace').'\\' . $this->name . '\\View\\Components', $this->nameLower);
+        Blade::componentNamespace(config('modules.namespace') . '\\' . $this->name . '\\View\\Components', $this->nameLower);
     }
 
-    /**
-     * Get the services provided by the provider.
-     */
     public function provides(): array
     {
         return [];
@@ -157,11 +150,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $paths = [];
         foreach (config('view.paths') as $path) {
-            if (is_dir($path.'/modules/'.$this->nameLower)) {
-                $paths[] = $path.'/modules/'.$this->nameLower;
+            if (is_dir($path . '/modules/' . $this->nameLower)) {
+                $paths[] = $path . '/modules/' . $this->nameLower;
             }
         }
-
         return $paths;
     }
 }

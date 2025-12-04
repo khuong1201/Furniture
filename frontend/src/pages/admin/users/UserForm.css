@@ -1,0 +1,59 @@
+/* Reuse CategoryForm.css styles */
+@import '../categories/CategoryForm.css';
+
+.role-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.role-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.role-item:hover {
+    background-color: #f9fafb;
+    border-color: #3b82f6;
+}
+
+.role-item input[type="checkbox"] {
+    margin-top: 2px;
+    cursor: pointer;
+}
+
+.role-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.role-info strong {
+    color: #111827;
+    font-size: 14px;
+}
+
+.role-desc {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.no-roles {
+    color: #9ca3af;
+    text-align: center;
+    padding: 24px;
+}
+
+.hint {
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: normal;
+    margin-left: 4px;
+}

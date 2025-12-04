@@ -1,0 +1,238 @@
+/* Settings Page Styles */
+.settings-page {
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    margin-bottom: 32px;
+}
+
+.settings-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.settings-header p {
+    color: #64748b;
+    font-size: 14px;
+    margin: 8px 0 0 0;
+}
+
+.settings-container {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid rgba(254, 240, 138, 0.3);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
+    overflow: hidden;
+}
+
+/* Tabs */
+.settings-tabs {
+    display: flex;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-bottom: 1px solid rgba(254, 240, 138, 0.5);
+    overflow-x: auto;
+}
+
+.tab-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #78716c;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.tab-item:hover {
+    color: #92400e;
+}
+
+.tab-item.active {
+    color: #92400e;
+    border-bottom-color: #fbbf24;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Content */
+.settings-content {
+    padding: 32px;
+}
+
+.settings-section {
+    margin-bottom: 32px;
+}
+
+.settings-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #92400e;
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(254, 240, 138, 0.3);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(254, 240, 138, 0.5);
+    border-radius: 10px;
+    font-size: 14px;
+    background: white;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Toggle Group */
+.toggle-group {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #fefce8;
+    border-radius: 12px;
+    border: 1px solid rgba(254, 240, 138, 0.3);
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+}
+
+.toggle-label input {
+    width: 20px;
+    height: 20px;
+    accent-color: #fbbf24;
+}
+
+.helper-text {
+    color: #64748b;
+    font-size: 13px;
+    margin: 8px 0 0 32px;
+}
+
+/* Info Box */
+.info-box {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-radius: 12px;
+    border: 1px solid #93c5fd;
+}
+
+.info-box p {
+    color: #1e40af;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.info-box p+p {
+    margin-top: 8px;
+}
+
+/* Actions */
+.settings-actions {
+    padding-top: 24px;
+    border-top: 1px solid rgba(254, 240, 138, 0.3);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Alerts */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1px solid #34d399;
+}
