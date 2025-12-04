@@ -30,6 +30,12 @@ class OrderService {
   // 4. Hàm request dùng chung
   async _request(endpoint, options = {}) {
     try {
+      // Auto-set token from localStorage
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        this.setToken(token);
+      }
+
       const url = `${this.baseUrl}${endpoint}`;
       const config = {
         ...options,

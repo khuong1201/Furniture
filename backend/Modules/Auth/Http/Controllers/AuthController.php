@@ -3,7 +3,7 @@
 namespace Modules\Auth\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Modules\Shared\Http\Controllers\BaseController; 
+use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Auth\Services\AuthService;
 use Modules\Auth\Http\Requests\RegisterRequest;
@@ -16,12 +16,13 @@ use OpenApi\Attributes as OA;
     description: "Quản lý xác thực người dùng (Login, Register, OTP...)"
 )]
 
-class AuthController extends BaseController 
+class AuthController extends BaseController
 {
     public function __construct(
         protected AuthService $authService
-    ) {}
-    
+    ) {
+    }
+
     #[OA\Post(
         path: "/auth/register",
         summary: "Đăng ký tài khoản mới",
@@ -60,7 +61,7 @@ class AuthController extends BaseController
         ]
     )]
 
-    
+
     public function register(RegisterRequest $request)
     {
         $result = $this->authService->register(
@@ -139,9 +140,17 @@ class AuthController extends BaseController
                         new OA\Schema(ref: "#/components/schemas/ApiResponse"),
                         new OA\Schema(properties: [
                             new OA\Property(property: "data", type: "object", properties: [
+                                new OA\Property(property: "user", type: "object", properties: [
+                                    new OA\Property(property: "id", type: "integer", example: 1),
+                                    new OA\Property(property: "uuid", type: "string", example: "123e4567-e89b-12d3-a456-426614174000"),
+                                    new OA\Property(property: "email", type: "string", example: "admin@system.com"),
+                                    new OA\Property(property: "name", type: "string", example: "Super Admin")
+                                ]),
                                 new OA\Property(property: "access_token", type: "string"),
                                 new OA\Property(property: "refresh_token", type: "string"),
-                                new OA\Property(property: "permissions", type: "array", items: new OA\Items(type: "string"))
+                                new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string"), example: ["admin"]),
+                                new OA\Property(property: "permissions", type: "array", items: new OA\Items(type: "string")),
+                                new OA\Property(property: "expires_in", type: "integer", example: 3600)
                             ])
                         ])
                     ]
@@ -230,7 +239,7 @@ class AuthController extends BaseController
             )
         ]
     )]
-    
+
     public function logout(Request $request)
     {
         $token = $request->input('refresh_token');

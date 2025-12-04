@@ -13,12 +13,12 @@ use Modules\User\Domain\Models\User;
 use Modules\Role\Domain\Models\Role;
 use Modules\Category\Domain\Models\Category;
 use Modules\Product\Domain\Models\Product;
-use Modules\Product\Domain\Models\ProductVariant; 
+use Modules\Product\Domain\Models\ProductVariant;
 use Modules\Product\Domain\Models\Attribute;
 use Modules\Product\Domain\Models\AttributeValue;
 use Modules\Product\Domain\Models\ProductImage;
 use Modules\Warehouse\Domain\Models\Warehouse;
-use Modules\Inventory\Domain\Models\InventoryStock; 
+use Modules\Inventory\Domain\Models\InventoryStock;
 use Modules\Address\Domain\Models\Address;
 use Modules\Collection\Domain\Models\Collection;
 use Modules\Order\Domain\Models\Order;
@@ -31,16 +31,36 @@ class DatabaseSeeder extends Seeder
         // 1. Dọn dẹp DB
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         $tables = [
-            'users', 'roles', 'permissions', 'model_has_roles', 'permission_role', 'role_user',
-            'categories', 'products', 'product_variants', 'product_images', 
-            'attributes', 'attribute_values', 'variant_attribute_values',
-            'warehouses', 'inventory_stocks', 
-            'orders', 'order_items', 'carts', 'cart_items', 
-            'addresses', 'collections', 'collection_product', 'shippings', 'payments', 'reviews'
+            'users',
+            'roles',
+            'permissions',
+            'model_has_roles',
+            'permission_role',
+            'role_user',
+            'categories',
+            'products',
+            'product_variants',
+            'product_images',
+            'attributes',
+            'attribute_values',
+            'variant_attribute_values',
+            'warehouses',
+            'inventory_stocks',
+            'orders',
+            'order_items',
+            'carts',
+            'cart_items',
+            'addresses',
+            'collections',
+            'collection_product',
+            'shippings',
+            'payments',
+            'reviews'
         ];
 
         foreach ($tables as $table) {
-            if (Schema::hasTable($table)) DB::table($table)->truncate();
+            if (Schema::hasTable($table))
+                DB::table($table)->truncate();
         }
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -52,18 +72,28 @@ class DatabaseSeeder extends Seeder
         // 3. Admin & User
         echo "👤 Creating Users...\n";
         $admin = User::create([
-            'uuid' => Str::uuid(), 'name' => 'Super Admin', 'email' => 'admin@system.com',
-            'password' => bcrypt('123456'), 'is_active' => true, 'email_verified_at' => now()
+            'uuid' => Str::uuid(),
+            'name' => 'Super Admin',
+            'email' => 'admin@system.com',
+            'password' => bcrypt('123456'),
+            'is_active' => true,
+            'email_verified_at' => now()
         ]);
         $adminRole = Role::where('name', 'admin')->first();
-        if ($adminRole) $admin->roles()->sync([$adminRole->id]); // Sync sẽ tự xử lý bảng trung gian
+        if ($adminRole)
+            $admin->roles()->sync([$adminRole->id]); // Sync sẽ tự xử lý bảng trung gian
 
         $customer = User::create([
-            'uuid' => Str::uuid(), 'name' => 'Test Customer', 'email' => 'customer@test.com',
-            'password' => bcrypt('123456'), 'is_active' => true, 'email_verified_at' => now()
+            'uuid' => Str::uuid(),
+            'name' => 'Test Customer',
+            'email' => 'customer@test.com',
+            'password' => bcrypt('123456'),
+            'is_active' => true,
+            'email_verified_at' => now()
         ]);
         $customerRole = Role::where('name', 'customer')->first();
-        if ($customerRole) $customer->roles()->sync([$customerRole->id]);
+        if ($customerRole)
+            $customer->roles()->sync([$customerRole->id]);
 
         // Address
         if (Schema::hasTable('addresses')) {
@@ -92,7 +122,7 @@ class DatabaseSeeder extends Seeder
 
         // 7. Products (Loop 20 items)
         echo "📦 Creating Products...\n";
-        
+
         $products = []; // Lưu lại để tạo Order sau
 
         for ($i = 1; $i <= 20; $i++) {
@@ -101,16 +131,13 @@ class DatabaseSeeder extends Seeder
                 'uuid' => Str::uuid(),
                 'name' => $isFashion ? "Áo Thun Mẫu $i" : "Laptop Model $i",
                 'category_id' => $isFashion ? $catFashion->id : $catElec->id,
-                'has_variants' => $isFashion, 
+                'has_variants' => $isFashion,
                 'is_active' => true,
                 'price' => $isFashion ? null : 20000000,
                 'sku' => $isFashion ? null : "LAPTOP-$i",
-                // Khởi tạo giá trị thống kê
-                'sold_count' => rand(0, 50), 
-                'rating_avg' => rand(3, 5), 
-                'rating_count' => rand(1, 10)
+                'sold_count' => rand(0, 50)
             ]);
-            
+
             ProductImage::create(['uuid' => Str::uuid(), 'product_id' => $product->id, 'image_url' => 'https://placehold.co/400', 'is_primary' => true]);
 
             if ($isFashion) {
@@ -118,7 +145,7 @@ class DatabaseSeeder extends Seeder
                 $v1 = ProductVariant::create(['uuid' => Str::uuid(), 'product_id' => $product->id, 'sku' => "TSHIRT-$i-RED", 'price' => 100000, 'weight' => 0.2]);
                 $v1->attributeValues()->sync([$valRed->id, $valS->id]);
                 InventoryStock::create(['uuid' => Str::uuid(), 'warehouse_id' => $whHN->id, 'product_variant_id' => $v1->id, 'quantity' => 100]);
-                
+
                 // Variant 2
                 $v2 = ProductVariant::create(['uuid' => Str::uuid(), 'product_id' => $product->id, 'sku' => "TSHIRT-$i-BLUE", 'price' => 120000, 'weight' => 0.2]);
                 $v2->attributeValues()->sync([$valBlue->id, $valM->id]);
@@ -153,7 +180,7 @@ class DatabaseSeeder extends Seeder
         if (Schema::hasTable('orders')) {
             // Lấy 1 variant có sẵn để mua
             $buyVariant = ProductVariant::first();
-            
+
             $order = Order::create([
                 'uuid' => Str::uuid(),
                 'user_id' => $customer->id,
