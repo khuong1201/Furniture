@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProduct } from '../../../hooks/useProduct';
-import { useOrder } from '../../../hooks/useOrder';
+import { useProduct } from '@/hooks/useProduct';
+import { useCart } from '@/hooks/useCart';
 import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin, ThumbsUp } from 'lucide-react';
 import './ProductDetail.css';
 
@@ -10,19 +10,20 @@ const ProductDetail = () => {
   const { id } = useParams();
 
   const { productDetail, loading, error, getDetail } = useProduct();
-  const { createOrder, loading: orderLoading } = useOrder();
+  const { addToCart, loading: cartLoading, error: cartError, message } = useCart();
 
   const [activeImage, setActiveImage] = useState(null);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [address, setAddress] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
 
   const isLoggedIn = () => {
-  const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('access_token');
 
-  return !!token;
-};
+    return !!token;
+  };
 
   useEffect(() => {
     if (id) {
@@ -30,70 +31,65 @@ const ProductDetail = () => {
     }
   }, [id, getDetail]);
 
-  // --- 2. CẬP NHẬT ẢNH MẶC ĐỊNH KHI CÓ DỮ LIỆU ---
+
   useEffect(() => {
-    if (productDetail) {
-      // Ưu tiên lấy ảnh từ mảng images, nếu không có thì lấy ảnh đại diện chính
-      const firstImg = productDetail.images?.[0]?.path || productDetail.image;
-      if (firstImg) {
-        setActiveImage(getImageUrl(firstImg));
-      }
-    }
+    if (!productDetail?.images?.length) return;
+
+    const primary =
+      productDetail.images.find(img => img.is_primary === 1) ||
+      productDetail.images[0];
+
+    setActiveImage(primary.url);
   }, [productDetail]);
 
-  const getImageUrl = (path) => {
-    if (!path) return 'https://placehold.co/600x400?text=No+Image';
-    if (path.startsWith('http')) return path; 
-    return `http://localhost:8000/storage/${path}`; 
-  };
+  useEffect(() => {
+    if (!selectedVariant && productDetail?.variants?.length) {
+      setSelectedVariant(productDetail.variants[0]);
+    }
+  }, [productDetail, selectedVariant]);
+
+  useEffect(() => {
+    if (!productDetail?.variants?.length) return;
+    if (!selectedColor || !selectedSize) return;
+
+    const foundVariant = productDetail.variants.find(v =>
+      v.attributes.some(a => a.value_uuid === selectedColor) &&
+      v.attributes.some(a => a.value_uuid === selectedSize)
+    );
+
+    if (foundVariant) {
+      setSelectedVariant(foundVariant);
+    }
+  }, [selectedColor, selectedSize, productDetail]);
 
   const handleQuantity = (type) => {
     if (type === 'dec' && quantity > 1) setQuantity(quantity - 1);
     if (type === 'inc') setQuantity(quantity + 1);
   };
-
-  const handleAction = async (actionType) => {
+  
+  const handleAddToCart = async (actionType) => {
 
     if (!isLoggedIn()) {
       alert('Bạn cần đăng nhập để tiếp tục!');
-      return navigate('/login');
+      return navigate('/customer/login');
     }
     if (!selectedColor) return alert('Please select a color!');
     if (!selectedSize) return alert('Please select a size!');
     if (!address.trim()) return alert('Please enter your delivery address!');
 
-    const orderPayload = {
-      address_id: 1,
-      notes: `Color: ${selectedColor}, Size: ${selectedSize}, Address: ${address}`,
-      items: [
-        {
-          product_uuid: productDetail.uuid,
-          quantity: quantity
-        }
-      ]
-    };
-
-    console.log('🚀 ORDER PAYLOAD:', orderPayload);
-
     try {
-      // ✅ 4. GỌI API TẠO ORDER
-      const result = await createOrder(orderPayload);
+      const result = await addToCart(
+        selectedVariant.uuid,
+        quantity
+      );
 
-      console.log('✅ ORDER CREATE SUCCESS:', result);
-
-      if (actionType === 'cart') {  
-        alert('✅ Đã thêm vào giỏ thành công!');
-      }
-
-      if (actionType === 'buy') {
-        alert('✅ Đặt hàng thành công!');
-        navigate(`/orders/${result.uuid}`); // nếu có trang chi tiết đơn
-      }
-
+      console.log('✅ ADD TO CART SUCCESS:', result);
+      alert('Add to cart success');
     } catch (error) {
-      console.error('❌ ORDER FAILED:', error);
-      alert(error.message || 'Đặt hàng thất bại!');
+      console.error('❌ ADD TO CART FAILED:', error);
+      alert(error.message || 'Add to cart failed');
     }
+
   };
 
 
@@ -101,14 +97,20 @@ const ProductDetail = () => {
   if (error) return <div className="pd-error">❌ Lỗi: {error}</div>;
   if (!productDetail) return <div className="pd-error">⚠️ Không tìm thấy sản phẩm</div>;
 
-  // --- CHUẨN BỊ DỮ LIỆU HIỂN THỊ ---
-  // Nếu API chưa trả về mảng ảnh, tạo mảng tạm chứa 1 ảnh chính để không lỗi giao diện
-  const displayImages = productDetail.images && productDetail.images.length > 0 
-    ? productDetail.images.map(img => img.path) 
-    : [productDetail.image];
 
-  const colors = productDetail.colors || ["Standard"];
-  const sizes = productDetail.sizes || ["Standard"];
+  const displayImages = productDetail.images || [];
+  
+  const colors = productDetail?.available_options?.find(
+    opt => opt.attribute_name === "Màu sắc"
+  )?.values || [];
+  
+  const sizes = productDetail?.available_options?.find(
+    opt => opt.attribute_name === "Kích thước"
+  )?.values || [];
+
+  const rating = 4.9;
+  const reviewsCount = 156;
+  const soldCount = 89;
 
   return (
     <div className="pd-wrapper">
@@ -121,21 +123,22 @@ const ProductDetail = () => {
         {/* --- CỘT TRÁI: HÌNH ẢNH --- */}
         <div className="pd-gallery">
           <div className="main-image">
-            <img src={activeImage} alt={productDetail.name} />
+            <img 
+              src={activeImage || displayImages?.[0]?.url} 
+              alt={productDetail.name} 
+            />
           </div>
+
           <div className="thumbnail-list">
-            {displayImages.map((img, index) => {
-               const fullUrl = getImageUrl(img);
-               return (
-                <div 
-                  key={index} 
-                  className={`thumb-item ${activeImage === fullUrl ? 'active' : ''}`}
-                  onMouseEnter={() => setActiveImage(fullUrl)}
-                >
-                  <img src={fullUrl} alt={`Thumb ${index}`} />
-                </div>
-               );
-            })}
+            {displayImages.map((img, index) => (
+              <div
+                key={img.uuid}
+                className={`thumb-item ${activeImage === img.url ? 'active' : ''}`}
+                onMouseEnter={() => setActiveImage(img.url)}
+              >
+                <img src={img.url} alt={`Thumb ${index}`} />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -146,17 +149,17 @@ const ProductDetail = () => {
 
             <div className="product-meta">
               <span className="rating">
-                {productDetail.rating || 5.0} <Star size={14} fill="#ffc107" color="#ffc107" />
+                {rating} <Star size={14} fill="#ffc107" color="#ffc107" />
               </span>
               <span className="divider">|</span>
-              <span className="reviews">{productDetail.reviews_count || 156} Ratings</span>
+              <span className="reviews">{reviewsCount} Ratings</span>
               <span className="divider">|</span>
-              <span className="sold">{productDetail.sold || 156} sold</span>
+              <span className="sold">{soldCount} sold</span>
             </div>
 
             <div className="price-section">
               <span className="current-price">
-                  {Number(productDetail.price).toLocaleString()} VND
+                {Number(selectedVariant?.price || productDetail.variants?.[0]?.price || 0).toLocaleString()} VND
               </span>
               {/* Nếu có giá gốc thì hiển thị */}
               {productDetail.original_price && (
@@ -167,7 +170,7 @@ const ProductDetail = () => {
                       <span className="discount-badge">-10%</span>
                   </>
               )}
-          </div>
+          </div>  
           </div>
           
           <div className='product-body'>
@@ -190,13 +193,13 @@ const ProductDetail = () => {
             <div className="variant-section">
               <span className="label">Color</span>
               <div className="options-row">
-                {colors.map((color, index) => (
+                {colors.map((c) => (
                   <button 
-                    key={color}
-                    className={`option-btn ${selectedColor === color ? 'selected' : ''}`}
-                    onClick={() => setSelectedColor(color)}
+                    key={c.uuid}
+                    className={`option-btn ${selectedColor === c.uuid ? 'selected' : ''}`}
+                    onClick={() => setSelectedColor(c.uuid)}
                   >
-                    {color}
+                    {c.value}
                   </button>
                 ))}
               </div>
@@ -206,13 +209,13 @@ const ProductDetail = () => {
             <div className="variant-section">
               <span className="label">Size</span>
               <div className="options-row">
-                {sizes.map((size, index) => (
+                {sizes.map((s) => (
                   <button 
-                    key={size}
-                    className={`option-btn ${selectedSize === size ? 'selected' : ''}`}
-                    onClick={() => setSelectedSize(size)}
+                    key={s.uuid}
+                    className={`option-btn ${selectedSize === s.uuid ? 'selected' : ''}`}
+                    onClick={() => setSelectedSize(s.uuid)}
                   >
-                    {size}
+                    {s.value}
                   </button>
                 ))}
               </div>
@@ -232,19 +235,18 @@ const ProductDetail = () => {
             <div className="action-buttons">
               <button 
                 className="btn-add-cart" 
-                onClick={() => handleAction('cart')}
-                disabled={orderLoading}
+                onClick={handleAddToCart}
+                disabled={cartLoading}
               >
                 <ShoppingCart size={20}/>
-                {orderLoading ? 'Processing...' : 'Add to Cart'}
+                {cartLoading ? 'Processing...' : 'Add to Cart'}
               </button>
               
               <button 
                 className="btn-buy-now"
-                onClick={() => handleAction('buy')}
-                disabled={orderLoading}
+              
               >
-                {orderLoading ? 'Processing...' : 'Buy Now'}
+                Buy Now
               </button>
             </div>
           </div>

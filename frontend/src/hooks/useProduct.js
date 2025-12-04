@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ProductService from '@/services/productService';
 
 export const useProduct = () => {
@@ -60,7 +60,10 @@ export const useProduct = () => {
     }
   }, []);
 
-  // Trả về mọi thứ cần thiết cho View
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   return {
     products,       // Danh sách (Array)
     productDetail,  // Chi tiết (Object)

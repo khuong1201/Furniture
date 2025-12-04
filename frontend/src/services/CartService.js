@@ -2,7 +2,6 @@ class CartService {
   static _instance = null;
 
   constructor() {
-    // Lưu ý: Endpoint thường là /cart
     this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     this.headers = {
       'Content-Type': 'application/json',
@@ -17,7 +16,6 @@ class CartService {
     return CartService._instance;
   }
 
-  // Hàm request chung (giống ProductService)
   async _request(endpoint, options = {}) {
     try {
       const token = localStorage.getItem('access_token');
@@ -32,52 +30,77 @@ class CartService {
         headers,
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
+        throw new Error(result?.message || 'API Error');
       }
 
-      const result = await response.json();
-      return result.data || result; // Laravel thường trả về { data: ... }
+      return result.data; // đúng chuẩn ApiResponse::success
     } catch (error) {
       console.error(`CartService Error (${endpoint}):`, error);
       throw error;
     }
   }
 
-  // --- API METHODS ---
-
-  // 1. Lấy danh sách giỏ hàng
+  // ✅ 1. Lấy giỏ hàng
   async getCart() {
     return this._request('/carts', { method: 'GET' });
   }
 
-  // 2. Thêm vào giỏ (Thường dùng ở trang ProductDetail)
-  async addToCart(productId, quantity = 1) {
+  // ✅ 2. Thêm vào giỏ (PHẢI là variant_uuid)
+  async addToCart(variantUuid, quantity = 1) {
     return this._request('/carts', {
       method: 'POST',
-      body: JSON.stringify({ product_id: productId, quantity }),
+      body: JSON.stringify({
+        variant_uuid: variantUuid,
+        quantity,
+      }),
     });
   }
 
-  // 3. Cập nhật số lượng (quantity)
-  async updateItem(itemId, quantity) {
-    // itemId: ID của dòng trong giỏ hàng (cart_items.id) chứ không phải product_id
-    return this._request(`/cart/${itemId}`, {
-      method: 'PUT', // Hoặc POST tùy backend bạn viết
+  // ✅ 3. Cập nhật số lượng item
+  async updateItem(itemUuid, quantity) {
+    return this._request(`/carts/${itemUuid}`, {
+      method: 'PUT',
       body: JSON.stringify({ quantity }),
     });
   }
 
-  // 4. Xóa sản phẩm khỏi giỏ
-  async removeItem(itemId) {
-    return this._request(`/cart/remove/${itemId}`, { method: 'DELETE' });
+  // ✅ 4. Xóa item
+  async removeItem(itemUuid) {
+    return this._request(`/carts/${itemUuid}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ✅ 5. Làm trống giỏ
+  async clearCart() {
+    return this._request('/carts', {
+      method: 'DELETE',
+    });
   }
 
   // --- STATIC WRAPPERS ---
-  static async getCart() { return CartService.instance.getCart(); }
-  static async addToCart(pId, qty) { return CartService.instance.addToCart(pId, qty); }
-  static async updateItem(itemId, qty) { return CartService.instance.updateItem(itemId, qty); }
-  static async removeItem(itemId) { return CartService.instance.removeItem(itemId); }
+  static async getCart() {
+    return CartService.instance.getCart();
+  }
+
+  static async addToCart(variantUuid, qty) {
+    return CartService.instance.addToCart(variantUuid, qty);
+  }
+
+  static async updateItem(itemUuid, qty) {
+    return CartService.instance.updateItem(itemUuid, qty);
+  }
+
+  static async removeItem(itemUuid) {
+    return CartService.instance.removeItem(itemUuid);
+  }
+
+  static async clearCart() {
+    return CartService.instance.clearCart();
+  }
 }
 
 export default CartService;

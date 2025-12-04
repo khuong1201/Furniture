@@ -1,30 +1,32 @@
-import { useState, useCallback, useEffect } from 'react';
-import CartService from '@/services/cartService';
+import React, { useState, useEffect, useCallback } from 'react';
+import CartService from '@/services/CartService';
 
 export const useCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
-
-  // Hàm tính tổng tiền (Client side calculation)
+  const [message, setMessage] = useState(null); 
   const calculateTotal = (items) => {
     const total = items.reduce((acc, item) => {
-      // Giả sử API trả về structure: { product: { price: 100 }, quantity: 2 }
-      // Bạn cần điều chỉnh price/quantity tùy theo response thực tế
-      const price = item.product?.price || item.price || 0;
-      return acc + (price * item.quantity);
+      const price =
+        item.variant?.price ??
+        item.product?.price ??
+        item.price ??
+        0;
+
+      return acc + price * item.quantity;
     }, 0);
+
     setTotalPrice(total);
   };
 
-  // 1. Lấy giỏ hàng
+  // ✅ LẤY GIỎ
   const fetchCart = useCallback(async () => {
     setLoading(true);
     try {
       const data = await CartService.getCart();
-      // Nếu data trả về là mảng items
-      const items = Array.isArray(data) ? data : (data.items || []);
+      const items = Array.isArray(data) ? data : data?.items || [];
       setCartItems(items);
       calculateTotal(items);
     } catch (err) {
@@ -34,53 +36,84 @@ export const useCart = () => {
     }
   }, []);
 
-  // 2. Cập nhật số lượng
-  const updateQuantity = async (itemId, newQuantity) => {
-    if (newQuantity < 1) return; // Không cho nhỏ hơn 1
+  // ✅🔥 THÊM VÀO GIỎ (CHUẨN HOOK)
+  const addToCart = async (variantUuid, quantity = 1) => {
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+
     try {
-      // Optimistic Update: Cập nhật giao diện trước khi gọi API để mượt hơn
-      const oldItems = [...cartItems];
-      const newItems = cartItems.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
+      const result = await CartService.addToCart(variantUuid, quantity);
+
+      setMessage('✅ Đã thêm vào giỏ hàng!');
+
+      // ✅ Reload giỏ để sync toàn app
+      await fetchCart();
+
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ UPDATE ITEM
+  const updateQuantity = async (itemUuid, newQuantity) => {
+    if (newQuantity < 0) return;
+
+    if (newQuantity === 0) {
+      return removeItem(itemUuid);
+    }
+
+    try {
+      const newItems = cartItems.map(item =>
+        item.uuid === itemUuid
+          ? { ...item, quantity: newQuantity }
+          : item
       );
+
       setCartItems(newItems);
       calculateTotal(newItems);
 
-      // Gọi API
-      await CartService.updateItem(itemId, newQuantity);
+      await CartService.updateItem(itemUuid, newQuantity);
     } catch (err) {
-      console.error('Lỗi update:', err);
-      // Nếu lỗi thì revert lại (Optional)
-      fetchCart(); 
+      fetchCart();
     }
   };
 
-  // 3. Xóa sản phẩm
-  const removeItem = async (itemId) => {
+  // ✅ DELETE ITEM
+  const removeItem = async (itemUuid) => {
     if (!window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
+
     try {
-      await CartService.removeItem(itemId);
-      // Xóa item khỏi state hiện tại
-      const newItems = cartItems.filter(item => item.id !== itemId);
+      await CartService.removeItem(itemUuid);
+
+      const newItems = cartItems.filter(
+        item => item.uuid !== itemUuid
+      );
+
       setCartItems(newItems);
       calculateTotal(newItems);
     } catch (err) {
-      alert('Xóa thất bại: ' + err.message);
+      alert(err.message);
     }
   };
 
-  // Tự động fetch khi mount hook
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
-
+        
   return {
     cartItems,
     loading,
     error,
+    message,   
     totalPrice,
     fetchCart,
+    addToCart,  
     updateQuantity,
-    removeItem
+    removeItem,
   };
 };

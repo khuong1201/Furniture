@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
         await AuthService.logout();
-    } catch (e) {
+    } catch (e) {``
         console.log('Lỗi logout server, vẫn clear client');
     }
     // Xóa sạch client
