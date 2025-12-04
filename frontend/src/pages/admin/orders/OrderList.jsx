@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Search, Filter, Package } from 'lucide-react';
-import OrderService from '@/services/OrderService';
+import OrderService from '@/services/customer/OrderService';
 import '../products/ProductList.css';
 
 const OrderList = () => {

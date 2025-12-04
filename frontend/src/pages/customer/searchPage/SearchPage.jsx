@@ -4,46 +4,54 @@ import { useProduct } from '@/hooks/useProduct';
 import ProductCard from '@/pages/customer/components/ProductCard';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
+// Import CSS Module
+import styles from './SearchPage.module.css';
+
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
   
-  // 1. Lấy keyword từ URL (khớp với bên Header là 'search')
+  // 1. Lấy keyword từ URL
   const keyword = searchParams.get('search') || ''; 
 
-  // 2. Sử dụng Hook useProduct để quản lý state và gọi API
+  // 2. Sử dụng Hook (đã fix ở bước trước)
   const { products, loading, error, searchProducts } = useProduct();
 
-  // 3. Khi keyword thay đổi -> Gọi API search server-side
+  // 3. Gọi API khi keyword thay đổi
   useEffect(() => {
-    if (keyword) {
+    if (keyword.trim()) {
       searchProducts(keyword);
     }
   }, [keyword, searchProducts]);
 
   return (
-    <div className="search-page-container" style={{ padding: '20px' }}>
-      <h2>Kết quả tìm kiếm cho: "{keyword}"</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>
+        Kết quả tìm kiếm cho: <span>"{keyword}"</span>
+      </h2>
       
       {/* Hiển thị lỗi nếu có */}
-      {error && <div className="error-message" style={{color: 'red'}}>Lỗi: {error}</div>}
+      {error && <div className={styles.error}>⚠️ Lỗi: {error}</div>}
 
       {loading ? (
-         <div className="loading" style={{textAlign: 'center', padding: '50px'}}>
-            <AiOutlineLoading3Quarters className="spin" size={30} /> 
+         <div className={styles.loading}>
+            <AiOutlineLoading3Quarters className={styles.spin} size={40} /> 
             <p>Đang tìm sản phẩm...</p>
          </div>
       ) : (
         <>
           {products && products.length > 0 ? (
-            <div className="product-grid">
+            <div className={styles.grid}>
               {products.map(item => (
-                <ProductCard key={item.id} item={item} />
+                // ⚠️ QUAN TRỌNG: Dùng uuid thay vì id
+                <ProductCard key={item.uuid || item.id} item={item} />
               ))}
             </div>
           ) : (
-            <div className="no-result" style={{textAlign: 'center', marginTop: '50px'}}>
+            // Trạng thái không tìm thấy
+            <div className={styles.noResult}>
+                <div className={styles.icon}>🔍</div>
                 <h3>Không tìm thấy sản phẩm nào phù hợp.</h3>
-                <p>Thử tìm kiếm bằng từ khóa khác (ví dụ: "sofa", "bàn", "đèn").</p>
+                <p>Hãy thử tìm kiếm bằng từ khóa khác (ví dụ: "sofa", "bàn", "đèn").</p>
             </div>
           )}
         </>

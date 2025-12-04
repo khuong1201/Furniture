@@ -1,0 +1,89 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    font-family: 'Inter', sans-serif;
+    min-height: 60vh; /* Giữ chiều cao tối thiểu */
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.title span {
+    color: #d32f2f; /* Màu đỏ nhấn mạnh từ khóa */
+}
+
+/* Lưới sản phẩm Responsive */
+.grid {
+    display: grid;
+    /* Tự động chia cột: Ít nhất 240px 1 ô, tự giãn ra */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+/* Trạng thái Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    color: #666;
+}
+
+.loading p {
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+/* Animation xoay tròn */
+.spin {
+    animation: spin 1s linear infinite;
+    color: #000;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Trạng thái Lỗi */
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Trạng thái Không có kết quả */
+.noResult {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.noResult .icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.noResult h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.noResult p {
+    color: #777;
+}

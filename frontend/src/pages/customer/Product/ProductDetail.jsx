@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/useProduct';
 import { useCart } from '@/hooks/useCart';
+import { useOrder } from '@/hooks/useOrder';
 import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin, ThumbsUp } from 'lucide-react';
 
 // 1. Import styles từ module
@@ -13,6 +14,8 @@ const ProductDetail = () => {
 
   const { productDetail, loading, error, getDetail } = useProduct();
   const { addToCart, loading: cartLoading, error: cartError, message } = useCart();
+
+  const { createOrder, loading: orderLoading } = useOrder();
 
   const [activeImage, setActiveImage] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -68,7 +71,7 @@ const ProductDetail = () => {
     if (type === 'inc') setQuantity(quantity + 1);
   };
   
-  const handleAddToCart = async (actionType) => {
+  const handleProductAction = async (actionType) => {
 
     if (!isLoggedIn()) {
       alert('Bạn cần đăng nhập để tiếp tục!');
@@ -79,13 +82,37 @@ const ProductDetail = () => {
     if (!address.trim()) return alert('Please enter your delivery address!');
 
     try {
-      const result = await addToCart(
-        selectedVariant.uuid,
-        quantity
-      );
+      if (actionType === 'cart') {
+        await addToCart(selectedVariant.uuid, quantity);
+        alert('✅ Đã thêm vào giỏ hàng thành công!');
+      }
 
-      console.log('✅ ADD TO CART SUCCESS:', result);
-      alert('Add to cart success');
+      else if (actionType === 'buy_now') {
+        const isConfirmed = window.confirm(`Bạn muốn đặt hàng ngay ${quantity} sản phẩm này?`);
+        if (!isConfirmed) return;
+
+        // Tạo payload chuẩn cho OrderController
+        const payload = {
+          address_id: parseInt(address) || 1, // Parse ID từ input
+          items: [
+            {
+              variant_uuid: selectedVariant.uuid,
+              quantity: quantity
+            }
+          ]
+        };
+
+        const result = await createOrder(payload);
+        console.log('✅ BUY NOW SUCCESS:', result);
+        alert('🎉 Đặt hàng thành công!');
+
+        if (result?.uuid) {
+            navigate(`/customer/orders/${result.uuid}`);
+        } else {
+            navigate('/customer/orders');
+        }
+      }
+
     } catch (error) {
       console.error('❌ ADD TO CART FAILED:', error);
       alert(error.message || 'Add to cart failed');
@@ -238,15 +265,18 @@ const ProductDetail = () => {
             <div className={styles['action-buttons']}>
               <button 
                 className={styles['btn-add-cart']} 
-                onClick={handleAddToCart}
+                onClick={() => handleProductAction('cart')}
                 disabled={cartLoading}
               >
                 <ShoppingCart size={20}/>
                 {cartLoading ? 'Processing...' : 'Add to Cart'}
               </button>
               
-              <button className={styles['btn-buy-now']}>
-                Buy Now
+              <button className={styles['btn-buy-now']}
+                onClick={() => handleProductAction('buy_now')}
+                disabled={cartLoading || orderLoading || !selectedVariant}
+              >
+                {orderLoading ? 'Processing...' : 'Buy Now'}
               </button>
             </div>
           </div>
