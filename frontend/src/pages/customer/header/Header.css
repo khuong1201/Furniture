@@ -1,98 +1,411 @@
-/* Reset cơ bản */
-* {
-  box-sizing: border-box;
-}
-
+/* Header Wrapper */
 .header-wrapper {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  position: sticky;
+  top: 0;
   width: 100%;
-  position: sticky; /* 1. Giữ cố định vị trí */
-  top: 0;          /* 2. Dính chặt lên mép trên cùng */
-  left: 0;         /* 3. Căn trái */
-  width: 100%;     /* 4. Trải rộng hết chiều ngang màn hình */
-  z-index: 1000;   /* 5. Đảm bảo Header nổi lên trên các thành phần khác */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 1000;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
 }
 
 .header-top {
-  background-color: #CBA890;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(135deg, #d4a574 0%, #c9976c 100%);
+  padding: 16px 0;
 }
 
-.container.top-container {
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.top-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-
-  padding: 32px 24px;   /* Khoảng cách lề 2 bên */
-  gap: 16px;         /* Khoảng cách giữa Search và Icons */
+  gap: 32px;
 }
 
-.search-box { 
+/* Logo */
+.header-logo {
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Search Box */
+.search-box {
+  flex: 1;
+  max-width: 600px;
   display: flex;
   align-items: center;
-  flex-grow: 1; 
   background: white;
-  border-radius: 8px;
-  padding: 8px 12px;
-  height: 45px;
+  border-radius: 12px;
+  padding: 8px 8px 8px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.search-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-right: 10px;
-}
-
-.search-icon {
-  width: 24px;
-  height: 24px;
-  fill: #727070;
+.search-box .search-icon {
+  color: #a78b69;
+  flex-shrink: 0;
 }
 
 .search-box input {
-  width: 100%;
+  flex: 1;
   border: none;
   outline: none;
+  padding: 8px 12px;
   font-size: 14px;
+  color: #1e293b;
   background: transparent;
-  color: #333;
 }
 
-/* --- 2. ICONS ACTION (Bên phải) --- */
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.search-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #a78b69 0%, #8b6f4d 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 111, 77, 0.3);
+}
+
+/* Header Actions */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 12px;
 }
 
-.action-item {
+.action-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  color: #333; /* Chữ màu đen xám */
+  justify-content: center;
+  transition: all 0.3s;
 }
 
-/* Chỉnh icon SVG (Chuông, Giỏ, User) */
-.action-item .svg-icon {
-  width: 24px;
-  height: 24px;
-  fill: #333;
-  stroke: #333;
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
-.auth-text {
-  font-size: 14px;
+.action-btn .badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Hover hiệu ứng */
-.action-item:hover {
-  opacity: 0.7;
+/* User Dropdown */
+.user-dropdown {
+  position: relative;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 24px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.user-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.user-btn svg.rotate {
+  transform: rotate(180deg);
+}
+
+.user-btn svg {
+  transition: transform 0.3s;
+}
+
+/* Dropdown Menu */
+.dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.dropdown-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #d4a574 0%, #c9976c 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.dropdown-info strong {
+  display: block;
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.dropdown-info span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 4px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  color: #475569;
+  font-size: 14px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.dropdown-item svg {
+  color: #a78b69;
+}
+
+.dropdown-item.logout {
+  color: #ef4444;
+}
+
+.dropdown-item.logout:hover {
+  background: #fef2f2;
+}
+
+.dropdown-item.logout svg {
+  color: #ef4444;
+}
+
+/* Auth Actions (Not Logged In) */
+.auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-link {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.auth-link.login {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.auth-link.login:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.auth-link.register {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.auth-link.register:hover {
+  background: #fde68a;
+}
+
+/* Navigation */
+.header-nav {
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.nav-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-list li a {
+  display: block;
+  padding: 14px 20px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.nav-list li a:hover {
+  color: #a78b69;
+}
+
+.nav-list li a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: #a78b69;
+  transition: width 0.3s;
+}
+
+.nav-list li a:hover::after {
+  width: 60%;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .top-container {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .search-box {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .header-logo {
+    order: 1;
+  }
+
+  .header-actions {
+    order: 2;
+  }
+
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .nav-list {
+    gap: 4px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 16px;
+  }
+
+  .nav-list li a {
+    padding: 12px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .search-btn {
+    padding: 10px 14px;
+  }
 }

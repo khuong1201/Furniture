@@ -196,7 +196,14 @@ const CustomerOrderDetail = () => {
                             {order?.items?.map((item, index) => (
                                 <div key={index} className="order-item">
                                     <div className="item-image">
-                                        <Package size={24} />
+                                        {item.product_image || item.variant?.product?.thumbnail ? (
+                                            <img
+                                                src={item.product_image || item.variant?.product?.thumbnail}
+                                                alt={item.product_name}
+                                            />
+                                        ) : (
+                                            <Package size={24} />
+                                        )}
                                     </div>
                                     <div className="item-details">
                                         <h4>{item.product_name || item.variant?.product?.name}</h4>

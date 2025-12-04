@@ -8,16 +8,13 @@ export const useProduct = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 1. Hàm lấy danh sách Flash Sale
-  // Dùng useCallback để tránh hàm bị tạo lại liên tục gây re-render
-  const fetchProducts = useCallback(async () => {
+  // 1. Hàm lấy danh sách sản phẩm với params
+  const getProducts = useCallback(async (params = {}) => {
     setLoading(true);
     setError(null);
     try {
-      // Gọi qua Service Static Wrapper
-      const data = await ProductService.getAllProducts();
-      
-      console.log('✅featch data success')
+      const data = await ProductService.getAllProducts(params);
+      console.log('✅ Fetch products success');
       setProducts(data);
     } catch (err) {
       console.error(err);
@@ -26,6 +23,9 @@ export const useProduct = () => {
       setLoading(false);
     }
   }, []);
+
+  // Alias for backward compatibility
+  const fetchProducts = useCallback(() => getProducts(), [getProducts]);
 
   // 2. Hàm lấy chi tiết sản phẩm
   const getDetail = useCallback(async (id) => {
@@ -46,11 +46,8 @@ export const useProduct = () => {
   const searchProducts = useCallback(async (keyword, page = 1, perPage = 15) => {
     setLoading(true);
     try {
-
       const data = await ProductService.searchProducts(keyword, page, perPage);
-
-      setProducts(data); // Cập nhật list bằng kết quả tìm kiếm
-
+      setProducts(data);
     } catch (err) {
       console.error('Search error:', err);
       setError(err.message || 'Lỗi tìm kiếm');
@@ -65,12 +62,13 @@ export const useProduct = () => {
   }, [fetchProducts]);
 
   return {
-    products,       // Danh sách (Array)
-    productDetail,  // Chi tiết (Object)
-    loading,        // Trạng thái tải
-    error,          // Lỗi nếu có
-    fetchProducts,  // Hàm gọi API lấy list
-    getDetail,      // Hàm gọi API lấy chi tiết
-    searchProducts  // Hàm tìm kiếm
+    products,
+    productDetail,
+    loading,
+    error,
+    fetchProducts,
+    getProducts,
+    getDetail,
+    searchProducts
   };
 };
