@@ -13,6 +13,15 @@ class EloquentOrderRepository extends EloquentBaseRepository implements OrderRep
         parent::__construct($model);
     }
 
+    public function countByStatus(): array
+    {
+        return $this->model
+            ->select('status', \DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+    }
+
     public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = $this->query()->with([

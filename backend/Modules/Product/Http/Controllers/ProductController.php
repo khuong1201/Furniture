@@ -36,6 +36,7 @@ class ProductController extends BaseController
             new OA\Parameter(name: "category_uuid", in: "query", description: "Lọc theo danh mục", schema: new OA\Schema(type: "string", format: "uuid")),
             new OA\Parameter(name: "price_min", in: "query", schema: new OA\Schema(type: "number")),
             new OA\Parameter(name: "price_max", in: "query", schema: new OA\Schema(type: "number")),
+            new OA\Parameter(name: "sort_by", in: "query", schema: new OA\Schema(type: "string", enum: ["best_selling", "latest", "price_asc", "price_desc"]), description: "Sắp xếp danh sách"),
         ],
         responses: [
             new OA\Response(response: 200, description: "Success", content: new OA\JsonContent(properties: [

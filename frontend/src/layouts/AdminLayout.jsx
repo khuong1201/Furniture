@@ -15,10 +15,17 @@ import {
   Bell,
   Search,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Shield,
+  Boxes,
+  Layers,
+  Truck
 } from 'lucide-react';
 import { useAuth } from '@/hooks/AuthContext';
 import './AdminLayout.css';
+
+// Import logo của bạn
+import logo from '@/assets/icons/assets_admin/logo_admin.png';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -31,10 +38,14 @@ const AdminLayout = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: Package, label: 'Sản phẩm', path: '/admin/products' },
     { icon: FolderTree, label: 'Danh mục', path: '/admin/categories' },
+    { icon: Layers, label: 'Bộ sưu tập', path: '/admin/collections' },
     { icon: ShoppingCart, label: 'Đơn hàng', path: '/admin/orders' },
     { icon: Users, label: 'Người dùng', path: '/admin/users' },
-    { icon: Warehouse, label: 'Tồn kho', path: '/admin/inventory' },
+    { icon: Boxes, label: 'Tồn kho', path: '/admin/inventory' },
+    { icon: Warehouse, label: 'Kho hàng', path: '/admin/warehouses' },
+    { icon: Truck, label: 'Vận chuyển', path: '/admin/shippings' },
     { icon: Gift, label: 'Khuyến mãi', path: '/admin/promotions' },
+    { icon: Shield, label: 'Phân quyền', path: '/admin/roles' },
     { icon: Star, label: 'Đánh giá', path: '/admin/reviews' },
     { icon: Settings, label: 'Cài đặt', path: '/admin/settings' },
   ];
@@ -57,7 +68,8 @@ const AdminLayout = () => {
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
           <h2 className="sidebar-logo">
-            {sidebarOpen ? 'Admin Panel' : 'AP'}
+            <img src={logo} alt="Admin Logo" className="logo-image" />
+            {sidebarOpen && <span className="logo-text">Admin Panel</span>}
           </h2>
         </div>
 
@@ -69,6 +81,7 @@ const AdminLayout = () => {
                 key={item.path}
                 to={item.path}
                 className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+                onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
               >
                 <Icon size={20} />
                 {sidebarOpen && <span>{item.label}</span>}
@@ -92,7 +105,7 @@ const AdminLayout = () => {
 
             <div className="search-box">
               <Search size={18} />
-              <input type="text" placeholder="Tìm kiếm..." />
+              <input type="text" placeholder="Tìm kiếm sản phẩm, đơn hàng..." />
             </div>
           </div>
 
@@ -115,19 +128,22 @@ const AdminLayout = () => {
               </button>
 
               {profileOpen && (
-                <div className="dropdown-menu">
-                  <Link to="/admin/profile" className="dropdown-item">
-                    Hồ sơ
-                  </Link>
-                  <Link to="/admin/settings" className="dropdown-item">
-                    Cài đặt
-                  </Link>
-                  <hr />
-                  <button onClick={handleLogout} className="dropdown-item logout">
-                    <LogOut size={16} />
-                    Đăng xuất
-                  </button>
-                </div>
+                <>
+                  <div className="dropdown-overlay" onClick={() => setProfileOpen(false)} />
+                  <div className="dropdown-menu">
+                    <Link to="/admin/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+                      👤 Hồ sơ cá nhân
+                    </Link>
+                    <Link to="/admin/settings" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+                      ⚙️ Cài đặt
+                    </Link>
+                    <hr />
+                    <button onClick={handleLogout} className="dropdown-item logout">
+                      <LogOut size={16} />
+                      Đăng xuất
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -137,6 +153,10 @@ const AdminLayout = () => {
         <main className="admin-content">
           <Outlet />
         </main>
+        {/* Footer */}
+        <footer className="admin-footer">
+          <p>© {new Date().getFullYear()} Jewelry Admin Panel — Crafted with ❤️ by DevPhu</p>
+        </footer>
       </div>
     </div>
   );

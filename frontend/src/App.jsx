@@ -2,10 +2,20 @@ import { Routes, Route } from 'react-router-dom';
 import './App.css'
 import CustomerLayout from './layouts/CustomerLayout';
 import AdminLayout from './layouts/AdminLayout';
+
+// Customer Pages
 import HomePage from './pages/customer/homePage/HomePage';
 import Register from './pages/customer/register/RegisterForm';
 import LogIn from './pages/customer/login/LoginForm';
 import ProductDetail from './pages/customer/Product/ProductDetail';
+import SearchPage from './pages/customer/SearchPage';
+import CartPage from './pages/customer/cart/CartPage';
+import CheckoutPage from './pages/customer/checkout/CheckoutPage';
+import OrderHistory from './pages/customer/orders/OrderHistory';
+import CustomerOrderDetail from './pages/customer/orders/CustomerOrderDetail';
+import ProfilePage from './pages/customer/profile/ProfilePage';
+
+// Admin Pages
 import Dashboard from './pages/admin/dashboard/Dashboard';
 import ProductList from './pages/admin/products/ProductList';
 import ProductForm from './pages/admin/products/ProductForm';
@@ -19,19 +29,32 @@ import UserForm from './pages/admin/users/UserForm';
 import InventoryList from './pages/admin/inventory/InventoryList';
 import WarehouseList from './pages/admin/warehouses/WarehouseList';
 import WarehouseForm from './pages/admin/warehouses/WarehouseForm';
+import PromotionList from './pages/admin/promotions/PromotionList';
+import PromotionForm from './pages/admin/promotions/PromotionForm';
+import RoleList from './pages/admin/roles/RoleList';
+import RoleForm from './pages/admin/roles/RoleForm';
+import ReviewList from './pages/admin/reviews/ReviewList';
+import CollectionList from './pages/admin/collections/CollectionList';
+import CollectionForm from './pages/admin/collections/CollectionForm';
+import ShippingList from './pages/admin/shippings/ShippingList';
+import ShippingForm from './pages/admin/shippings/ShippingForm';
+import SettingsPage from './pages/admin/settings/SettingsPage';
 
 function App() {
   return (
     <Routes>
-
-      {/*CUSTOMER */}
+      {/* CUSTOMER */}
       <Route path="/customer" element={<CustomerLayout />}>
-
         <Route index element={<HomePage />} />
         <Route path="register" element={<Register />} />
         <Route path="login" element={<LogIn />} />
         <Route path="product/:id" element={<ProductDetail />} />
-
+        <Route path="product" element={<SearchPage />} />
+        <Route path="cart" element={<CartPage />} />
+        <Route path="checkout" element={<CheckoutPage />} />
+        <Route path="orders" element={<OrderHistory />} />
+        <Route path="orders/:uuid" element={<CustomerOrderDetail />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* ADMIN */}
@@ -53,9 +76,25 @@ function App() {
         <Route path="warehouses" element={<WarehouseList />} />
         <Route path="warehouses/create" element={<WarehouseForm />} />
         <Route path="warehouses/:uuid/edit" element={<WarehouseForm />} />
+        <Route path="promotions" element={<PromotionList />} />
+        <Route path="promotions/create" element={<PromotionForm />} />
+        <Route path="promotions/:uuid/edit" element={<PromotionForm />} />
+        <Route path="roles" element={<RoleList />} />
+        <Route path="roles/create" element={<RoleForm />} />
+        <Route path="roles/:uuid/edit" element={<RoleForm />} />
+        <Route path="reviews" element={<ReviewList />} />
+        <Route path="collections" element={<CollectionList />} />
+        <Route path="collections/create" element={<CollectionForm />} />
+        <Route path="collections/:uuid/edit" element={<CollectionForm />} />
+        <Route path="shippings" element={<ShippingList />} />
+        <Route path="shippings/create" element={<ShippingForm />} />
+        <Route path="shippings/:uuid/edit" element={<ShippingForm />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );
 }
 
 export default App;
+
+

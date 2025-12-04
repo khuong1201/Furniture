@@ -35,6 +35,12 @@ return new class extends Migration {
             $table->boolean('has_variants')->default(false);
             $table->boolean('is_active')->default(true)->index();
 
+            $table->unsignedBigInteger('sold_count')->default(0)->index();
+
+                        
+            $table->decimal('rating_avg', 3, 2)->default(0)->index(); 
+            $table->unsignedInteger('rating_count')->default(0);
+            
             $table->decimal('price', 12, 2)->nullable();
             $table->string('sku', 100)->unique()->nullable();
             
@@ -51,6 +57,8 @@ return new class extends Migration {
             $table->decimal('price', 12, 2);
             $table->decimal('weight', 10, 2)->nullable();
             $table->string('image_url')->nullable();
+
+            $table->unsignedBigInteger('sold_count')->default(0)->index();
             
             $table->timestamps();
         });

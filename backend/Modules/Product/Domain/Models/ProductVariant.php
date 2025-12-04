@@ -7,7 +7,7 @@ use Modules\Inventory\Domain\Models\InventoryStock;
 
 class ProductVariant extends Model {
     use Loggable;
-    protected $fillable = ['uuid', 'product_id', 'sku', 'price', 'weight', 'image_url'];
+    protected $fillable = ['uuid', 'product_id', 'sku', 'price', 'weight', 'image_url', 'sold_count'];
     protected static function boot() {
         parent::boot();
         static::creating(fn($m) => $m->uuid = (string) Str::uuid());

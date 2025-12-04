@@ -1,9 +1,7 @@
 class AuthService {
-  // 1. Singleton Instance
   static _instance = null;
 
   constructor() {
-    // Lấy URL từ biến môi trường hoặc dùng mặc định
     this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     this.headers = {
       'Content-Type': 'application/json',
@@ -11,7 +9,6 @@ class AuthService {
     };
   }
 
-  // 2. Hàm static để lấy instance duy nhất
   static get instance() {
     if (!AuthService._instance) {
       AuthService._instance = new AuthService();
@@ -19,7 +16,6 @@ class AuthService {
     return AuthService._instance;
   }
 
-  // 3. Cập nhật Token (Dùng khi user đã đăng nhập)
   setToken(token) {
     if (token) {
       this.headers['Authorization'] = `Bearer ${token}`;
@@ -28,7 +24,6 @@ class AuthService {
     }
   }
 
-  // 4. Hàm Private xử lý request chung
   async _request(endpoint, options = {}) {
     try {
       const url = `${this.baseUrl}${endpoint}`;
@@ -47,71 +42,75 @@ class AuthService {
         throw new Error(result.message || `Lỗi API: ${response.status}`);
       }
 
-      return result; // Auth thường cần lấy full response (token, user info...)
+      return result;
     } catch (error) {
       console.error(`Auth Service Error (${endpoint}):`, error);
       throw error;
     }
   }
 
-  async login(email, password,device_name) {
-    const data = await this._request('/auth/login', {
+  // ✅ LOGIN
+  async login(email, password, device_name) {
+    return this._request('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({email, password,device_name }),
+      body: JSON.stringify({ email, password, device_name }),
     });
-    
-    // Tự động set token vào instance sau khi login thành công
-    if (data.access_token) {
-      this.setToken(data.access_token);
-    }
-    return data;
   }
 
-  async register(name, email, password, password_confirmation, device_name) {
+  // ✅ REGISTER
+  async register(payload) {
     return this._request('/auth/register', {
       method: 'POST',
-      body: JSON.stringify(name, email, password, password_confirmation, device_name),
+      body: JSON.stringify(payload),
     });
   }
 
+  // ✅ VERIFY OTP
   async verifyOtp(email, otp) {
-    const data = await this._request('/auth/verify-otp', {
+    return this._request('/auth/verify', {
       method: 'POST',
       body: JSON.stringify({ email, otp }),
     });
-    
-    if (data.access_token) {
-      this.setToken(data.access_token);
-    }
-    return data;
   }
 
-  async logout() {
-    // Cần token để logout
-    return this._request('/auth/logout', { method: 'POST' });
-  }
+  // ✅ REFRESH TOKEN
+  async refreshToken() {
+    const refresh_token = localStorage.getItem('refresh_token');
 
-  async refreshToken(token) {
-    return this._request('/auth/refresh-token', {
-        method: 'POST',
-        body: JSON.stringify({ token })
+    return this._request('/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token }),
     });
   }
 
-  
-  static async login(email, password) {
-    return AuthService.instance.login(email, password);
+  // ✅ LOGOUT
+  async logout() {
+    const refresh_token = localStorage.getItem('refresh_token');
+
+    return this._request('/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token }),
+    });
   }
 
-  static async register(name, email, password, password_confirmation, device_name) {
-    return AuthService.instance.register(name, email, password, password_confirmation, device_name);
+  // Static wrappers
+  static login(email, password, device_name) {
+    return AuthService.instance.login(email, password, device_name);
   }
 
-  static async verifyOtp(email, otp) {
+  static register(payload) {
+    return AuthService.instance.register(payload);
+  }
+
+  static verifyOtp(email, otp) {
     return AuthService.instance.verifyOtp(email, otp);
   }
 
-  static async logout() {
+  static refreshToken() {
+    return AuthService.instance.refreshToken();
+  }
+
+  static logout() {
     return AuthService.instance.logout();
   }
 }

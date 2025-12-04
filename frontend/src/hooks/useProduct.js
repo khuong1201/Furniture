@@ -1,16 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ProductService from '@/services/productService';
 
 export const useProduct = () => {
-  // State quản lý dữ liệu
-  const [products, setProducts] = useState([]); // Danh sách sản phẩm 
-  const [productDetail, setProductDetail] = useState(null); // Chi tiết 1 sản phẩm
+
+  const [products, setProducts] = useState([]);
+  const [productDetail, setProductDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // 1. Hàm lấy danh sách Flash Sale
   // Dùng useCallback để tránh hàm bị tạo lại liên tục gây re-render
-  const getAllProduct = useCallback(async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -31,6 +31,7 @@ export const useProduct = () => {
   const getDetail = useCallback(async (id) => {
     setLoading(true);
     setError(null);
+    setProductDetail(null);
     try {
       const data = await ProductService.getProductDetail(id);
       setProductDetail(data);
@@ -42,25 +43,33 @@ export const useProduct = () => {
   }, []);
 
   // 3. Hàm tìm kiếm
-  const searchProducts = useCallback(async (keyword) => {
+  const searchProducts = useCallback(async (keyword, page = 1, perPage = 15) => {
     setLoading(true);
     try {
-      const data = await ProductService.searchProducts(keyword);
+
+      const data = await ProductService.searchProducts(keyword, page, perPage);
+
       setProducts(data); // Cập nhật list bằng kết quả tìm kiếm
+
     } catch (err) {
-      setError(err.message);
+      console.error('Search error:', err);
+      setError(err.message || 'Lỗi tìm kiếm');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Trả về mọi thứ cần thiết cho View
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   return {
     products,       // Danh sách (Array)
     productDetail,  // Chi tiết (Object)
     loading,        // Trạng thái tải
     error,          // Lỗi nếu có
-    getAllProduct,  // Hàm gọi API lấy list
+    fetchProducts,  // Hàm gọi API lấy list
     getDetail,      // Hàm gọi API lấy chi tiết
     searchProducts  // Hàm tìm kiếm
   };
