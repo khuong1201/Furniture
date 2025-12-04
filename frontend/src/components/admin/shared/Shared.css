@@ -1,27 +1,32 @@
-/* Modal Styles */
+/* Shared Component Styles - Using Admin Design System */
+
+/* Modal Overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(61, 50, 40, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     animation: fadeIn 0.2s ease-out;
+    backdrop-filter: blur(4px);
 }
 
+/* Modal Container */
 .modal-container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    background: var(--admin-card-bg);
+    border-radius: var(--admin-radius-lg);
+    box-shadow: var(--admin-shadow-lg), 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     max-height: 90vh;
     width: 100%;
-    animation: slideIn 0.3s ease-out;
+    animation: modalSlideIn 0.3s ease-out;
+    border: 1px solid var(--admin-border-light);
 }
 
 .modal-sm {
@@ -36,18 +41,25 @@
     max-width: 900px;
 }
 
+.modal-xl {
+    max-width: 1100px;
+}
+
+/* Modal Header */
 .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--admin-border-light);
+    background: linear-gradient(135deg, var(--admin-accent-light) 0%, #fff 100%);
+    border-radius: var(--admin-radius-lg) var(--admin-radius-lg) 0 0;
 }
 
 .modal-title {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: var(--admin-text);
     margin: 0;
 }
 
@@ -55,60 +67,112 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    color: #6b7280;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s;
+    color: var(--admin-text-muted);
+    padding: 8px;
+    border-radius: var(--admin-radius-sm);
+    transition: var(--admin-transition);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .modal-close-btn:hover {
-    background-color: #f3f4f6;
-    color: #111827;
+    background: var(--admin-accent-light);
+    color: var(--admin-primary-dark);
 }
 
+/* Modal Content */
 .modal-content {
     padding: 24px;
     overflow-y: auto;
 }
 
+/* Modal Footer */
 .modal-footer {
     padding: 16px 24px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--admin-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    background-color: #f9fafb;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    background: linear-gradient(135deg, #faf8f5 0%, var(--admin-accent-light) 100%);
+    border-radius: 0 0 var(--admin-radius-lg) var(--admin-radius-lg);
+}
+
+/* Modal Buttons */
+.modal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--admin-transition);
+}
+
+.modal-btn-primary {
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
+}
+
+.modal-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(203, 168, 144, 0.45);
+}
+
+.modal-btn-secondary {
+    background: white;
+    color: var(--admin-text);
+    border: 2px solid var(--admin-border);
+}
+
+.modal-btn-secondary:hover {
+    border-color: var(--admin-primary);
+    background: var(--admin-accent-light);
+}
+
+.modal-btn-danger {
+    background: linear-gradient(135deg, var(--admin-error) 0%, #dc2626 100%);
+    color: white;
+}
+
+.modal-btn-danger:hover {
+    transform: translateY(-2px);
 }
 
 /* Confirm Dialog Styles */
 .confirm-dialog-content {
     text-align: center;
-    padding: 8px 0;
+    padding: 16px 0;
 }
 
 .confirm-icon {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: center;
 }
 
+.confirm-icon svg {
+    width: 56px;
+    height: 56px;
+}
+
 .confirm-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
-    color: #111827;
-    margin: 0 0 8px 0;
+    color: var(--admin-text);
+    margin: 0 0 12px 0;
 }
 
 .confirm-message {
-    color: #6b7280;
+    color: var(--admin-text-secondary);
     font-size: 14px;
-    margin: 0 0 24px 0;
-    line-height: 1.5;
+    margin: 0 0 28px 0;
+    line-height: 1.6;
 }
 
 .confirm-actions {
@@ -119,19 +183,19 @@
 
 /* Text Colors */
 .text-danger {
-    color: #ef4444;
+    color: var(--admin-error);
 }
 
 .text-warning {
-    color: #f59e0b;
+    color: var(--admin-warning);
 }
 
 .text-success {
-    color: #10b981;
+    color: var(--admin-success);
 }
 
 .text-info {
-    color: #3b82f6;
+    color: var(--admin-info);
 }
 
 /* Animations */
@@ -145,16 +209,67 @@
     }
 }
 
-@keyframes slideIn {
+@keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateY(-30px) scale(0.95);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
+}
+
+/* Form Group Styles for Modals */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    color: var(--admin-text);
+    background: white;
+    transition: var(--admin-transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 4px rgba(203, 168, 144, 0.15);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group .help-text {
+    font-size: 12px;
+    color: var(--admin-text-muted);
+    margin-top: 6px;
+}
+
+.form-group .error-text {
+    font-size: 12px;
+    color: var(--admin-error);
+    margin-top: 6px;
 }
 
 /* Responsive */
@@ -162,5 +277,15 @@
     .modal-container {
         width: 95%;
         margin: 0 auto;
+    }
+
+    .modal-header,
+    .modal-content,
+    .modal-footer {
+        padding: 16px;
+    }
+
+    .confirm-actions {
+        flex-direction: column;
     }
 }

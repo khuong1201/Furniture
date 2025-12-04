@@ -28,14 +28,19 @@ class ReviewController extends BaseController
             new OA\Parameter(name: "product_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
+        responses: [new OA\Response(response: 200, description: "Success")]
     )]
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->all();
+        $perPage = $request->get('per_page', 10);
+        $query = $this->service->getRepository()->query()->with(['user', 'product'])->latest();
 
-        $data = $this->service->getRepository()->with(['user'])->paginate($request->get('per_page', 10), $filters);
-        
+        if ($request->has('product_uuid')) {
+            $query->whereHas('product', fn($q) => $q->where('uuid', $request->product_uuid));
+        }
+
+        $data = $query->paginate($perPage);
+
         return response()->json(ApiResponse::paginated($data));
     }
 
@@ -55,15 +60,15 @@ class ReviewController extends BaseController
                 ]
             )
         ),
-        responses: [ new OA\Response(response: 201, description: "Created") ]
+        responses: [new OA\Response(response: 201, description: "Created")]
     )]
     public function store(StoreReviewRequest $request): JsonResponse
     {
         $data = $request->validated();
-        
+
         $data['user_id'] = $request->user()->id;
-        
-        $data['is_approved'] = false; 
+
+        $data['is_approved'] = false;
 
         $review = $this->service->create($data);
         return response()->json(ApiResponse::success($review, 'Review created successfully', 201), 201);
@@ -85,7 +90,7 @@ class ReviewController extends BaseController
                 ]
             )
         ),
-        responses: [ 
+        responses: [
             new OA\Response(response: 200, description: "Updated"),
             new OA\Response(response: 403, description: "Forbidden")
         ]
@@ -95,15 +100,15 @@ class ReviewController extends BaseController
         $review = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('update', $review);
-        
+
         $data = $request->validated();
 
         if (!$request->user()->hasPermissionTo('review.edit')) {
-             unset($data['is_approved']);
+            unset($data['is_approved']);
         }
 
         $updatedReview = $this->service->update($uuid, $data);
-        
+
         return response()->json(ApiResponse::success($updatedReview, 'Review updated successfully'));
     }
 
@@ -115,16 +120,16 @@ class ReviewController extends BaseController
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [ new OA\Response(response: 200, description: "Deleted") ]
+        responses: [new OA\Response(response: 200, description: "Deleted")]
     )]
-    
+
     public function destroy(string $uuid): JsonResponse
     {
         $review = $this->service->findByUuidOrFail($uuid);
 
         $this->authorize('delete', $review);
 
-        $this->service->delete($uuid); 
+        $this->service->delete($uuid);
 
         return response()->json(ApiResponse::success(null, 'Review deleted successfully'));
     }

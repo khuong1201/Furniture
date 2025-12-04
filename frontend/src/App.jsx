@@ -10,10 +10,6 @@ import LogIn from './pages/customer/login/LoginForm';
 import ProductDetail from './pages/customer/Product/ProductDetail';
 import SearchPage from './pages/customer/SearchPage';
 import CartPage from './pages/customer/cart/CartPage';
-import CheckoutPage from './pages/customer/checkout/CheckoutPage';
-import OrderHistory from './pages/customer/orders/OrderHistory';
-import CustomerOrderDetail from './pages/customer/orders/CustomerOrderDetail';
-import ProfilePage from './pages/customer/profile/ProfilePage';
 
 // Admin Pages
 import Dashboard from './pages/admin/dashboard/Dashboard';
@@ -33,29 +29,33 @@ import PromotionList from './pages/admin/promotions/PromotionList';
 import PromotionForm from './pages/admin/promotions/PromotionForm';
 import RoleList from './pages/admin/roles/RoleList';
 import RoleForm from './pages/admin/roles/RoleForm';
+import PermissionList from './pages/admin/permissions/PermissionList';
 import ReviewList from './pages/admin/reviews/ReviewList';
 import CollectionList from './pages/admin/collections/CollectionList';
 import CollectionForm from './pages/admin/collections/CollectionForm';
 import ShippingList from './pages/admin/shippings/ShippingList';
 import ShippingForm from './pages/admin/shippings/ShippingForm';
 import SettingsPage from './pages/admin/settings/SettingsPage';
+import AdminLogin from './pages/admin/login/AdminLogin';
 
 function App() {
   return (
     <Routes>
-      {/* CUSTOMER */}
+
+      {/*CUSTOMER */}
       <Route path="/customer" element={<CustomerLayout />}>
+
         <Route index element={<HomePage />} />
         <Route path="register" element={<Register />} />
         <Route path="login" element={<LogIn />} />
         <Route path="product/:id" element={<ProductDetail />} />
         <Route path="product" element={<SearchPage />} />
         <Route path="cart" element={<CartPage />} />
-        <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="orders" element={<OrderHistory />} />
-        <Route path="orders/:uuid" element={<CustomerOrderDetail />} />
-        <Route path="profile" element={<ProfilePage />} />
+
       </Route>
+
+      {/* ADMIN LOGIN - Outside AdminLayout */}
+      <Route path="/admin/login" element={<AdminLogin />} />
 
       {/* ADMIN */}
       <Route path='/admin' element={<AdminLayout />}>
@@ -82,6 +82,7 @@ function App() {
         <Route path="roles" element={<RoleList />} />
         <Route path="roles/create" element={<RoleForm />} />
         <Route path="roles/:uuid/edit" element={<RoleForm />} />
+        <Route path="permissions" element={<PermissionList />} />
         <Route path="reviews" element={<ReviewList />} />
         <Route path="collections" element={<CollectionList />} />
         <Route path="collections/create" element={<CollectionForm />} />

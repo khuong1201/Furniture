@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -30,9 +30,30 @@ import logo from '@/assets/icons/assets_admin/logo_admin.png';
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Check if user is admin
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      navigate('/admin/login');
+      return;
+    }
+
+    const roles = user.roles || [];
+    // Handle both array of strings and array of objects
+    const isAdmin = roles.some(r =>
+      r === 'admin' || r === 'super-admin' ||
+      r?.name === 'admin' || r?.name === 'super-admin'
+    );
+
+    if (!isAdmin) {
+      navigate('/admin/login');
+    }
+  }, [user, loading, navigate]);
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -45,7 +66,8 @@ const AdminLayout = () => {
     { icon: Warehouse, label: 'Kho hàng', path: '/admin/warehouses' },
     { icon: Truck, label: 'Vận chuyển', path: '/admin/shippings' },
     { icon: Gift, label: 'Khuyến mãi', path: '/admin/promotions' },
-    { icon: Shield, label: 'Phân quyền', path: '/admin/roles' },
+    { icon: Shield, label: 'Vai trò', path: '/admin/roles' },
+    { icon: Shield, label: 'Quyền hạn', path: '/admin/permissions' },
     { icon: Star, label: 'Đánh giá', path: '/admin/reviews' },
     { icon: Settings, label: 'Cài đặt', path: '/admin/settings' },
   ];
