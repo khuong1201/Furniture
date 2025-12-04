@@ -32,13 +32,24 @@ const CategoryForm = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await CategoryService.getCategories();
+            const response = await CategoryService.getCategoryTree();
             if (response.success && response.data) {
-                // Handle both paginated and flat response
-                const data = Array.isArray(response.data) ? response.data : (response.data.data || []);
-                // Filter out current category (cannot be its own parent)
-                const filtered = isEditMode ? data.filter(c => c.uuid !== uuid) : data;
-                setCategories(filtered);
+                // Flatten tree for select options
+                const flattenCategories = (cats, depth = 0) => {
+                    return cats.reduce((acc, cat) => {
+                        // Skip current category and its children if in edit mode (prevent cycle)
+                        if (isEditMode && cat.uuid === uuid) return acc;
+
+                        acc.push({ ...cat, depth });
+                        if (cat.children && cat.children.length > 0) {
+                            acc.push(...flattenCategories(cat.children, depth + 1));
+                        }
+                        return acc;
+                    }, []);
+                };
+
+                const flatData = flattenCategories(response.data);
+                setCategories(flatData);
             }
         } catch (err) {
             console.error('Error fetching categories:', err);
@@ -167,6 +178,8 @@ const CategoryForm = () => {
                             <option value="">-- Không có (Danh mục gốc) --</option>
                             {categories.map(cat => (
                                 <option key={cat.id} value={cat.id}>
+                                    {Array(cat.depth).fill('\u00A0\u00A0\u00A0').join('')}
+                                    {cat.depth > 0 ? '└─ ' : ''}
                                     {cat.name}
                                 </option>
                             ))}

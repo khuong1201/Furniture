@@ -23,12 +23,10 @@ const CategoryList = () => {
             setLoading(true);
             setError(null);
 
-            const response = await CategoryService.getCategories();
+            const response = await CategoryService.getCategoryTree();
 
             if (response.success && response.data) {
-                // Check if response.data is paginated (has .data property) or is direct array
-                const categoriesData = Array.isArray(response.data) ? response.data : (response.data.data || []);
-                setCategories(categoriesData);
+                setCategories(response.data);
             }
         } catch (err) {
             setError(err.message || 'Không thể tải danh sách danh mục');
@@ -107,44 +105,56 @@ const CategoryList = () => {
                             <tr>
                                 <th>Tên danh mục</th>
                                 <th>Slug</th>
-                                <th>Danh mục cha</th>
                                 <th>Số sản phẩm</th>
                                 <th className="text-right">Thao tác</th>
                             </tr>
-                        </thead>
+                        </thead >
                         <tbody>
-                            {categories.map((category) => (
-                                <tr key={category.uuid}>
-                                    <td>
-                                        <strong>{category.name}</strong>
-                                    </td>
-                                    <td>{category.slug}</td>
-                                    <td>{category.parent?.name || '-'}</td>
-                                    <td>{category.products_count || 0}</td>
-                                    <td className="text-right">
-                                        <div className="action-buttons">
-                                            <button
-                                                className="btn-icon"
-                                                onClick={() => navigate(`/admin/categories/${category.uuid}/edit`)}
-                                                title="Chỉnh sửa"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button
-                                                className="btn-icon btn-danger"
-                                                onClick={() => handleDelete(category.uuid, category.name)}
-                                                title="Xóa"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {(() => {
+                                const renderCategoryRow = (category, depth = 0) => {
+                                    return (
+                                        <React.Fragment key={category.uuid}>
+                                            <tr>
+                                                <td>
+                                                    <div style={{ paddingLeft: `${depth * 24}px`, display: 'flex', alignItems: 'center' }}>
+                                                        {depth > 0 && <span style={{ color: '#9ca3af', marginRight: '8px' }}>└─</span>}
+                                                        <strong>{category.name}</strong>
+                                                    </div>
+                                                </td>
+                                                <td>{category.slug}</td>
+                                                <td>{category.products_count || 0}</td>
+                                                <td className="text-right">
+                                                    <div className="action-buttons">
+                                                        <button
+                                                            className="btn-icon"
+                                                            onClick={() => navigate(`/admin/categories/${category.uuid}/edit`)}
+                                                            title="Chỉnh sửa"
+                                                        >
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button
+                                                            className="btn-icon btn-danger"
+                                                            onClick={() => handleDelete(category.uuid, category.name)}
+                                                            title="Xóa"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {category.children && category.children.length > 0 && (
+                                                category.children.map(child => renderCategoryRow(child, depth + 1))
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                };
+
+                                return categories.map(category => renderCategoryRow(category));
+                            })()}
                         </tbody>
-                    </table>
+                    </table >
                 )}
-            </div>
+            </div >
 
 
             <ConfirmDialog

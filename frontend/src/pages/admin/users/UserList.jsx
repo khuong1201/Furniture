@@ -32,7 +32,9 @@ const UserList = () => {
             const response = await UserService.getUsers(params);
 
             if (response.success && response.data) {
-                setUsers(response.data);
+                // Check if response.data is paginated (has .data property) or is direct array
+                const usersData = Array.isArray(response.data) ? response.data : (response.data.data || []);
+                setUsers(usersData);
             }
         } catch (err) {
             setError(err.message || 'Không thể tải danh sách người dùng');
