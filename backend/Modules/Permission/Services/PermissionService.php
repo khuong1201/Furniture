@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Permission\Services;
 
+use Illuminate\Support\Collection;
 use Modules\Shared\Services\BaseService;
 use Modules\Shared\Services\CacheService;
 use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
@@ -23,9 +24,15 @@ class PermissionService extends BaseService
     {
         $cacheKey = "user_permissions_{$userId}";
 
-        return $this->cacheService->remember($cacheKey, function () use ($userId) {
+        $result = $this->cacheService->remember($cacheKey, function () use ($userId) {
             return $this->repository->getPermissionsByUserId($userId);
         }, self::CACHE_TTL);
+        
+        if ($result instanceof Collection) {
+            return $result->toArray();
+        }
+
+        return (array) $result;
     }
 
     public function hasPermission(int $userId, string $permission): bool

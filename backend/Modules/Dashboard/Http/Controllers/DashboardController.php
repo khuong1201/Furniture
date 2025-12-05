@@ -16,7 +16,6 @@ class DashboardController extends BaseController
 {
     public function __construct(protected DashboardService $dashboardService)
     {
-        // Không cần parent construct nếu không dùng base service
     }
 
     #[OA\Get(
@@ -69,10 +68,6 @@ class DashboardController extends BaseController
         }
 
         $period = $request->input('period', 'week'); 
-
-        // Cache dashboard data trong 5 phút để giảm tải DB nếu traffic cao
-        // $cacheKey = "dashboard_summary_{$period}";
-        // $data = cache()->remember($cacheKey, 300, function() use ($period) { ... });
 
         $data = [
             'cards'          => $this->dashboardService->getSummaryStats(),
