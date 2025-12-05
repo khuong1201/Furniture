@@ -14,21 +14,26 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             
-            // percentage: giảm %, fixed: giảm số tiền cố định
+            // Type: percentage (giảm %), fixed (giảm số tiền cố định)
             $table->enum('type', ['percentage', 'fixed'])->default('percentage'); 
-            $table->decimal('value', 12, 2); // Giá trị giảm (vd: 10% hoặc 50.000)
             
-            $table->decimal('min_order_value', 12, 2)->nullable()->comment('Giá trị đơn hàng tối thiểu'); 
-            $table->decimal('max_discount_amount', 12, 2)->nullable()->comment('Giảm tối đa bao nhiêu (cho loại %)');
+            // CHANGE: Decimal -> UnsignedBigInteger
+            // Lưu ý: Nếu type=percentage, value=10 nghĩa là 10%. 
+            // Nếu type=fixed, value=50000 nghĩa là 50,000 VND.
+            $table->unsignedBigInteger('value'); 
+            
+            // CHANGE: Decimal -> UnsignedBigInteger
+            $table->unsignedBigInteger('min_order_value')->nullable()->comment('Giá trị đơn hàng tối thiểu'); 
+            $table->unsignedBigInteger('max_discount_amount')->nullable()->comment('Giảm tối đa bao nhiêu (cho loại %)');
             
             $table->integer('quantity')->default(0)->comment('Tổng số lượng mã (0 = không giới hạn)'); 
             $table->integer('used_count')->default(0); 
-            
             $table->integer('limit_per_user')->default(1); 
             
-            $table->timestamp('start_date')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
-            $table->timestamp('end_date')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
-            $table->boolean('is_active')->default(true)->index(); // Chuẩn hóa thành is_active
+            // Indexing for performance
+            $table->timestamp('start_date')->nullable()->index();
+            $table->timestamp('end_date')->nullable()->index();
+            $table->boolean('is_active')->default(true)->index();
             
             $table->softDeletes();
             $table->timestamps();
@@ -38,7 +43,9 @@ return new class extends Migration
             $table->foreignId('promotion_id')->constrained('promotions')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             
-            $table->primary(['promotion_id', 'product_id']); 
+            $table->primary(['promotion_id', 'product_id']);
+            // Index ngược để tìm promotion từ product nhanh hơn
+            $table->index('product_id'); 
         });
     }
 

@@ -6,6 +6,8 @@ use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Review\Domain\Models\Review;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+
 
 class EloquentReviewRepository extends EloquentBaseRepository implements ReviewRepositoryInterface
 {

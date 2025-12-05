@@ -12,18 +12,36 @@ class UpdatePromotionRequest extends FormRequest
 
     public function rules(): array
     {
+        // Lấy ID của promotion hiện tại để validate unique (nếu cần thiết cho trường nào đó)
+        // $uuid = $this->route('uuid'); 
+
         return [
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
+            
             'type' => 'sometimes|in:percentage,fixed',
-            'value' => 'sometimes|numeric|min:0',
+            
+            // CHANGE: Sử dụng integer cho BigInteger (tiền tệ)
+            'value' => 'sometimes|integer|min:0',
+            
             'start_date' => 'sometimes|date',
+            // Rule 'after:start_date' chỉ hoạt động tốt nếu start_date cũng được gửi lên, 
+            // hoặc bạn phải custom validation nếu start_date không được gửi.
+            // Ở đây giữ đơn giản theo convention API: thường gửi cả cặp date nếu sửa thời gian.
             'end_date' => 'sometimes|date|after:start_date',
+            
             'is_active' => 'sometimes|boolean',
+            
+            // Sync products
             'product_ids' => 'sometimes|array',
             'product_ids.*' => 'integer|exists:products,id',
-            'min_order_value' => 'nullable|numeric|min:0',
-            'max_discount_amount' => 'nullable|numeric|min:0',
+            
+            // CHANGE: Sử dụng integer
+            'min_order_value' => 'nullable|integer|min:0',
+            'max_discount_amount' => 'nullable|integer|min:0',
+            
+            'quantity' => 'sometimes|integer|min:0',
+            'limit_per_user' => 'sometimes|integer|min:1',
         ];
     }
 }

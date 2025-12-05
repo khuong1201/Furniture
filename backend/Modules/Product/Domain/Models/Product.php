@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+// use Illuminate\Database\Eloquent\Relations\BelongsToMany; // Đã chuyển vào Trait
 use Illuminate\Support\Str;
-use Modules\Shared\Traits\Loggable;
+use Modules\Shared\Traits\Loggable; // Giả sử có trait này
 use Modules\Category\Domain\Models\Category;
-
-use Modules\Promotion\Domain\Models\Promotion; 
 use Modules\Review\Domain\Models\Review;
+use Modules\Promotion\Domain\Traits\HasPromotions; // IMPORT TRAIT
 
 class Product extends Model 
 {
     use SoftDeletes, Loggable;
+    use HasPromotions; // SỬ DỤNG TRAIT
 
     protected $fillable = [
         'uuid', 'name', 'description', 'category_id', 'has_variants', 
@@ -26,11 +26,13 @@ class Product extends Model
     ];
     
     protected $casts = [
-        'is_active' => 'boolean', 
+        'is_active'    => 'boolean', 
         'has_variants' => 'boolean', 
-        'price' => 'integer',
-        'rating_avg' => 'decimal:2'
+        'price'        => 'integer',
+        'rating_avg'   => 'decimal:2'
     ];
+
+    protected $appends = ['flash_sale_info']; 
 
     protected static function boot(): void 
     {
@@ -53,13 +55,6 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderByDesc('is_primary')->orderBy('sort_order'); 
     }
 
-    // UPDATE: Relation với Module Promotion
-    public function promotions(): BelongsToMany
-    {
-        return $this->belongsToMany(Promotion::class, 'product_promotion');
-    }
-
-    // UPDATE: Relation với Module Review
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

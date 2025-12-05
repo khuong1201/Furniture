@@ -1669,52 +1669,54 @@ paths:
       tags:
         - Products
       summary: 'Danh sách sản phẩm (Public)'
-      description: 'Lấy danh sách sản phẩm đang hoạt động (Active). Có thể lọc theo tên, danh mục, khoảng giá.'
+      description: 'Lấy danh sách sản phẩm active. Hỗ trợ lọc Flash Sale, Giá, Danh mục.'
       operationId: f089d65f31dc82c6e3b80e06c542463f
       parameters:
         -
           name: page
           in: query
-          description: 'Trang hiện tại'
           schema:
             type: integer
             default: 1
         -
           name: per_page
           in: query
-          description: 'Số lượng item/trang'
           schema:
             type: integer
             default: 15
         -
           name: search
           in: query
-          description: 'Tìm kiếm theo tên hoặc SKU'
+          description: 'Tìm theo tên/SKU'
           schema:
             type: string
         -
           name: category_uuid
           in: query
-          description: 'Lọc theo danh mục'
           schema:
             type: string
             format: uuid
         -
           name: price_min
           in: query
-          description: 'Giá thấp nhất'
+          description: 'Giá sàn (VND)'
           schema:
-            type: number
+            type: integer
         -
           name: price_max
           in: query
-          description: 'Giá cao nhất'
+          description: 'Giá trần (VND)'
           schema:
-            type: number
+            type: integer
+        -
+          name: is_flash_sale
+          in: query
+          description: 'Chỉ lấy sản phẩm đang giảm giá'
+          schema:
+            type: boolean
         -
           name: sort_by
           in: query
-          description: 'Sắp xếp (latest, price_asc, price_desc, best_selling)'
           schema:
             type: string
             enum:
@@ -1744,7 +1746,7 @@ paths:
       tags:
         - Products
       summary: 'Danh sách sản phẩm (Admin)'
-      description: 'Lấy toàn bộ sản phẩm bao gồm cả ẩn/hiện để quản lý.'
+      description: 'Lấy toàn bộ sản phẩm bao gồm cả ẩn/hiện.'
       operationId: 90b09429681f249365da59a28870cfb5
       parameters:
         -
@@ -1759,6 +1761,11 @@ paths:
             type: string
         -
           name: is_active
+          in: query
+          schema:
+            type: boolean
+        -
+          name: is_flash_sale
           in: query
           schema:
             type: boolean
@@ -1793,8 +1800,8 @@ paths:
                 description:
                   type: string
                 price:
-                  description: 'Giá (nếu không có biến thể)'
-                  type: number
+                  description: 'Giá VND (BigInt)'
+                  type: integer
                 has_variants:
                   type: boolean
                   default: false
@@ -1808,7 +1815,7 @@ paths:
                       sku:
                         type: string
                       price:
-                        type: number
+                        type: integer
                       stock:
                         type: array
                         items:
@@ -1825,8 +1832,6 @@ paths:
           description: 'Created Successfully'
         422:
           description: 'Validation Error'
-        403:
-          description: Forbidden
       security:
         -
           bearerAuth: []
@@ -1873,15 +1878,13 @@ paths:
                 description:
                   type: string
                 price:
-                  type: number
+                  type: integer
                 is_active:
                   type: boolean
               type: object
       responses:
         200:
           description: 'Updated Successfully'
-        404:
-          description: 'Not Found'
       security:
         -
           bearerAuth: []
@@ -1901,8 +1904,6 @@ paths:
       responses:
         200:
           description: 'Deleted Successfully'
-        403:
-          description: Forbidden
       security:
         -
           bearerAuth: []
@@ -1982,6 +1983,12 @@ paths:
           in: query
           schema:
             type: boolean
+        -
+          name: valid_now
+          in: query
+          schema:
+            description: 'Chỉ lấy khuyến mãi đang chạy'
+            type: boolean
       responses:
         200:
           description: Success
@@ -2007,16 +2014,15 @@ paths:
               properties:
                 name:
                   type: string
-                  example: 'Summer Sale'
-                description:
-                  type: string
+                  example: 'Flash Sale 11/11'
                 type:
                   type: string
                   enum:
                     - percentage
                     - fixed
                 value:
-                  type: number
+                  description: '10% hoặc 50000 VND'
+                  type: integer
                   example: 10
                 start_date:
                   type: string
@@ -2031,10 +2037,6 @@ paths:
                 is_active:
                   type: boolean
                   default: true
-                min_order_value:
-                  type: number
-                max_discount_amount:
-                  type: number
               type: object
       responses:
         201:
@@ -2067,28 +2069,11 @@ paths:
         - Promotions
       summary: 'Cập nhật khuyến mãi'
       operationId: bad7f0f192a9b0095bc1390f390d90a6
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         content:
           application/json:
             schema:
-              properties:
-                name:
-                  type: string
-                is_active:
-                  type: boolean
-                product_ids:
-                  type: array
-                  items:
-                    type: integer
-              type: object
+              properties: []
       responses:
         200:
           description: Updated
@@ -3144,13 +3129,13 @@ tags:
     description: 'API quản lý thuộc tính'
   -
     name: Products
-    description: 'API quản lý sản phẩm (Sofa, Bàn, Ghế...)'
+    description: 'API quản lý sản phẩm (Hỗ trợ Flash Sale & BigInteger)'
   -
     name: 'Product Images'
     description: 'API quản lý ảnh sản phẩm'
   -
     name: Promotions
-    description: 'Quản lý chương trình khuyến mãi, giảm giá'
+    description: 'Quản lý chương trình khuyến mãi, giảm giá (BigInteger Support)'
   -
     name: Reviews
     description: 'API quản lý Đánh giá sản phẩm'

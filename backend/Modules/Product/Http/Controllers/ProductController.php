@@ -15,7 +15,7 @@ use Modules\Product\Http\Requests\StoreProductRequest;
 use Modules\Product\Http\Requests\UpdateProductRequest;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(name: "Products", description: "API quản lý sản phẩm (Sofa, Bàn, Ghế...)")]
+#[OA\Tag(name: "Products", description: "API quản lý sản phẩm (Hỗ trợ Flash Sale & BigInteger)")]
 class ProductController extends BaseController
 {
     public function __construct(ProductService $service)
@@ -26,16 +26,22 @@ class ProductController extends BaseController
     #[OA\Get(
         path: "/public/products",
         summary: "Danh sách sản phẩm (Public)",
-        description: "Lấy danh sách sản phẩm đang hoạt động (Active). Có thể lọc theo tên, danh mục, khoảng giá.",
+        description: "Lấy danh sách sản phẩm active. Hỗ trợ lọc Flash Sale, Giá, Danh mục.",
         tags: ["Products"],
         parameters: [
-            new OA\Parameter(name: "page", in: "query", description: "Trang hiện tại", schema: new OA\Schema(type: "integer", default: 1)),
-            new OA\Parameter(name: "per_page", in: "query", description: "Số lượng item/trang", schema: new OA\Schema(type: "integer", default: 15)),
-            new OA\Parameter(name: "search", in: "query", description: "Tìm kiếm theo tên hoặc SKU", schema: new OA\Schema(type: "string")),
-            new OA\Parameter(name: "category_uuid", in: "query", description: "Lọc theo danh mục", schema: new OA\Schema(type: "string", format: "uuid")),
-            new OA\Parameter(name: "price_min", in: "query", description: "Giá thấp nhất", schema: new OA\Schema(type: "number")),
-            new OA\Parameter(name: "price_max", in: "query", description: "Giá cao nhất", schema: new OA\Schema(type: "number")),
-            new OA\Parameter(name: "sort_by", in: "query", description: "Sắp xếp (latest, price_asc, price_desc, best_selling)", schema: new OA\Schema(type: "string", enum: ["latest", "price_asc", "price_desc", "best_selling"])),
+            new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer", default: 1)),
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 15)),
+            new OA\Parameter(name: "search", in: "query", description: "Tìm theo tên/SKU", schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "category_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
+            
+            // CHANGE: Cập nhật type integer cho BigInteger
+            new OA\Parameter(name: "price_min", in: "query", description: "Giá sàn (VND)", schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "price_max", in: "query", description: "Giá trần (VND)", schema: new OA\Schema(type: "integer")),
+            
+            // CHANGE: Thêm tham số này để Swagger UI hiện ô checkbox test
+            new OA\Parameter(name: "is_flash_sale", in: "query", description: "Chỉ lấy sản phẩm đang giảm giá", schema: new OA\Schema(type: "boolean")),
+            
+            new OA\Parameter(name: "sort_by", in: "query", schema: new OA\Schema(type: "string", enum: ["latest", "price_asc", "price_desc", "best_selling"])),
         ],
         responses: [
             new OA\Response(
@@ -43,7 +49,7 @@ class ProductController extends BaseController
                 description: "Success",
                 content: new OA\JsonContent(properties: [
                     new OA\Property(property: "success", type: "boolean", example: true),
-                    new OA\Property(property: "data", type: "array", items: new OA\Items(type: "object")), // Product Resource structure
+                    new OA\Property(property: "data", type: "array", items: new OA\Items(type: "object")),
                     new OA\Property(property: "meta", type: "object")
                 ])
             )
@@ -58,11 +64,10 @@ class ProductController extends BaseController
 
         $perPage = $request->integer('per_page', 15);
         
-        // Gọi Service để lấy Paginator (Chứa Model)
+        // Gọi Service -> Repository (Repository đã handle logic 'is_flash_sale' và eager load 'promotions')
         $paginator = $this->service->paginate($perPage, $filters);
         
-        // QUAN TRỌNG: Áp dụng ProductResource lên từng item trong kết quả phân trang
-        // Để đảm bảo giá tiền được quy đổi (Currency) và format đúng chuẩn
+        // Áp dụng Resource để tính toán giá hiển thị (Original vs Sale Price)
         $paginator->through(function ($product) {
             return new ProductResource($product);
         });
@@ -73,13 +78,15 @@ class ProductController extends BaseController
     #[OA\Get(
         path: "/admin/products",
         summary: "Danh sách sản phẩm (Admin)",
-        description: "Lấy toàn bộ sản phẩm bao gồm cả ẩn/hiện để quản lý.",
+        description: "Lấy toàn bộ sản phẩm bao gồm cả ẩn/hiện.",
         security: [['bearerAuth' => []]],
         tags: ["Products"],
         parameters: [
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "search", in: "query", schema: new OA\Schema(type: "string")),
             new OA\Parameter(name: "is_active", in: "query", schema: new OA\Schema(type: "boolean")),
+            // Admin cũng có thể muốn lọc xem sản phẩm nào đang sale
+            new OA\Parameter(name: "is_flash_sale", in: "query", schema: new OA\Schema(type: "boolean")),
         ],
         responses: [
             new OA\Response(response: 200, description: "Success"),
@@ -95,7 +102,6 @@ class ProductController extends BaseController
 
         $paginator = $this->service->paginate($perPage, $filters);
         
-        // Áp dụng Resource cho Admin luôn để format dữ liệu đồng nhất
         $paginator->through(function ($product) {
             return new ProductResource($product);
         });
@@ -117,20 +123,21 @@ class ProductController extends BaseController
     )]
     public function show(string $uuid): JsonResponse
     {
+        // Service tìm product theo UUID
         $product = $this->service->findByUuidOrFail($uuid);
         
-        // Eager Load các quan hệ cần thiết để Resource xử lý
-        // - images: Ảnh sản phẩm
-        // - category: Danh mục
-        // - variants.stock: Tồn kho của từng biến thể (Inventory Module)
-        // - variants.attributeValues.attribute: Thuộc tính (Màu, Size...)
-        // - promotions: Khuyến mãi đang chạy
+        // QUAN TRỌNG: Eager Load để Resource có dữ liệu tính toán
+        // Nếu thiếu dòng 'promotions' => fn($q) => $q->active(), Flash Sale sẽ luôn trả về NULL
         $product->load([
             'images', 
             'category', 
             'variants.stock', 
             'variants.attributeValues.attribute',
-            'promotions' => function($q) { $q->active(); }
+            
+            // Chỉ load khuyến mãi đang chạy (Active + Date Range)
+            'promotions' => function($q) { 
+                $q->active(); 
+            }
         ]);
         
         return response()->json(ApiResponse::success(new ProductResource($product)));
@@ -149,16 +156,17 @@ class ProductController extends BaseController
                     new OA\Property(property: "name", type: "string", example: "Sofa Da Bò Ý"),
                     new OA\Property(property: "category_uuid", type: "string", format: "uuid"),
                     new OA\Property(property: "description", type: "string"),
-                    new OA\Property(property: "price", type: "number", description: "Giá (nếu không có biến thể)"),
+                    new OA\Property(property: "price", type: "integer", description: "Giá VND (BigInt)"),
                     new OA\Property(property: "has_variants", type: "boolean", default: false),
                     new OA\Property(property: "is_active", type: "boolean", default: true),
+                    // Schema variants giữ nguyên...
                     new OA\Property(
                         property: "variants", 
                         type: "array", 
                         items: new OA\Items(
                             properties: [
                                 new OA\Property(property: "sku", type: "string"),
-                                new OA\Property(property: "price", type: "number"),
+                                new OA\Property(property: "price", type: "integer"),
                                 new OA\Property(property: "stock", type: "array", items: new OA\Items(properties: [
                                     new OA\Property(property: "warehouse_uuid", type: "string"),
                                     new OA\Property(property: "quantity", type: "integer")
@@ -171,8 +179,7 @@ class ProductController extends BaseController
         ),
         responses: [
             new OA\Response(response: 201, description: "Created Successfully"),
-            new OA\Response(response: 422, description: "Validation Error"),
-            new OA\Response(response: 403, description: "Forbidden")
+            new OA\Response(response: 422, description: "Validation Error")
         ]
     )]
     public function store(StoreProductRequest $request): JsonResponse
@@ -181,7 +188,9 @@ class ProductController extends BaseController
         
         $product = $this->service->create($request->validated());
         
-        // Trả về Resource để đảm bảo cấu trúc dữ liệu trả về chuẩn
+        // Load lại relation cần thiết nếu muốn trả về full info ngay sau khi tạo
+        $product->load(['category', 'images', 'variants']);
+
         return response()->json(ApiResponse::success(new ProductResource($product), 'Created', 201));
     }
 
@@ -198,14 +207,13 @@ class ProductController extends BaseController
                 properties: [
                     new OA\Property(property: "name", type: "string"),
                     new OA\Property(property: "description", type: "string"),
-                    new OA\Property(property: "price", type: "number"),
+                    new OA\Property(property: "price", type: "integer"),
                     new OA\Property(property: "is_active", type: "boolean")
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: "Updated Successfully"),
-            new OA\Response(response: 404, description: "Not Found")
+            new OA\Response(response: 200, description: "Updated Successfully")
         ]
     )]
     public function update(UpdateProductRequest $request, string $uuid): JsonResponse
@@ -216,6 +224,9 @@ class ProductController extends BaseController
         
         $updatedProduct = $this->service->update($uuid, $request->validated());
         
+        // Load relation để response đẹp
+        $updatedProduct->load(['category', 'images', 'variants', 'promotions' => fn($q) => $q->active()]);
+
         return response()->json(ApiResponse::success(new ProductResource($updatedProduct), 'Updated'));
     }
 
@@ -228,8 +239,7 @@ class ProductController extends BaseController
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
         responses: [
-            new OA\Response(response: 200, description: "Deleted Successfully"),
-            new OA\Response(response: 403, description: "Forbidden")
+            new OA\Response(response: 200, description: "Deleted Successfully")
         ]
     )]
     public function destroy(string $uuid): JsonResponse

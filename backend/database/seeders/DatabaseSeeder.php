@@ -15,6 +15,8 @@ use Modules\Voucher\Database\Seeders\VoucherDatabaseSeeder;
 // use Modules\Order\Database\Seeders\OrderDatabaseSeeder; // Optional, chạy sau cùng nếu cần đơn mẫu
 use Modules\Review\Database\Seeders\ReviewDatabaseSeeder;
 use Modules\Currency\Database\Seeders\CurrencyDatabaseSeeder;
+use Modules\Promotion\Database\Seeders\PromotionDatabaseSeeder;
+
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -22,13 +24,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionDatabaseSeeder::class,
             UserDatabaseSeeder::class,
-            WarehouseDatabaseSeeder::class, // Tạo kho trước
+            WarehouseDatabaseSeeder::class,
+            CurrencyDatabaseSeeder::class, // Tạo kho trước
             CategoryDatabaseSeeder::class,  // Tạo danh mục nội thất
             ProductDatabaseSeeder::class,   // Tạo sp nội thất + variants
             InventoryDatabaseSeeder::class, // Nhập kho cho variants vừa tạo
             VoucherDatabaseSeeder::class,
+            PromotionDatabaseSeeder::class,
             ReviewDatabaseSeeder::class,
-            CurrencyDatabaseSeeder::class,
         ]);
     }
 }
