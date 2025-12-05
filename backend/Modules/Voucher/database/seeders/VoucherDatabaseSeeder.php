@@ -14,7 +14,7 @@ class VoucherDatabaseSeeder extends Seeder
             [
                 'name' => 'New Member Welcome Gift',
                 'type' => 'fixed',
-                'value' => 10.00, // $10 off
+                'value' => 10.00, 
                 'min_order_value' => 50.00,
                 'quantity' => 1000,
                 'start_date' => now(),

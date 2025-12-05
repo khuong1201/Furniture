@@ -7,11 +7,11 @@ namespace Modules\Review\Services;
 use Modules\Shared\Services\BaseService;
 use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Review\Events\ReviewPosted; // Event mới
-use Modules\Review\Events\ReviewApproved; // Event mới
+use Illuminate\Validation\ValidationException;
+use Modules\Review\Events\ReviewPosted;
+use Modules\Review\Events\ReviewApproved;
 
 class ReviewService extends BaseService
 {
@@ -25,9 +25,11 @@ class ReviewService extends BaseService
     public function create(array $data): Model
     {
         $product = $this->productRepo->findByUuid($data['product_uuid']);
-        if (!$product) throw ValidationException::withMessages(['product_uuid' => 'Product not found']);
+        if (!$product) {
+            throw ValidationException::withMessages(['product_uuid' => 'Product not found']);
+        }
 
-        // Check unique review
+        // Check unique: 1 user - 1 review - 1 product
         $exists = $this->repository->query()
             ->where('user_id', auth()->id())
             ->where('product_id', $product->id)
@@ -43,13 +45,13 @@ class ReviewService extends BaseService
             'rating' => $data['rating'],
             'comment' => $data['comment'] ?? null,
             'images' => $data['images'] ?? [],
-            'is_approved' => false // Mặc định cần duyệt
+            'is_approved' => false 
         ];
 
-        // Nếu có quyền auto-approve (ví dụ trusted user) thì set true luôn
-        // Ở đây giữ false cho an toàn
-
         $review = $this->repository->create($reviewData);
+        
+        // Clear cache stats
+        $this->clearStatsCache($product->id);
         
         event(new ReviewPosted($review));
 
@@ -60,7 +62,6 @@ class ReviewService extends BaseService
     {
         $review = $this->repository->findByUuidOrFail($uuid);
 
-        // Chỉ admin mới được sửa trạng thái duyệt
         if (!auth()->user()->hasRole('admin')) {
             unset($data['is_approved']);
         }
@@ -69,7 +70,11 @@ class ReviewService extends BaseService
         
         $this->repository->update($review, $data);
         
-        // Nếu trạng thái chuyển sang approved -> tính lại rating sản phẩm
+        // Clear cache nếu rating thay đổi hoặc trạng thái duyệt thay đổi
+        if (isset($data['rating']) || ($data['is_approved'] ?? false) !== $oldStatus) {
+             $this->clearStatsCache($review->product_id);
+        }
+        
         if (!$oldStatus && ($data['is_approved'] ?? false)) {
              event(new ReviewApproved($review));
         }
@@ -85,11 +90,69 @@ class ReviewService extends BaseService
         $result = $this->repository->delete($review);
         
         if ($result) {
-             // Trigger event để tính lại rating (hoặc gọi trực tiếp logic tính toán)
-             // Ở đây ta dùng cơ chế Event Listener ở Product Module để decouple
-             event(new ReviewApproved($review)); // Tái sử dụng event này để trigger recalc
+             $this->clearStatsCache($productId);
+             // Trigger event để tính lại rating cho product
+             event(new ReviewApproved($review)); 
         }
         
         return $result;
+    }
+
+    public function getReviewStats(string $productUuid): array
+    {
+        $cacheKey = "review_stats_{$productUuid}";
+
+        return Cache::remember($cacheKey, 3600, function () use ($productUuid) {
+            $product = $this->productRepo->findByUuid($productUuid);
+            if (!$product) {
+                return $this->getEmptyStats();
+            }
+
+            $counts = $this->repository->getRatingCounts($product->id);
+            $totalReviews = array_sum($counts);
+            
+            $sumRating = 0;
+            foreach ($counts as $star => $count) {
+                $sumRating += ($star * $count);
+            }
+            
+            $avgRating = $totalReviews > 0 ? round($sumRating / $totalReviews, 1) : 0;
+
+            $distribution = [];
+            // Loop từ 5 xuống 1 để UI hiển thị đúng thứ tự
+            for ($i = 5; $i >= 1; $i--) {
+                $count = $counts[$i] ?? 0;
+                $percent = $totalReviews > 0 ? round(($count / $totalReviews) * 100, 1) : 0;
+                
+                $distribution[] = [
+                    'star' => $i,
+                    'count' => $count,
+                    'percent' => $percent
+                ];
+            }
+
+            return [
+                'total_reviews' => $totalReviews,
+                'average_rating' => $avgRating,
+                'distribution' => $distribution
+            ];
+        });
+    }
+
+    private function getEmptyStats(): array
+    {
+        return [
+            'total_reviews' => 0,
+            'average_rating' => 0,
+            'distribution' => array_map(fn($i) => ['star' => $i, 'count' => 0, 'percent' => 0], range(5, 1, -1))
+        ];
+    }
+
+    public function clearStatsCache(int $productId): void
+    {
+        $product = $this->productRepo->findById($productId);
+        if ($product) {
+            Cache::forget("review_stats_{$product->uuid}");
+        }
     }
 }

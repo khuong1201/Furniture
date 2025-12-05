@@ -2855,13 +2855,13 @@
                 ]
             }
         },
-        "/reviews": {
+        "/public/reviews": {
             "get": {
                 "tags": [
                     "Reviews"
                 ],
-                "summary": "Xem danh sách đánh giá (Public/Admin)",
-                "operationId": "537151cfc85509ee58521c13903a8fe3",
+                "summary": "Xem danh sách đánh giá",
+                "operationId": "d1352c2ddc934caf545e4a45c5975346",
                 "parameters": [
                     {
                         "name": "product_uuid",
@@ -2888,7 +2888,6 @@
                     {
                         "name": "admin_view",
                         "in": "query",
-                        "description": "Nếu true (và là admin) sẽ thấy cả review chưa duyệt",
                         "schema": {
                             "type": "boolean"
                         }
@@ -2899,7 +2898,34 @@
                         "description": "Success"
                     }
                 }
-            },
+            }
+        },
+        "/public/reviews/stats": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Lấy thống kê đánh giá (5 sao, 4 sao...)",
+                "operationId": "25c4c6008610651b29a52d76aa558a3f",
+                "parameters": [
+                    {
+                        "name": "product_uuid",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/reviews": {
             "post": {
                 "tags": [
                     "Reviews"
@@ -2907,7 +2933,6 @@
                 "summary": "Tạo đánh giá mới",
                 "operationId": "fb71a3b9781fdda4cb83976b10b69418",
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2981,7 +3006,6 @@
                                         "type": "string"
                                     },
                                     "is_approved": {
-                                        "description": "Admin only",
                                         "type": "boolean"
                                     }
                                 },
@@ -3027,6 +3051,30 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/public/reviews/{uuid}": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Xem chi tiết",
+                "operationId": "75fc9d5eed73d63c227cc8cb4c270ca5",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
             }
         },
         "/admin/roles": {

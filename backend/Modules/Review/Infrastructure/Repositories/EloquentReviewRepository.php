@@ -48,5 +48,24 @@ class EloquentReviewRepository extends EloquentBaseRepository implements ReviewR
             'count_rating' => (int)($stats->count_rating ?? 0)
         ];
     }
+
+    public function getRatingCounts(int $productId): array
+    {
+        // Query tối ưu: SELECT rating, COUNT(*) FROM reviews ... GROUP BY rating
+        $results = $this->model
+            ->where('product_id', $productId)
+            ->where('is_approved', true)
+            ->select('rating', DB::raw('count(*) as count'))
+            ->groupBy('rating')
+            ->pluck('count', 'rating') 
+            ->toArray();
+
+        $formatted = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $formatted[$i] = $results[$i] ?? 0;
+        }
+
+        return $formatted;
+    }
     
 }

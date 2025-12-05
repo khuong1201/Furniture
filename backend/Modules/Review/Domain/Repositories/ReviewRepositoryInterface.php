@@ -11,4 +11,5 @@ interface ReviewRepositoryInterface extends BaseRepositoryInterface
 {
     public function filter(array $filters): LengthAwarePaginator;
     public function getStats(int $productId): array;
+    public function getRatingCounts(int $productId): array;
 }

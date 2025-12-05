@@ -13,6 +13,7 @@ use Modules\Warehouse\Database\Seeders\WarehouseDatabaseSeeder;
 use Modules\Inventory\Database\Seeders\InventoryDatabaseSeeder; // Nhập kho
 use Modules\Voucher\Database\Seeders\VoucherDatabaseSeeder;
 // use Modules\Order\Database\Seeders\OrderDatabaseSeeder; // Optional, chạy sau cùng nếu cần đơn mẫu
+use Modules\Review\Database\Seeders\ReviewDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -26,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ProductDatabaseSeeder::class,   // Tạo sp nội thất + variants
             InventoryDatabaseSeeder::class, // Nhập kho cho variants vừa tạo
             VoucherDatabaseSeeder::class,
+            ReviewDatabaseSeeder::class,
         ]);
     }
 }
