@@ -28,7 +28,7 @@ class Product extends Model
     protected $casts = [
         'is_active' => 'boolean', 
         'has_variants' => 'boolean', 
-        'price' => 'decimal:2',
+        'price' => 'integer',
         'rating_avg' => 'decimal:2'
     ];
 

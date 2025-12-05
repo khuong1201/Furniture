@@ -17,4 +17,6 @@ interface InventoryServiceInterface
      * Hoàn kho khi hủy đơn.
      */
     public function restore(int $variantId, int $quantity, int $warehouseId): void;
+
+    public function getTotalStock(int $variantId): int;
 }

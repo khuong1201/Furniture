@@ -319,7 +319,7 @@ paths:
     post:
       tags:
         - Cart
-      summary: 'Thêm sản phẩm (Biến thể) vào giỏ'
+      summary: 'Thêm sản phẩm vào giỏ'
       operationId: f54d6540bce234d581cf30b75f9cc7f2
       requestBody:
         required: true
@@ -701,6 +701,126 @@ paths:
           schema:
             type: string
             format: uuid
+      responses:
+        200:
+          description: Deleted
+      security:
+        -
+          bearerAuth: []
+  /public/currencies:
+    get:
+      tags:
+        - Currencies
+      summary: 'Lấy danh sách tiền tệ hỗ trợ (Public)'
+      operationId: 654a2fc5b3d2734f2c716dac287a63a2
+      responses:
+        200:
+          description: Success
+  /admin/currencies:
+    get:
+      tags:
+        - Currencies
+      summary: 'Quản lý danh sách tiền tệ (Admin)'
+      operationId: 00372af0b6ba8daac270146114fb6e60
+      parameters:
+        -
+          name: page
+          in: query
+          schema:
+            type: integer
+        -
+          name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+      security:
+        -
+          bearerAuth: []
+    post:
+      tags:
+        - Currencies
+      summary: 'Thêm tiền tệ mới'
+      operationId: 2f59f32def05570122e406bd5c0aab78
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - code
+                - name
+                - symbol
+                - exchange_rate
+              properties:
+                code:
+                  type: string
+                  example: USD
+                name:
+                  type: string
+                  example: 'US Dollar'
+                symbol:
+                  type: string
+                  example: $
+                exchange_rate:
+                  type: number
+                  format: float
+                  example: 4.0E-5
+                is_default:
+                  type: boolean
+                is_active:
+                  type: boolean
+              type: object
+      responses:
+        201:
+          description: Created
+      security:
+        -
+          bearerAuth: []
+  '/admin/currencies/{uuid}':
+    put:
+      tags:
+        - Currencies
+      summary: 'Cập nhật tiền tệ'
+      operationId: b245f13a4603d64fc44b60c42663dda6
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                exchange_rate:
+                  type: number
+                is_default:
+                  type: boolean
+                is_active:
+                  type: boolean
+              type: object
+      responses:
+        200:
+          description: Updated
+      security:
+        -
+          bearerAuth: []
+    delete:
+      tags:
+        - Currencies
+      summary: 'Xóa tiền tệ'
+      operationId: 3ead392faf8836f1d1edc0589e5f529b
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Deleted
@@ -1549,7 +1669,83 @@ paths:
       tags:
         - Products
       summary: 'Danh sách sản phẩm (Public)'
+      description: 'Lấy danh sách sản phẩm đang hoạt động (Active). Có thể lọc theo tên, danh mục, khoảng giá.'
       operationId: f089d65f31dc82c6e3b80e06c542463f
+      parameters:
+        -
+          name: page
+          in: query
+          description: 'Trang hiện tại'
+          schema:
+            type: integer
+            default: 1
+        -
+          name: per_page
+          in: query
+          description: 'Số lượng item/trang'
+          schema:
+            type: integer
+            default: 15
+        -
+          name: search
+          in: query
+          description: 'Tìm kiếm theo tên hoặc SKU'
+          schema:
+            type: string
+        -
+          name: category_uuid
+          in: query
+          description: 'Lọc theo danh mục'
+          schema:
+            type: string
+            format: uuid
+        -
+          name: price_min
+          in: query
+          description: 'Giá thấp nhất'
+          schema:
+            type: number
+        -
+          name: price_max
+          in: query
+          description: 'Giá cao nhất'
+          schema:
+            type: number
+        -
+          name: sort_by
+          in: query
+          description: 'Sắp xếp (latest, price_asc, price_desc, best_selling)'
+          schema:
+            type: string
+            enum:
+              - latest
+              - price_asc
+              - price_desc
+              - best_selling
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object
+                type: object
+  /admin/products:
+    get:
+      tags:
+        - Products
+      summary: 'Danh sách sản phẩm (Admin)'
+      description: 'Lấy toàn bộ sản phẩm bao gồm cả ẩn/hiện để quản lý.'
+      operationId: 90b09429681f249365da59a28870cfb5
       parameters:
         -
           name: page
@@ -1562,31 +1758,25 @@ paths:
           schema:
             type: string
         -
-          name: category_uuid
+          name: is_active
           in: query
           schema:
-            type: string
+            type: boolean
       responses:
         200:
           description: Success
-  /admin/products:
-    get:
-      tags:
-        - Products
-      summary: 'Danh sách sản phẩm (Admin)'
-      operationId: 90b09429681f249365da59a28870cfb5
-      responses:
-        200:
-          description: Success
+        403:
+          description: Forbidden
       security:
         -
           bearerAuth: []
     post:
       tags:
         - Products
-      summary: 'Tạo sản phẩm'
+      summary: 'Tạo sản phẩm mới'
       operationId: 6cac846a61b72104adff1ee91bd8f69b
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1596,20 +1786,47 @@ paths:
               properties:
                 name:
                   type: string
+                  example: 'Sofa Da Bò Ý'
                 category_uuid:
                   type: string
+                  format: uuid
+                description:
+                  type: string
                 price:
+                  description: 'Giá (nếu không có biến thể)'
                   type: number
                 has_variants:
                   type: boolean
+                  default: false
+                is_active:
+                  type: boolean
+                  default: true
                 variants:
                   type: array
                   items:
+                    properties:
+                      sku:
+                        type: string
+                      price:
+                        type: number
+                      stock:
+                        type: array
+                        items:
+                          properties:
+                            warehouse_uuid:
+                              type: string
+                            quantity:
+                              type: integer
+                          type: object
                     type: object
               type: object
       responses:
         201:
-          description: Created
+          description: 'Created Successfully'
+        422:
+          description: 'Validation Error'
+        403:
+          description: Forbidden
       security:
         -
           bearerAuth: []
@@ -1626,9 +1843,12 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         200:
           description: Success
+        404:
+          description: 'Not Found'
   '/admin/products/{uuid}':
     put:
       tags:
@@ -1642,6 +1862,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       requestBody:
         content:
           application/json:
@@ -1649,17 +1870,25 @@ paths:
               properties:
                 name:
                   type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                is_active:
+                  type: boolean
               type: object
       responses:
         200:
-          description: Updated
+          description: 'Updated Successfully'
+        404:
+          description: 'Not Found'
       security:
         -
           bearerAuth: []
     delete:
       tags:
         - Products
-      summary: 'Xóa sản phẩm'
+      summary: 'Xóa sản phẩm (Soft Delete)'
       operationId: 997ef24991477503409e3edfd16a1553
       parameters:
         -
@@ -1668,9 +1897,12 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         200:
-          description: Deleted
+          description: 'Deleted Successfully'
+        403:
+          description: Forbidden
       security:
         -
           bearerAuth: []
@@ -2881,6 +3113,9 @@ tags:
     name: Collections
     description: 'API quản lý Bộ sưu tập'
   -
+    name: Currencies
+    description: 'API quản lý Tiền tệ'
+  -
     name: Dashboard
     description: 'Báo cáo thống kê hệ thống (Admin Only)'
   -
@@ -2909,7 +3144,7 @@ tags:
     description: 'API quản lý thuộc tính'
   -
     name: Products
-    description: 'API quản lý sản phẩm'
+    description: 'API quản lý sản phẩm (Sofa, Bàn, Ghế...)'
   -
     name: 'Product Images'
     description: 'API quản lý ảnh sản phẩm'

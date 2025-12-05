@@ -45,7 +45,7 @@ class CartController extends BaseController
 
     #[OA\Post(
         path: "/carts",
-        summary: "Thêm sản phẩm (Biến thể) vào giỏ",
+        summary: "Thêm sản phẩm vào giỏ",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         requestBody: new OA\RequestBody(
@@ -86,7 +86,6 @@ class CartController extends BaseController
     public function update(UpdateCartItemRequest $request, string $itemUuid): JsonResponse
     {
         $cartItem = $this->service->findCartItemOrFail($itemUuid);
-
         $this->authorize('update', $cartItem);
 
         $data = $this->service->updateItem($cartItem, (int)$request->input('quantity'), $request->user()->id);
@@ -107,7 +106,6 @@ class CartController extends BaseController
     public function destroy(string $uuid): JsonResponse
     {
         $cartItem = $this->service->findCartItemOrFail($uuid);
-
         $this->authorize('delete', $cartItem);
         
         $data = $this->service->removeItem($cartItem, request()->user()->id);

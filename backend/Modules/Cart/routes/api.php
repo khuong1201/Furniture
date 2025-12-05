@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Cart\Http\Controllers\CartController;
 use Modules\Cart\Http\Controllers\CartVoucherController;
+use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
 Route::middleware(['auth:sanctum'])->prefix('carts')->group(function() {
     Route::get('/', [CartController::class, 'index']);   

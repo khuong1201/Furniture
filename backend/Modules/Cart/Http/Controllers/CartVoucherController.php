@@ -9,16 +9,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Cart\Services\CartService;
-use Modules\Voucher\Services\VoucherService;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Cart", description: "API Giỏ hàng")]
 class CartVoucherController extends Controller
 {
-    public function __construct(
-        protected CartService $cartService,
-        protected VoucherService $voucherService 
-    ) {}
+    public function __construct(protected CartService $cartService) {}
 
     #[OA\Post(
         path: "/carts/apply-coupon",
@@ -35,8 +31,11 @@ class CartVoucherController extends Controller
     {
         $request->validate(['code' => 'required|string']);
         
-        // TODO: Implement VoucherService Logic here later
-        return response()->json(ApiResponse::error('Voucher Module not ready', 501), 501);
+        // Logic này cần tích hợp Module Voucher. Tạm thời giả lập để code chạy.
+        // Nếu đã có Module Voucher, uncomment dòng dưới:
+        // $result = app(\Modules\Voucher\Services\VoucherService::class)->applyVoucher(...);
+        
+        return response()->json(ApiResponse::error('Voucher System Integration Pending', 501), 501);
     }
 
     #[OA\Delete(path: "/carts/remove-coupon", summary: "Gỡ mã giảm giá", security: [['bearerAuth' => []]], tags: ["Cart"], responses: [new OA\Response(response: 200, description: "Removed")])]

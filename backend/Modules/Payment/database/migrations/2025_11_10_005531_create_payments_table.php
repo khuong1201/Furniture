@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             
             $table->string('method', 50); // cod, momo, vnpay...
-            $table->decimal('amount', 12, 2); 
+            $table->unsignedBigInteger('amount'); 
             $table->string('currency', 3)->default('VND');
             
             $table->string('status', 20)->default('pending')->index(); // pending, paid, failed, refunded

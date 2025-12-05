@@ -22,10 +22,10 @@ class OrderItem extends Model
 
     protected $casts = [
         'product_snapshot' => 'array',
-        'unit_price' => 'decimal:2',
-        'subtotal' => 'decimal:2',
-        'original_price' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
+        'unit_price' => 'integer',
+        'subtotal' => 'integer',
+        'original_price' => 'integer',
+        'discount_amount' => 'integer',
     ];
 
     protected static function boot()

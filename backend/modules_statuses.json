@@ -21,5 +21,6 @@
     "Dashboard": true,
     "Voucher": true,
     "Wishlist": true,
-    "Media": true
+    "Media": true,
+    "Currency": true
 }

@@ -89,6 +89,14 @@ class InventoryService extends BaseService implements InventoryServiceInterface
         }
     }
 
+    public function getTotalStock(int $variantId): int
+    {
+        // Tính tổng quantity từ tất cả các kho
+        return (int) $this->repository->query()
+            ->where('product_variant_id', $variantId)
+            ->sum('quantity');
+    }
+    
     // --- END IMPLEMENTATION ---
 
     public function adjust(string $variantUuid, string $warehouseUuid, int $delta, string $reason = 'manual'): Model

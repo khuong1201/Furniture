@@ -11,6 +11,7 @@ use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Order\Services\OrderService;
 use Modules\Order\Http\Requests\CreateOrderRequest;
 use Modules\Order\Domain\Models\Order;
+use Modules\Order\Http\Resources\OrderResource;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Orders", description: "API quản lý Đơn hàng")]
@@ -125,7 +126,7 @@ class OrderController extends BaseController
 
         $order->load(['items.variant.product.images', 'user']);
         
-        return response()->json(ApiResponse::success($order));
+        return response()->json(ApiResponse::success(new OrderResource($order)));
     }
 
     #[OA\Put(

@@ -16,10 +16,10 @@ return new class extends Migration
             $table->text('description')->nullable();
             
             $table->enum('type', ['fixed', 'percentage'])->default('fixed'); 
-            $table->decimal('value', 12, 2); // Amount or Percentage
+            $table->unsignedBigInteger('value'); 
             
-            $table->decimal('min_order_value', 12, 2)->nullable(); 
-            $table->decimal('max_discount_amount', 12, 2)->nullable(); // Cap for percentage
+            $table->unsignedBigInteger('min_order_value')->nullable(); // [CHANGE]
+            $table->unsignedBigInteger('max_discount_amount')->nullable();
             
             $table->integer('quantity')->default(0); 
             $table->integer('used_count')->default(0); 
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->foreignId('voucher_id')->constrained('vouchers')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
-            $table->decimal('discount_amount', 12, 2);
+            $table->unsignedBigInteger('discount_amount');
             $table->timestamp('used_at')->useCurrent();
             
             // Index để query lịch sử dùng của user nhanh

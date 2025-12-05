@@ -15,6 +15,10 @@ class ProductVariant extends Model
 {
     protected $fillable = ['uuid', 'product_id', 'sku', 'price', 'weight', 'image_url', 'sold_count'];
 
+    protected $casts = [
+        'price' => 'integer', // [CHANGE] Cast to integer
+    ];
+
     protected static function boot(): void 
     { 
         parent::boot(); 

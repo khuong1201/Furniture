@@ -44,7 +44,7 @@ return new class extends Migration {
             $table->unsignedInteger('rating_count')->default(0);
             
             // Simple product fields
-            $table->decimal('price', 12, 2)->nullable();
+            $table->unsignedBigInteger('price')->nullable()->comment('Min price of variants (Base Currency)');
             $table->string('sku', 100)->unique()->nullable();
             
             $table->softDeletes();
@@ -70,7 +70,7 @@ return new class extends Migration {
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             
             $table->string('sku', 100)->unique();
-            $table->decimal('price', 12, 2);
+            $table->unsignedBigInteger('price')->comment('Base Currency');
             $table->decimal('weight', 10, 2)->nullable();
             
             $table->string('image_url')->nullable(); 

@@ -19,11 +19,11 @@ return new class extends Migration
             $table->string('payment_status', 50)->default('unpaid')->index();
             $table->string('shipping_status', 50)->default('not_shipped');
             
-            $table->decimal('total_amount', 12, 2)->default(0);
+            $table->unsignedBigInteger('total_amount')->default(0);
             $table->text('notes')->nullable();
             
             $table->string('voucher_code')->nullable();
-            $table->decimal('voucher_discount', 12, 2)->default(0);
+            $table->unsignedBigInteger('voucher_discount')->default(0);
 
             $table->timestamp('ordered_at')->useCurrent();
             $table->softDeletes();
@@ -40,10 +40,10 @@ return new class extends Migration
             
             $table->integer('quantity');
 
-            $table->decimal('original_price', 12, 2)->comment('Giá gốc tại thời điểm mua');
-            $table->decimal('discount_amount', 12, 2)->default(0);
-            $table->decimal('unit_price', 12, 2)->comment('Giá sau giảm');
-            $table->decimal('subtotal', 12, 2); 
+            $table->unsignedBigInteger('original_price');
+            $table->unsignedBigInteger('discount_amount')->default(0);
+            $table->unsignedBigInteger('unit_price');
+            $table->unsignedBigInteger('subtotal');
             
             $table->json('product_snapshot')->nullable(); 
 

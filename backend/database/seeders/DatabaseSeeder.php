@@ -14,7 +14,7 @@ use Modules\Inventory\Database\Seeders\InventoryDatabaseSeeder; // Nhập kho
 use Modules\Voucher\Database\Seeders\VoucherDatabaseSeeder;
 // use Modules\Order\Database\Seeders\OrderDatabaseSeeder; // Optional, chạy sau cùng nếu cần đơn mẫu
 use Modules\Review\Database\Seeders\ReviewDatabaseSeeder;
-
+use Modules\Currency\Database\Seeders\CurrencyDatabaseSeeder;
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             InventoryDatabaseSeeder::class, // Nhập kho cho variants vừa tạo
             VoucherDatabaseSeeder::class,
             ReviewDatabaseSeeder::class,
+            CurrencyDatabaseSeeder::class,
         ]);
     }
 }

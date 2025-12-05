@@ -29,8 +29,8 @@ class Order extends Model
         'payment_status' => PaymentStatus::class,
         'shipping_address_snapshot' => 'array',
         'ordered_at' => 'datetime',
-        'total_amount' => 'decimal:2',
-        'voucher_discount' => 'decimal:2',
+        'total_amount' => 'integer',     
+        'voucher_discount' => 'integer',
     ];
 
     protected static function boot()

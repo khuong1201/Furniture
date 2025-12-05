@@ -19,7 +19,7 @@ return new class extends Migration
 
             $table->enum('status', ['pending', 'shipped', 'delivered', 'returned', 'cancelled'])->default('pending');
 
-            $table->decimal('fee', 12, 2)->default(0); 
+            $table->unsignedBigInteger('fee')->default(0);
             
             $table->timestamp('shipped_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
