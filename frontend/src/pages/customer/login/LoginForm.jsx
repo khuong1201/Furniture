@@ -13,7 +13,7 @@ function LoginForm () {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    device_name:''
+    device_name:'web'
   });
 
   const { login, loading, error } = useAuth();
@@ -37,10 +37,12 @@ function LoginForm () {
       return;
     }
 
-    const isSuccess = await login (formData.email, formData.password, formData.device_name);
+    const result = await login (formData.email, formData.password, formData.device_name);
 
-    if (isSuccess) {
+   if (result.success) {
         navigate('/customer'); 
+    } else {
+        setLocalError(result.message || 'Đăng nhập thất bại'); 
     }
   };
 
@@ -49,7 +51,19 @@ function LoginForm () {
     <div className="signup-wrapper">
       <div className="signup-card">
         <h2 className="signup-title">LOG IN</h2>
-
+        {localError && (
+          <div className="error-message" style={{ 
+              color: 'red', 
+              backgroundColor: '#ffe6e6', 
+              padding: '10px', 
+              borderRadius: '5px', 
+              marginBottom: '15px',
+              textAlign: 'center',
+              fontSize: '14px'
+          }}>
+            {localError}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
 
           {/* Email Field */}
@@ -122,7 +136,7 @@ function LoginForm () {
         {/* Footer Login Link */}
         <p className="footer-text">
           Don't have an account?{' '}
-          <Link to='/register' className='link-highlight'>
+          <Link to='/customer/register' className='link-highlight'>
             Sign up
           </Link>
         </p>

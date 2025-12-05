@@ -8,7 +8,7 @@
   import './Header.css';
 
   function Header() {
-
+    
     const{user} = useAuth();
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState('');
@@ -57,9 +57,19 @@
 
               <div className="action-item user-action">
                 <img src={accountIcon} alt="User" className="svg-icon"/>
-                <Link to="/customer/register" className="auth-text" style={{textDecoration: 'none', color: 'inherit'}}>
-                  Log In/ Sign up
-                </Link>
+                {user ? (
+                  <span className="auth-text">
+                    Xin chào, {user.name}
+                  </span>
+                ) : (
+                  <Link
+                    to="/customer/register"
+                    className="auth-text"
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    Log In / Sign up
+                  </Link>
+                )}
               </div>
 
             </div>

@@ -8,6 +8,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import styles from './SearchPage.module.css';
 
 const SearchPage = () => {
+  
   const [searchParams] = useSearchParams();
   
   // 1. Lấy keyword từ URL

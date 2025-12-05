@@ -1,11 +1,15 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useCart } from '@/hooks/useCart';
 import { Link } from 'react-router-dom';
 import styles from './CartPage.module.css'; // 👈 Import styles object
 
 const CartPage = () => {
-  const { cartItems, loading, error, totalPrice, updateQuantity, removeItem } = useCart();
+  const { cartItems, loading, error, totalPrice, updateQuantity, removeItem, fetchCart } = useCart();
 
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+      
   // Loading & Error States
   if (loading && cartItems.length === 0) {
     return <div className={styles['cart-loading']}>⏳ Đang tải giỏ hàng...</div>;

@@ -5,23 +5,24 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading lúc mới vào app (check token)
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 1. Check xem user đã đăng nhập chưa khi F5 trang
+  // 1. Check user khi F5 trang
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('access_token');
       if (token) {
-        // Set token lại cho Service 
         AuthService.instance.setToken(token);
         try {
-          // Gọi API lấy thông tin user (profile) nếu cần
-          // Hoặc tạm thời lấy user từ localStorage nếu bạn có lưu
+          // Lấy user từ localStorage để hiển thị ngay lập tức (cho nhanh)
           const storedUser = JSON.parse(localStorage.getItem('user_info'));
           if (storedUser) setUser(storedUser);
+          
+          // (Tùy chọn) Gọi API /me để chắc chắn token còn sống
+          // await AuthService.getMe(); 
         } catch (err) {
-          console.error("Token hết hạn", err);
+          console.error("Token lỗi hoặc hết hạn", err);
           logout();
         }
       }
@@ -30,36 +31,40 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // 2. Hàm Login (Gọi Service)
-  const login = async (email, password, device_name) => {
+  // 2. Hàm Login
+  const login = async (email, password, device_name = 'web') => {
     setLoading(true);
     setError(null);
     try {
+      // Gọi API
+      const response = await AuthService.login(email, password, device_name || 'web');
+      
+      // ⚠️ Backend trả về: { success: true, data: { access_token, user, ... } }
+      // Truy cập vào lớp .data
+      const { access_token, refresh_token, user, roles } = response.data;
 
-      const data = await AuthService.login(email, password, device_name);
+      if (!access_token) throw new Error('Không nhận được Access Token');
 
-      // Lưu trữ
-      localStorage.setItem('access_token', data.data.access_token);
-      localStorage.setItem('refresh_token', data.data.refresh_token);
-
-      // Lưu user info cùng với roles
-      const userInfo = {
-        ...data.data.user,
-        roles: data.data.roles || []
-      };
+      // Lưu Storage
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      
+      const userInfo = { ...user, roles: roles || [] };
       localStorage.setItem('user_info', JSON.stringify(userInfo));
 
-      console.log('🔑 Access Token:', data.data.access_token);
-      console.log('👤 User Roles:', data.data.roles);
-      console.log('✅Login success:', data);
-
-      AuthService.instance.setToken(data.data.access_token);
+      // Cập nhật State & Service
+      AuthService.instance.setToken(access_token);
       setUser(userInfo);
 
+      console.log('✅ Login Success:', userInfo);
       return { success: true, user: userInfo };
+
     } catch (err) {
-      setError(err.message || '❌Đăng nhập thất bại');
-      return { success: false };
+      console.error('Login Error:', err);
+      // Lấy message từ API nếu có
+      const msg = err.message || 'Đăng nhập thất bại';
+      setError(msg);
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
@@ -71,12 +76,12 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const response = await AuthService.register(payload);
-
-      console.log('✅Form Submitted:', response);
-      return true;
+      console.log('✅ Register Success:', response);
+      return { success: true }; // Trả về object cho đồng bộ
     } catch (err) {
-      setError(err.message || '❌ ký thất bại');
-      return false;
+      const msg = err.message || 'Đăng ký thất bại';
+      setError(msg);
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
@@ -89,14 +94,15 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.log('Lỗi logout server, vẫn clear client');
     }
-    // Xóa sạch client
+    
+    // Xóa sạch mọi thứ
     AuthService.instance.setToken(null);
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token'); // 👈 Nhớ xóa cái này
     localStorage.removeItem('user_info');
     setUser(null);
   };
 
-  // Giá trị trả về cho các Component con dùng
   const value = {
     user,
     loading,
@@ -109,7 +115,6 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Hook nhỏ để các component gọi nhanh
 export const useAuth = () => {
   return useContext(AuthContext);
 };

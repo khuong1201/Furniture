@@ -100,11 +100,7 @@ export const useCart = () => {
       alert(err.message);
     }
   };
-
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
-        
+  
   return {
     cartItems,
     loading,

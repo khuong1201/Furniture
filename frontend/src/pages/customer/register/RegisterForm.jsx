@@ -16,8 +16,9 @@ const RegisterForm = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    agreeTerms: false,
+    password_confirmation: '',
+    device_name: 'web',
+    agreeTerms: false 
   });
 
 
@@ -38,9 +39,25 @@ const RegisterForm = () => {
     
     setLocalError('');
 
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.name || !formData.email || !formData.password) {
+      setLocalError("Please fill in all required fields.");
+      return;
+    }
+
+    if (formData.password !== formData.password_confirmation) {
       setLocalError("Authentication passwords do not match!");
       return;
+    }
+
+    if (formData.password.length < 6) {
+        setLocalError("Password must be at least 6 characters.");
+        return;
+    }
+    
+    const hasLetter = /[a-zA-Z]/.test(formData.password);
+    if (!hasLetter) {
+        setLocalError("Password must contain at least one letter.");
+        return;
     }
 
     if (!formData.agreeTerms) {
@@ -51,7 +68,7 @@ const RegisterForm = () => {
       name: formData.name,
       email: formData.email,
       password: formData.password,
-      password_confirmation: formData.confirmPassword,
+      password_confirmation: formData.password_confirmation,
       device_name: 'web_browser'
     };
     
@@ -69,18 +86,9 @@ const RegisterForm = () => {
         <h2 className="signup-title">SIGN UP</h2>
 
         {(localError || apiError) && (
-            <div style={{ 
-                backgroundColor: '#ffebee', 
-                color: '#c62828', 
-                padding: '10px', 
-                borderRadius: '4px', 
-                marginBottom: '15px', 
-                fontSize: '14px',
-                textAlign: 'center',
-                border: '1px solid #ffcdd2'
-            }}>
-                {localError || apiError}
-            </div>
+          <div className='error-message'>
+              {localError || apiError}
+          </div>
         )}
 
         <form onSubmit={handleSubmit}>
@@ -148,11 +156,11 @@ const RegisterForm = () => {
               <Lock className="input-icon" />
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
+                name="password_confirmation"
                 placeholder="Confirm your password"
                 className="form-input"
                 style={{ paddingRight: '40px' }}
-                value={formData.confirmPassword}
+                value={formData.password_confirmation}
                 onChange={handleChange}
               />
               <button
