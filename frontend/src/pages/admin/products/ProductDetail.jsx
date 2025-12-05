@@ -32,7 +32,7 @@ const ProductDetail = () => {
 
     if (loading) {
         return (
-            <div className="product-detail">
+            <div className="product_detail">
                 <div className="loading-state">
                     <div className="spinner"></div>
                     <p>Đang tải dữ liệu...</p>
@@ -43,10 +43,10 @@ const ProductDetail = () => {
 
     if (error || !product) {
         return (
-            <div className="product-detail">
+            <div className="product_detail">
                 <div className="error-state">
                     <p>{error || 'Không tìm thấy sản phẩm'}</p>
-                    <button onClick={() => navigate('/admin/products')} className="btn btn-secondary">
+                    <button onClick={() => navigate('/admin/products')} className="btn-secondary">
                         Quay lại danh sách
                     </button>
                 </div>
@@ -55,7 +55,7 @@ const ProductDetail = () => {
     }
 
     return (
-        <div className="product-detail">
+        <div className="product_detail">
             {/* Header */}
             <div className="detail-header">
                 <button onClick={() => navigate('/admin/products')} className="btn-back">

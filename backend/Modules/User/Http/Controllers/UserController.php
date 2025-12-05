@@ -40,9 +40,9 @@ class UserController extends BaseController
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', User::class);
-        
-        return parent::index($request); 
-    }   
+
+        return parent::index($request);
+    }
 
     #[OA\Post(
         path: "/admin/users",
@@ -72,7 +72,7 @@ class UserController extends BaseController
         $this->authorize('create', User::class);
 
         $data = $request->validated();
-        
+
         $user = $this->service->create($data);
 
         return response()->json(ApiResponse::success($user, 'User created successfully', 201), 201);
@@ -114,7 +114,9 @@ class UserController extends BaseController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: "success", type: "boolean"),
-                        new OA\Property(property: "data", type: "object",
+                        new OA\Property(
+                            property: "data",
+                            type: "object",
                             properties: [
                                 new OA\Property(property: "uuid", type: "string"),
                                 new OA\Property(property: "name", type: "string"),
@@ -128,14 +130,49 @@ class UserController extends BaseController
             new OA\Response(response: 404, description: "User not found")
         ]
     )]
-    
+
     public function profile(Request $request): JsonResponse
     {
-        $user = $this->service->findByUuidOrFail($uuid);
-
-        $this->authorize('view', $user);
+        $user = $request->user();
+        $user->load('roles');
 
         return response()->json(ApiResponse::success($user));
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone' => 'sometimes|nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+        $user->load('roles');
+
+        return response()->json(ApiResponse::success($user, 'Cập nhật hồ sơ thành công'));
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if (!password_verify($validated['current_password'], $user->password)) {
+            return response()->json(ApiResponse::error('Mật khẩu hiện tại không đúng'), 400);
+        }
+
+        $user->update([
+            'password' => bcrypt($validated['password'])
+        ]);
+
+        return response()->json(ApiResponse::success(null, 'Đổi mật khẩu thành công'));
     }
 
     #[OA\Put(
@@ -163,15 +200,15 @@ class UserController extends BaseController
     public function update(UpdateUserRequest $request, string $uuid): JsonResponse
     {
         $user = $this->service->findByUuidOrFail($uuid);
-        
+
         $this->authorize('update', $user);
 
         $data = $request->validated();
 
         if (!$request->user()->hasPermissionTo('user.edit')) {
-             unset($data['roles']);   
-             unset($data['is_active']);
-             unset($data['email']);     
+            unset($data['roles']);
+            unset($data['is_active']);
+            unset($data['email']);
         }
 
         $updatedUser = $this->service->update($uuid, $data);

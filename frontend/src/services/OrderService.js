@@ -80,10 +80,15 @@ class OrderService {
   }
 
   // ✅ Lấy danh sách đơn hàng: GET /orders
-  async getMyOrders() {
-    return this._request('/orders', {
+  async getOrders(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this._request(`/orders${queryString ? `?${queryString}` : ''}`, {
       method: 'GET',
     });
+  }
+
+  async getMyOrders() {
+    return this.getOrders();
   }
 
   // ✅ Lấy chi tiết đơn theo UUID: GET /orders/{uuid}
@@ -110,6 +115,10 @@ class OrderService {
 
   static checkout(data) {
     return OrderService.instance.checkout(data);
+  }
+
+  static getOrders(params) {
+    return OrderService.instance.getOrders(params);
   }
 
   static getMyOrders() {

@@ -85,7 +85,7 @@ const PromotionList = () => {
     };
 
     return (
-        <div className="promotion-management">
+        <div className="promotion_management">
             {/* Header */}
             <div className="page-header">
                 <div className="header-content">

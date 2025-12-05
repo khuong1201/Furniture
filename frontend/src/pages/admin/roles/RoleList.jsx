@@ -25,7 +25,9 @@ const RoleList = () => {
         try {
             setLoading(true);
             const response = await RoleService.getRoles();
-            setRoles(response.data || []);
+            // Handle paginated response
+            const rolesData = response.data?.data || response.data || [];
+            setRoles(Array.isArray(rolesData) ? rolesData : []);
         } catch (err) {
             setError('Không thể tải danh sách vai trò');
             console.error(err);
@@ -66,86 +68,86 @@ const RoleList = () => {
     };
 
     return (
-        <div className="role-management">
+        <div className="role_management">
             {/* Header */}
-            <div className="page-header">
-                <div className="header-content">
+            <div className="role_page-header">
+                <div className="role_header-content">
                     <h1>
                         <Shield size={28} />
                         Quản lý vai trò & phân quyền
                     </h1>
                     <p>{roles.length} vai trò trong hệ thống</p>
                 </div>
-                <button onClick={() => navigate('/admin/roles/create')} className="btn btn-primary">
+                <button onClick={() => navigate('/admin/roles/create')} className="role_btn role_btn-primary">
                     <Plus size={20} />
                     Thêm vai trò
                 </button>
             </div>
 
             {error && (
-                <div className="alert alert-error">
+                <div className="role_alert role_alert-error">
                     <AlertCircle size={20} />
                     {error}
-                    <button onClick={() => setError(null)} className="alert-close">&times;</button>
+                    <button onClick={() => setError(null)} className="role_alert-close">&times;</button>
                 </div>
             )}
 
             {/* Roles List */}
-            <div className="roles-container">
+            <div className="roles_container">
                 {loading ? (
-                    <div className="loading-state">
+                    <div className="role_loading-state">
                         <div className="spinner"></div>
                         <p>Đang tải...</p>
                     </div>
                 ) : roles.length === 0 ? (
-                    <div className="empty-state">
+                    <div className="role_empty-state">
                         <Shield size={48} />
                         <h3>Chưa có vai trò nào</h3>
-                        <button onClick={() => navigate('/admin/roles/create')} className="btn btn-primary">
+                        <button onClick={() => navigate('/admin/roles/create')} className="role_btn role_btn-primary">
                             <Plus size={16} />
                             Tạo vai trò đầu tiên
                         </button>
                     </div>
                 ) : (
-                    <div className="roles-list">
+                    <div className="roles_list">
                         {roles.map(role => {
                             const isExpanded = expandedRole === role.uuid;
                             const permGroups = groupPermissionsByModule(role.permissions);
 
                             return (
-                                <div key={role.uuid} className={`role-card ${isExpanded ? 'expanded' : ''}`}>
-                                    <div className="role-header" onClick={() => toggleExpand(role.uuid)}>
-                                        <div className="role-info">
-                                            <div className="role-icon">
+                                <div key={role.uuid} className={`role_card ${isExpanded ? 'expanded' : ''}`}>
+                                    <div className="role_header" onClick={() => toggleExpand(role.uuid)}>
+                                        <div className="role_info">
+                                            <div className="role_icon">
                                                 <Shield size={20} />
                                             </div>
-                                            <div className="role-details">
+                                            <div className="role_details">
                                                 <h3>{role.name}</h3>
                                                 <p>{role.description || 'Không có mô tả'}</p>
                                             </div>
                                         </div>
 
-                                        <div className="role-meta">
-                                            <span className="meta-item">
+                                        <div className="role_meta">
+                                            <span className="role_meta-item">
                                                 <Key size={14} />
                                                 {role.permissions?.length || 0} quyền
                                             </span>
-                                            <span className="meta-item">
+                                            <span className="role_meta-item">
                                                 <Users size={14} />
                                                 {role.users_count || 0} người dùng
                                             </span>
                                             {role.is_system && (
-                                                <span className="badge badge-system">Hệ thống</span>
+                                                <span className="role_badge role_badge-system">Hệ thống</span>
                                             )}
                                         </div>
 
-                                        <div className="role-actions">
+                                        <div className="role_actions">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/admin/roles/${role.uuid}/edit`);
                                                 }}
-                                                className="btn-icon btn-edit"
+                                                className="role_btn-icon role_btn-edit"
                                                 title="Sửa"
                                             >
                                                 <Edit size={16} />
@@ -156,31 +158,31 @@ const RoleList = () => {
                                                         e.stopPropagation();
                                                         setDeleteConfirm({ show: true, item: role });
                                                     }}
-                                                    className="btn-icon btn-delete"
+                                                    className="role_btn-icon role_btn-delete"
                                                     title="Xóa"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
                                             )}
-                                            <button className="btn-icon btn-expand">
+                                            <button className="role_btn-icon role_btn-expand">
                                                 {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                             </button>
                                         </div>
                                     </div>
 
                                     {isExpanded && (
-                                        <div className="role-permissions">
+                                        <div className="role_permissions">
                                             <h4>Danh sách quyền hạn</h4>
                                             {Object.keys(permGroups).length === 0 ? (
                                                 <p className="no-permissions">Vai trò này chưa có quyền nào</p>
                                             ) : (
                                                 <div className="permissions-grid">
                                                     {Object.entries(permGroups).map(([module, perms]) => (
-                                                        <div key={module} className="permission-group">
+                                                        <div key={module} className="role_permission-group">
                                                             <h5>{module}</h5>
-                                                            <div className="permission-tags">
+                                                            <div className="role_role_permission-tags">
                                                                 {perms.map(perm => (
-                                                                    <span key={perm.id} className="permission-tag">
+                                                                    <span key={perm.id} className="role_permission-tag">
                                                                         {perm.name.split('.')[1] || perm.name}
                                                                     </span>
                                                                 ))}

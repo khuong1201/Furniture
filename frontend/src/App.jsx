@@ -30,12 +30,16 @@ import PromotionForm from './pages/admin/promotions/PromotionForm';
 import RoleList from './pages/admin/roles/RoleList';
 import RoleForm from './pages/admin/roles/RoleForm';
 import PermissionList from './pages/admin/permissions/PermissionList';
+import LogList from './pages/admin/activity-logs/LogList';
+import AttributeList from './pages/admin/attributes/AttributeList';
+import PaymentList from './pages/admin/payments/PaymentList';
 import ReviewList from './pages/admin/reviews/ReviewList';
 import CollectionList from './pages/admin/collections/CollectionList';
 import CollectionForm from './pages/admin/collections/CollectionForm';
 import ShippingList from './pages/admin/shippings/ShippingList';
 import ShippingForm from './pages/admin/shippings/ShippingForm';
 import SettingsPage from './pages/admin/settings/SettingsPage';
+import AdminProfile from './pages/admin/profile/AdminProfile';
 import AdminLogin from './pages/admin/login/AdminLogin';
 
 function App() {
@@ -83,6 +87,9 @@ function App() {
         <Route path="roles/create" element={<RoleForm />} />
         <Route path="roles/:uuid/edit" element={<RoleForm />} />
         <Route path="permissions" element={<PermissionList />} />
+        <Route path="logs" element={<LogList />} />
+        <Route path="attributes" element={<AttributeList />} />
+        <Route path="payments" element={<PaymentList />} />
         <Route path="reviews" element={<ReviewList />} />
         <Route path="collections" element={<CollectionList />} />
         <Route path="collections/create" element={<CollectionForm />} />
@@ -91,6 +98,7 @@ function App() {
         <Route path="shippings/create" element={<ShippingForm />} />
         <Route path="shippings/:uuid/edit" element={<ShippingForm />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="profile" element={<AdminProfile />} />
       </Route>
     </Routes>
   );

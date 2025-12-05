@@ -93,6 +93,29 @@ class AuthService {
     });
   }
 
+  // ✅ GET PROFILE
+  async getProfile() {
+    return this._request('/profile', {
+      method: 'GET',
+    });
+  }
+
+  // ✅ UPDATE PROFILE
+  async updateProfile(data) {
+    return this._request('/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ✅ CHANGE PASSWORD
+  async changePassword(data) {
+    return this._request('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Static wrappers
   static login(email, password, device_name) {
     return AuthService.instance.login(email, password, device_name);
@@ -112,6 +135,18 @@ class AuthService {
 
   static logout() {
     return AuthService.instance.logout();
+  }
+
+  static getProfile() {
+    return AuthService.instance.getProfile();
+  }
+
+  static updateProfile(data) {
+    return AuthService.instance.updateProfile(data);
+  }
+
+  static changePassword(data) {
+    return AuthService.instance.changePassword(data);
   }
 }
 

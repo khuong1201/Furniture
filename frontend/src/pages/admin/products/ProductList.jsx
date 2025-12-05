@@ -173,7 +173,7 @@ const ProductList = () => {
     };
 
     return (
-        <div className="product-list-container">
+        <div className="product_list-container">
             {/* Header */}
             <div className="list-header">
                 <div className="header-content">

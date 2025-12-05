@@ -76,7 +76,7 @@ const LogList = () => {
 
     if (loading && logs.length === 0) {
         return (
-            <div className="loading-state">
+            <div className="log_loading-state">
                 <Loader className="spinner" size={40} />
                 <p>Đang tải...</p>
             </div>
@@ -84,11 +84,11 @@ const LogList = () => {
     }
 
     return (
-        <div className="log-list-page">
-            <div className="page-header">
+        <div className="log_list-page">
+            <div className="log_page-header">
                 <div className="page-title">
                     <h1>Nhật ký hoạt động</h1>
-                    <p className="page-subtitle">Xem lịch sử hoạt động trong hệ thống</p>
+                    <p className="log_page-subtitle">Xem lịch sử hoạt động trong hệ thống</p>
                 </div>
             </div>
 
@@ -101,7 +101,7 @@ const LogList = () => {
             )}
 
             <div className="search-filters">
-                <div className="search-box">
+                <div className="log_search-box">
                     <Search size={20} className="search-icon" />
                     <input
                         type="text"
@@ -111,7 +111,7 @@ const LogList = () => {
                     />
                 </div>
                 <select
-                    className="filter-select"
+                    className="log_filter-select"
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
                 >
@@ -125,7 +125,7 @@ const LogList = () => {
 
             <div className="log-table-wrapper">
                 {filteredLogs.length === 0 ? (
-                    <div className="empty-state">
+                    <div className="log_empty-state">
                         <Activity size={64} />
                         <h3>Chưa có hoạt động nào</h3>
                         <p>Nhật ký sẽ được ghi lại khi có hoạt động</p>
@@ -157,7 +157,7 @@ const LogList = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className={`action-badge ${getActionColor(log.action || log.event)}`}>
+                                        <span className={`log_action-badge ${getActionColor(log.action || log.event)}`}>
                                             {log.action || log.event || '-'}
                                         </span>
                                     </td>
@@ -178,7 +178,7 @@ const LogList = () => {
             </div>
 
             {totalPages > 1 && (
-                <div className="pagination">
+                <div className="log_pagination">
                     <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
                         <ChevronLeft size={18} />
                     </button>
@@ -202,7 +202,7 @@ const LogList = () => {
                         <div className="detail-row"><label>Thời gian:</label><span>{formatDate(selectedLog.created_at)}</span></div>
                         <div className="detail-row"><label>Người dùng:</label><span>{selectedLog.user?.name || 'System'}</span></div>
                         <div className="detail-row"><label>Hành động:</label>
-                            <span className={`action-badge ${getActionColor(selectedLog.action)}`}>{selectedLog.action}</span>
+                            <span className={`log_action-badge ${getActionColor(selectedLog.action)}`}>{selectedLog.action}</span>
                         </div>
                         <div className="detail-row"><label>Mô tả:</label><span>{selectedLog.description}</span></div>
                         {selectedLog.properties && (

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Edit,
+  Trash2,
   FolderTree,
   ChevronRight,
   ChevronDown,
@@ -83,7 +83,7 @@ const CategoryList = () => {
     });
   };
 
-  const filteredCategories = categories.filter(category => 
+  const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     category.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -107,14 +107,14 @@ const CategoryList = () => {
     const icon = getCategoryIcon(category.name);
 
     return (
-      <div className="category-tree" key={category.uuid}>
-        <div 
-          className={`category-item ${depth > 0 ? 'child' : ''}`}
+      <div className="category_tree" key={category.uuid}>
+        <div
+          className={`category_item ${depth > 0 ? 'child' : ''}`}
           style={{ paddingLeft: `${depth * 32 + 16}px` }}
         >
-          <div className="category-header">
-            <button 
-              className="expand-btn"
+          <div className="category_header">
+            <button
+              className="category_expand-btn"
               onClick={() => toggleCategory(category.uuid)}
               disabled={!hasChildren}
             >
@@ -125,21 +125,21 @@ const CategoryList = () => {
               )}
             </button>
 
-            <div className="category-icon">
-              <span className="category-icon-text">{icon}</span>
+            <div className="category_icon">
+              <span className="category_icon-text">{icon}</span>
             </div>
 
-            <div className="category-info">
-              <div className="category-main">
-                <h4 className="category-name">{category.name}</h4>
+            <div className="category_info">
+              <div className="category_main">
+                <h4 className="category_name">{category.name}</h4>
                 {category.description && (
-                  <p className="category-description">{category.description}</p>
+                  <p className="category_description">{category.description}</p>
                 )}
               </div>
-              
-              <div className="category-meta">
-                <span className="category-slug">/{category.slug}</span>
-                <div className="category-stats">
+
+              <div className="category_meta">
+                <span className="category_slug">/{category.slug}</span>
+                <div className="category_stats">
                   <span className="stat-item">
                     <Package size={14} />
                     {category.products_count || 0} sản phẩm
@@ -155,12 +155,12 @@ const CategoryList = () => {
             </div>
           </div>
 
-          <div className="category-details">
-            <div className="category-detail-item">
+          <div className="category_details">
+            <div className="category_detail-item">
               <span className="detail-label">ID:</span>
               <span className="detail-value">{category.id}</span>
             </div>
-            <div className="category-detail-item">
+            <div className="category_detail-item">
               <span className="detail-label">Ngày tạo:</span>
               <span className="detail-value">
                 {new Date(category.created_at).toLocaleDateString('vi-VN')}
@@ -168,36 +168,36 @@ const CategoryList = () => {
             </div>
           </div>
 
-          <div className="category-actions">
+          <div className="category_actions">
             <button
-              className="action-btn view-btn"
+              className="category_action-btn category_view-btn"
               onClick={() => navigate(`/admin/products?category=${category.uuid}`)}
               title="Xem sản phẩm"
             >
               <Eye size={16} />
-              <span className="action-label">Xem</span>
+              <span className="category_action-label">Xem</span>
             </button>
             <button
-              className="action-btn edit-btn"
+              className="category_action-btn category_edit-btn"
               onClick={() => navigate(`/admin/categories/${category.uuid}/edit`)}
               title="Chỉnh sửa"
             >
               <Edit size={16} />
-              <span className="action-label">Sửa</span>
+              <span className="category_action-label">Sửa</span>
             </button>
             <button
-              className="action-btn delete-btn"
+              className="category_action-btn category_delete-btn"
               onClick={() => handleDelete(category.uuid, category.name)}
               title="Xóa"
             >
               <Trash2 size={16} />
-              <span className="action-label">Xóa</span>
+              <span className="category_action-label">Xóa</span>
             </button>
           </div>
         </div>
 
         {hasChildren && isExpanded && (
-          <div className="children-container">
+          <div className="category_children-container">
             {category.all_children.map(child => renderCategoryCard(child, depth + 1))}
           </div>
         )}
@@ -209,7 +209,7 @@ const CategoryList = () => {
   const totalCategories = categories.length;
   const totalProducts = categories.reduce((sum, cat) => sum + (cat.products_count || 0), 0);
   const activeCategories = categories.filter(cat => cat.is_active !== false).length;
-  
+
   // Tìm độ sâu tối đa của danh mục
   const getMaxDepth = (cats, depth = 0) => {
     let maxDepth = depth;
@@ -224,32 +224,32 @@ const CategoryList = () => {
   const maxDepth = getMaxDepth(categories);
 
   return (
-    <div className="category-management">
+    <div className="category_management">
       {/* Header Section */}
-      <div className="category-header-section">
-        <div className="header-left">
-          <div className="page-header">
+      <div className="category_header-section">
+        <div className="category_header-left">
+          <div className="category_page-header">
             <h1>
               <FolderTree size={28} />
               Quản lý Danh mục
             </h1>
-            <p className="page-subtitle">Tổ chức và quản lý danh mục sản phẩm của bạn</p>
+            <p className="category_page-subtitle">Tổ chức và quản lý danh mục sản phẩm của bạn</p>
           </div>
         </div>
 
-        <div className="header-right">
-          <div className="search-wrapper">
-            <Search size={18} className="search-icon" />
+        <div className="category_header-right">
+          <div className="category_search-wrapper">
+            <Search size={18} className="category_search-icon" />
             <input
               type="text"
               placeholder="Tìm kiếm danh mục..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="category_search-input"
             />
             {searchTerm && (
-              <button 
-                className="clear-search" 
+              <button
+                className="category_clear-search"
                 onClick={() => setSearchTerm('')}
                 title="Xóa tìm kiếm"
               >
@@ -259,7 +259,7 @@ const CategoryList = () => {
           </div>
 
           <button
-            className="btn btn-primary"
+            className="category_category_btn category_btn-primary"
             onClick={() => navigate('/admin/categories/create')}
           >
             <Plus size={20} />
@@ -269,42 +269,42 @@ const CategoryList = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon total">
+      <div className="category_stats-grid">
+        <div className="category_stat-card">
+          <div className="category_stat-icon total">
             <FolderTree size={24} />
           </div>
-          <div className="stat-content">
+          <div className="category_stat-content">
             <h3>{totalCategories}</h3>
             <p>Tổng danh mục</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon products">
+        <div className="category_stat-card">
+          <div className="category_stat-icon products">
             <Package size={24} />
           </div>
-          <div className="stat-content">
+          <div className="category_stat-content">
             <h3>{totalProducts}</h3>
             <p>Tổng sản phẩm</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon active">
+        <div className="category_stat-card">
+          <div className="category_stat-icon active">
             <Layers size={24} />
           </div>
-          <div className="stat-content">
+          <div className="category_stat-content">
             <h3>{activeCategories}</h3>
             <p>Đang hoạt động</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon levels">
+        <div className="category_stat-card">
+          <div className="category_stat-icon levels">
             <Settings size={24} />
           </div>
-          <div className="stat-content">
+          <div className="category_stat-content">
             <h3>{maxDepth + 1}</h3>
             <p>Cấp danh mục</p>
           </div>
@@ -312,46 +312,46 @@ const CategoryList = () => {
       </div>
 
       {/* Main Content */}
-      <div className="category-content">
+      <div className="category_content">
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner-gold"></div>
+          <div className="category_loading-state">
+            <div className="category_spinner-gold"></div>
             <p>Đang tải danh mục...</p>
           </div>
         ) : error ? (
-          <div className="error-state">
+          <div className="category_error-state">
             <div className="error-icon">⚠️</div>
             <p>{error}</p>
-            <button onClick={fetchCategories} className="btn btn-secondary">
+            <button onClick={fetchCategories} className="category_category_btn category_btn-secondary">
               Thử lại
             </button>
           </div>
         ) : filteredCategories.length === 0 ? (
-          <div className="empty-state">
+          <div className="category_empty-state">
             <FolderTree size={64} color="#fbbf24" />
             <h3>Không tìm thấy danh mục</h3>
             <p>{searchTerm ? 'Thử tìm kiếm với từ khóa khác' : 'Bắt đầu bằng cách thêm danh mục đầu tiên'}</p>
             <button
               onClick={() => navigate('/admin/categories/create')}
-              className="btn btn-primary"
+              className="category_category_btn category_btn-primary"
             >
               <Plus size={18} />
               Thêm danh mục mới
             </button>
           </div>
         ) : (
-          <div className="categories-list">
-            <div className="list-header">
-              <div className="header-col name">Danh mục</div>
-              <div className="header-col details">Chi tiết</div>
-              <div className="header-col actions">Thao tác</div>
+          <div className="categories_list">
+            <div className="category_list-header">
+              <div className="category_header-col name">Danh mục</div>
+              <div className="category_header-col details">Chi tiết</div>
+              <div className="category_header-col actions">Thao tác</div>
             </div>
 
-            <div className="categories-container">
+            <div className="categories_container">
               {filteredCategories.map(category => renderCategoryCard(category))}
             </div>
 
-            <div className="list-footer">
+            <div className="category_list-footer">
               <p>
                 Hiển thị {filteredCategories.length} trong tổng số {categories.length} danh mục
                 {searchTerm && ` • Kết quả tìm kiếm cho "${searchTerm}"`}

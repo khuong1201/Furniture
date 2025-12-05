@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Edit, Trash2, Eye, UserCircle } from 'lucide-react';
 import UserService from '@/services/UserService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
-import '../products/ProductList.css';
+import './UserList.css';
 
 const UserList = () => {
     const navigate = useNavigate();
@@ -73,7 +73,7 @@ const UserList = () => {
     };
 
     return (
-        <div className="product-list">
+        <div className="user_list">
             <div className="page-header">
                 <div>
                     <h1>Quản lý Người dùng</h1>

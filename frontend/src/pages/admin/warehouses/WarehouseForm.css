@@ -1,0 +1,201 @@
+/* Warehouse Form - Modern Gold Theme with warehouse_form prefix */
+
+.warehouse_form {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* === Form Header === */
+.warehouse_form .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
+}
+
+.warehouse_form .form-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--admin-text);
+    margin: 0;
+}
+
+.warehouse_form .form-header h1 svg {
+    color: var(--admin-primary-dark);
+}
+
+/* === Form Container === */
+.warehouse_form .admin-form {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    overflow: hidden;
+}
+
+/* === Form Section === */
+.warehouse_form .form-section {
+    padding: 28px;
+}
+
+.warehouse_form .form-section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--admin-primary-dark);
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--admin-border-light);
+}
+
+/* === Form Group === */
+.warehouse_form .form-group {
+    margin-bottom: 20px;
+}
+
+.warehouse_form .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.warehouse_form .form-group label {
+    display: block;
+    font-weight: 500;
+    color: var(--admin-text);
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.warehouse_form .required {
+    color: #ef4444;
+}
+
+.warehouse_form .form-group input,
+.warehouse_form .form-group select,
+.warehouse_form .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    background: white;
+    transition: all 0.2s;
+    color: var(--admin-text);
+}
+
+.warehouse_form .form-group input:focus,
+.warehouse_form .form-group select:focus,
+.warehouse_form .form-group textarea:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+}
+
+.warehouse_form .form-group input::placeholder,
+.warehouse_form .form-group textarea::placeholder {
+    color: var(--admin-text-muted);
+}
+
+.warehouse_form .form-group input.error,
+.warehouse_form .form-group select.error {
+    border-color: #ef4444;
+}
+
+.warehouse_form .error-message {
+    display: block;
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* === Form Actions === */
+.warehouse_form .form-actions {
+    display: flex;
+    gap: 14px;
+    padding: 24px 28px;
+    background: var(--admin-accent-light);
+    border-top: 1px solid var(--admin-border);
+    justify-content: flex-end;
+}
+
+/* === Buttons === */
+.warehouse_form .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.warehouse_form .btn-primary {
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+}
+
+.warehouse_form .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
+}
+
+.warehouse_form .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.warehouse_form .btn-secondary {
+    background: white;
+    color: var(--admin-text-secondary);
+    border: 1px solid var(--admin-border);
+}
+
+.warehouse_form .btn-secondary:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+    color: var(--admin-primary-dark);
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .warehouse_form {
+        padding: 16px;
+    }
+
+    .warehouse_form .form-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .warehouse_form .form-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .warehouse_form .form-section {
+        padding: 20px;
+    }
+
+    .warehouse_form .form-actions {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .warehouse_form .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

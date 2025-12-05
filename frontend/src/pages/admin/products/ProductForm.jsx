@@ -147,19 +147,15 @@ const ProductForm = () => {
         }
     };
 
-    if (loading) return <div className="loading-state"><div className="spinner"></div></div>;
+    if (loading) return <div className="product_form"><div className="loading-state"><div className="spinner"></div></div></div>;
 
     return (
-        <div className="product-list">
+        <div className="product_form">
             <div className="page-header">
-                <div className="header-left">
-                    <button onClick={() => navigate('/admin/products')} className="btn-back">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1>{isEditMode ? 'Chỉnh sửa Sản phẩm' : 'Thêm Sản phẩm mới'}</h1>
-                    </div>
-                </div>
+                <button onClick={() => navigate('/admin/products')} className="btn-back">
+                    <ArrowLeft size={20} />
+                </button>
+                <h1>{isEditMode ? 'Chỉnh sửa Sản phẩm' : 'Thêm Sản phẩm mới'}</h1>
             </div>
 
             <div className="form-container">

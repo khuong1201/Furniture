@@ -42,7 +42,11 @@ const RoleForm = () => {
                 }
             );
             const result = await response.json();
-            setAllPermissions(result.data || []);
+            // Handle both direct array and paginated response
+            const permissionsData = Array.isArray(result.data)
+                ? result.data
+                : (result.data?.data || []);
+            setAllPermissions(permissionsData);
         } catch (err) {
             console.error('Error fetching permissions:', err);
         }
