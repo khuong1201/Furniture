@@ -3,8 +3,8 @@ import {
     Star, Search, Trash2, Eye, AlertCircle, RefreshCw,
     ChevronLeft, ChevronRight, User, MessageSquare, ThumbsUp, ThumbsDown
 } from 'lucide-react';
-import ReviewService from '@/services/ReviewService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import ReviewService from '@/services/admin/ReviewService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './ReviewManagement.css';
 
 const ReviewList = () => {
@@ -64,7 +64,7 @@ const ReviewList = () => {
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString('vi-VN');
 
     return (
-        <div className="review-management">
+        <div className="review_management">
             {/* Header */}
             <div className="page-header">
                 <div className="header-content">
@@ -104,7 +104,7 @@ const ReviewList = () => {
             {error && <div className="alert alert-error"><AlertCircle size={20} />{error}</div>}
 
             {/* Reviews List */}
-            <div className="reviews-container">
+            <div className="reviews_container">
                 {loading ? (
                     <div className="loading-state"><div className="spinner"></div><p>Đang tải...</p></div>
                 ) : reviews.length === 0 ? (
@@ -113,10 +113,10 @@ const ReviewList = () => {
                         <h3>Chưa có đánh giá nào</h3>
                     </div>
                 ) : (
-                    <div className="reviews-list">
+                    <div className="reviews_list">
                         {reviews.map(review => (
-                            <div key={review.uuid} className="review-card">
-                                <div className="review-header">
+                            <div key={review.uuid} className="review_card">
+                                <div className="review_header">
                                     <div className="reviewer-info">
                                         <div className="avatar"><User size={18} /></div>
                                         <div>
@@ -132,13 +132,13 @@ const ReviewList = () => {
                                     <strong>{review.product?.name || 'N/A'}</strong>
                                 </div>
 
-                                <p className="review-content">{review.content || review.comment}</p>
+                                <p className="review_content">{review.content || review.comment}</p>
 
                                 <div className="review-footer">
                                     <div className="review-stats">
                                         <span><ThumbsUp size={14} /> {review.helpful_count || 0}</span>
                                     </div>
-                                    <div className="review-actions">
+                                    <div className="review_actions">
                                         <button
                                             onClick={() => setSelectedReview(review)}
                                             className="btn-icon btn-view"

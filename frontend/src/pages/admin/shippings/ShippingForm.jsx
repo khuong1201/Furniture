@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Truck, Save, AlertCircle, DollarSign, Clock } from 'lucide-react';
-import ShippingService from '@/services/ShippingService';
+import ShippingService from '@/services/admin/ShippingService';
 import './ShippingManagement.css';
 
 const ShippingForm = () => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Package, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import InventoryService from '@/services/InventoryService';
-import '../products/ProductList.css';
+import { Search, Package, AlertTriangle, CheckCircle, XCircle, Warehouse } from 'lucide-react';
+import InventoryService from '@/services/admin/InventoryService';
+import './InventoryList.css';
 
 const InventoryList = () => {
     const [inventories, setInventories] = useState([]);
@@ -63,10 +63,10 @@ const InventoryList = () => {
     };
 
     return (
-        <div className="product-list">
+        <div className="inventory_list">
             <div className="page-header">
                 <div>
-                    <h1>Quản lý Tồn kho</h1>
+                    <h1><Warehouse size={24} /> Quản lý Tồn kho</h1>
                     <p className="page-subtitle">Theo dõi số lượng tồn kho theo kho hàng</p>
                 </div>
             </div>

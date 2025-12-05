@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Layers, Save, AlertCircle, Image, X } from 'lucide-react';
-import CollectionService from '@/services/CollectionService';
+import CollectionService from '@/services/admin/CollectionService';
 import './CollectionManagement.css';
 
 const CollectionForm = () => {

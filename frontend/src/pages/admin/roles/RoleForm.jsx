@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, Shield, Save, AlertCircle, Key, CheckSquare, Square
 } from 'lucide-react';
-import RoleService from '@/services/RoleService';
+import RoleService from '@/services/admin/RoleService';
 import './RoleManagement.css';
 
 const RoleForm = () => {
@@ -42,7 +42,11 @@ const RoleForm = () => {
                 }
             );
             const result = await response.json();
-            setAllPermissions(result.data || []);
+            // Handle both direct array and paginated response
+            const permissionsData = Array.isArray(result.data)
+                ? result.data
+                : (result.data?.data || []);
+            setAllPermissions(permissionsData);
         } catch (err) {
             console.error('Error fetching permissions:', err);
         }

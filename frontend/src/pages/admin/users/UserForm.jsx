@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import UserService from '@/services/UserService';
-import RoleService from '@/services/RoleService';
+import UserService from '@/services/admin/UserService';
+import RoleService from '@/services/admin/RoleService';
 import './UserForm.css';
 
 const UserForm = () => {
@@ -155,110 +155,119 @@ const UserForm = () => {
     };
 
     return (
-        <div className="admin-form-container">
-            <div className="form-header">
-                <h1>{isEditMode ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}</h1>
+        <div className="user_form-page">
+            <div className="user_page-header">
+                <div className="user_header-content">
+                    <h1>{isEditMode ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}</h1>
+                </div>
                 <button
                     type="button"
                     onClick={() => navigate('/admin/users')}
-                    className="btn btn-secondary"
+                    className="user_btn-back"
                 >
                     Quay lại
                 </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="admin-form">
-                <div className="form-section">
-                    <h2>Thông tin cơ bản</h2>
-
-                    <div className="form-group">
-                        <label htmlFor="name">Tên người dùng <span className="required">*</span></label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className={errors.name ? 'error' : ''}
-                            placeholder="Nhập tên người dùng"
-                        />
-                        {errors.name && <span className="error-message">{errors.name}</span>}
+            <form onSubmit={handleSubmit} className="user_form-container">
+                <div className="user_form-section">
+                    <div className="user_section-title">
+                        <h2>Thông tin cơ bản</h2>
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="email">Email <span className="required">*</span></label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className={errors.email ? 'error' : ''}
-                            placeholder="example@email.com"
-                        />
-                        {errors.email && <span className="error-message">{errors.email}</span>}
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password">
-                            Mật khẩu {!isEditMode && <span className="required">*</span>}
-                            {isEditMode && <span className="hint">(Để trống nếu không đổi)</span>}
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className={errors.password ? 'error' : ''}
-                            placeholder="Nhập mật khẩu"
-                        />
-                        {errors.password && <span className="error-message">{errors.password}</span>}
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password_confirmation">Xác nhận mật khẩu</label>
-                        <input
-                            type="password"
-                            id="password_confirmation"
-                            name="password_confirmation"
-                            value={formData.password_confirmation}
-                            onChange={handleChange}
-                            className={errors.password_confirmation ? 'error' : ''}
-                            placeholder="Nhập lại mật khẩu"
-                        />
-                        {errors.password_confirmation && <span className="error-message">{errors.password_confirmation}</span>}
-                    </div>
-
-                    <div className="form-group">
-                        <label className="checkbox-label">
+                    <div className="user_form-grid">
+                        <div className="user_form-group">
+                            <label htmlFor="name">Tên người dùng <span className="required">*</span></label>
                             <input
-                                type="checkbox"
-                                name="is_active"
-                                checked={formData.is_active}
+                                type="text"
+                                id="name"
+                                name="name"
+                                value={formData.name}
                                 onChange={handleChange}
+                                className={errors.name ? 'error' : ''}
+                                placeholder="Nhập tên người dùng"
                             />
-                            <span>Kích hoạt tài khoản</span>
-                        </label>
+                            {errors.name && <span className="error-message">{errors.name}</span>}
+                        </div>
+
+                        <div className="user_form-group">
+                            <label htmlFor="email">Email <span className="required">*</span></label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className={errors.email ? 'error' : ''}
+                                placeholder="example@email.com"
+                            />
+                            {errors.email && <span className="error-message">{errors.email}</span>}
+                        </div>
+
+                        <div className="user_form-group">
+                            <label htmlFor="password">
+                                Mật khẩu {!isEditMode && <span className="required">*</span>}
+                                {isEditMode && <span className="user_form-hint">(Để trống nếu không đổi)</span>}
+                            </label>
+                            <div className="user_password-input">
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className={errors.password ? 'error' : ''}
+                                    placeholder="Nhập mật khẩu"
+                                />
+                            </div>
+                            {errors.password && <span className="error-message">{errors.password}</span>}
+                        </div>
+
+                        <div className="user_form-group">
+                            <label htmlFor="password_confirmation">Xác nhận mật khẩu</label>
+                            <div className="user_password-input">
+                                <input
+                                    type="password"
+                                    id="password_confirmation"
+                                    name="password_confirmation"
+                                    value={formData.password_confirmation}
+                                    onChange={handleChange}
+                                    className={errors.password_confirmation ? 'error' : ''}
+                                    placeholder="Nhập lại mật khẩu"
+                                />
+                            </div>
+                            {errors.password_confirmation && <span className="error-message">{errors.password_confirmation}</span>}
+                        </div>
+
+                        <div className="user_form-group full-width">
+                            <label className="user_switch-group">
+                                <div
+                                    className={`user_switch ${formData.is_active ? 'active' : ''}`}
+                                    onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
+                                ></div>
+                                <span>Kích hoạt tài khoản</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <div className="form-section">
-                    <h2>Phân quyền</h2>
-                    <div className="role-list">
+                <div className="user_form-section">
+                    <div className="user_section-title">
+                        <h2>Phân quyền</h2>
+                    </div>
+                    <div className="user_roles-grid">
                         {roles.length === 0 ? (
                             <p className="no-roles">Không có vai trò nào</p>
                         ) : (
                             roles.map(role => (
-                                <label key={role.id} className="role-item">
+                                <label key={role.id} className={`user_role-checkbox ${formData.role_ids.includes(role.id) ? 'selected' : ''}`}>
                                     <input
                                         type="checkbox"
                                         checked={formData.role_ids.includes(role.id)}
                                         onChange={() => handleRoleChange(role.id)}
                                     />
                                     <div className="role-info">
-                                        <strong>{role.name}</strong>
-                                        {role.description && <span className="role-desc">{role.description}</span>}
+                                        <span>{role.name}</span>
                                     </div>
                                 </label>
                             ))
@@ -266,18 +275,18 @@ const UserForm = () => {
                     </div>
                 </div>
 
-                <div className="form-actions">
+                <div className="user_form-actions">
                     <button
                         type="button"
                         onClick={() => navigate('/admin/users')}
-                        className="btn btn-secondary"
+                        className="user_btn user_btn-secondary"
                         disabled={loading}
                     >
                         Hủy
                     </button>
                     <button
                         type="submit"
-                        className="btn btn-primary"
+                        className="user_btn user_btn-primary"
                         disabled={loading}
                     >
                         {loading ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Tạo mới')}

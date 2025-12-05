@@ -4,8 +4,8 @@ import {
     Layers, Plus, Edit, Trash2, Search, Image, Package,
     AlertCircle, RefreshCw, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import CollectionService from '@/services/CollectionService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import CollectionService from '@/services/admin/CollectionService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './CollectionManagement.css';
 
 const CollectionList = () => {
@@ -53,7 +53,7 @@ const CollectionList = () => {
     };
 
     return (
-        <div className="collection-management">
+        <div className="collection_management">
             {/* Header */}
             <div className="page-header">
                 <div className="header-content">
@@ -94,25 +94,25 @@ const CollectionList = () => {
                 ) : (
                     <div className="collections-grid">
                         {collections.map(collection => (
-                            <div key={collection.uuid} className="collection-card">
-                                <div className="collection-image">
+                            <div key={collection.uuid} className="collection_card">
+                                <div className="collection_image">
                                     {collection.image ? (
                                         <img src={collection.image} alt={collection.name} />
                                     ) : (
                                         <div className="placeholder"><Image size={32} /></div>
                                     )}
                                 </div>
-                                <div className="collection-info">
+                                <div className="collection_info">
                                     <h3>{collection.name}</h3>
                                     <p>{collection.description || 'Không có mô tả'}</p>
-                                    <div className="collection-meta">
+                                    <div className="collection_meta">
                                         <span><Package size={14} /> {collection.products_count || 0} sản phẩm</span>
                                         <span className={`status ${collection.is_active ? 'active' : 'inactive'}`}>
                                             {collection.is_active ? 'Hiển thị' : 'Ẩn'}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="collection-actions">
+                                <div className="collection_actions">
                                     <button
                                         onClick={() => navigate(`/admin/collections/${collection.uuid}/edit`)}
                                         className="btn-icon btn-edit"

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import WarehouseService from '@/services/WarehouseService';
-import UserService from '@/services/UserService';
-import '../categories/CategoryForm.css';
+import { Warehouse } from 'lucide-react';
+import WarehouseService from '@/services/admin/WarehouseService';
+import UserService from '@/services/admin/UserService';
+import './WarehouseForm.css';
 
 const WarehouseForm = () => {
     const navigate = useNavigate();
@@ -117,9 +118,9 @@ const WarehouseForm = () => {
     };
 
     return (
-        <div className="admin-form-container">
+        <div className="warehouse_form">
             <div className="form-header">
-                <h1>{isEditMode ? 'Chỉnh sửa kho hàng' : 'Thêm kho hàng mới'}</h1>
+                <h1><Warehouse size={24} /> {isEditMode ? 'Chỉnh sửa kho hàng' : 'Thêm kho hàng mới'}</h1>
                 <button
                     type="button"
                     onClick={() => navigate('/admin/warehouses')}

@@ -4,8 +4,8 @@ import {
     Plus, Search, Edit, Trash2, Tag, Calendar, Percent,
     AlertCircle, RefreshCw, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import PromotionService from '@/services/PromotionService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import PromotionService from '@/services/admin/PromotionService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './PromotionManagement.css';
 
 const PromotionList = () => {
@@ -85,7 +85,7 @@ const PromotionList = () => {
     };
 
     return (
-        <div className="promotion-management">
+        <div className="promotion_management">
             {/* Header */}
             <div className="page-header">
                 <div className="header-content">

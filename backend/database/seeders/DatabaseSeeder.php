@@ -178,29 +178,56 @@ class DatabaseSeeder extends Seeder
         // 9. Order (Tạo đơn hàng mẫu để test Dashboard)
         echo "🛒 Creating Orders...\n";
         if (Schema::hasTable('orders')) {
-            // Lấy 1 variant có sẵn để mua
-            $buyVariant = ProductVariant::first();
+            // Lấy các variant có sẵn
+            $variants = ProductVariant::all();
 
-            $order = Order::create([
-                'uuid' => Str::uuid(),
-                'user_id' => $customer->id,
-                'status' => 'delivered',
-                'payment_status' => 'paid',
-                'total_amount' => $buyVariant->price * 2,
-                'ordered_at' => now(),
-                'shipping_address_snapshot' => []
-            ]);
+            if ($variants->count() > 0) {
+                // Tạo 50 đơn hàng rải rác trong 12 tháng qua
+                for ($i = 0; $i < 50; $i++) {
+                    $randomVariant = $variants->random();
+                    $quantity = rand(1, 3);
+                    $total = $randomVariant->price * $quantity;
 
-            $order->items()->create([
-                'uuid' => Str::uuid(),
-                'order_id' => $order->id,
-                'product_variant_id' => $buyVariant->id,
-                'warehouse_id' => $whHN->id,
-                'quantity' => 2,
-                'unit_price' => $buyVariant->price,
-                'original_price' => $buyVariant->price,
-                'subtotal' => $buyVariant->price * 2
-            ]);
+                    // Random status
+                    $statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+                    $status = $statuses[array_rand($statuses)];
+
+                    // Determine payment status based on order status
+                    $paymentStatus = 'unpaid';
+                    if (in_array($status, ['processing', 'shipped', 'delivered'])) {
+                        $paymentStatus = 'paid';
+                    } elseif ($status === 'cancelled') {
+                        $paymentStatus = rand(0, 1) ? 'refunded' : 'unpaid';
+                    }
+
+                    // Random date in last 12 months
+                    $date = now()->subDays(rand(0, 365));
+
+                    $order = Order::create([
+                        'uuid' => Str::uuid(),
+                        'user_id' => $customer->id,
+                        'status' => $status,
+                        'payment_status' => $paymentStatus,
+                        'total_amount' => $total,
+                        'ordered_at' => $date,
+                        'created_at' => $date, // Quan trọng cho chart theo created_at
+                        'updated_at' => $date,
+                        'shipping_address_snapshot' => []
+                    ]);
+
+                    $order->items()->create([
+                        'uuid' => Str::uuid(),
+                        'order_id' => $order->id,
+                        'product_variant_id' => $randomVariant->id,
+                        'warehouse_id' => $whHN->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $randomVariant->price,
+                        'original_price' => $randomVariant->price,
+                        'subtotal' => $total
+                    ]);
+                }
+                echo "   -> Created 50 historical orders.\n";
+            }
         }
 
         echo "✅ SEEDING COMPLETE! \n";

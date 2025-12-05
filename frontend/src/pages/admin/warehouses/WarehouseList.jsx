@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Package, Search } from 'lucide-react';
-import WarehouseService from '@/services/WarehouseService';
+import { Plus, Edit, Trash2, Package, Search, Warehouse } from 'lucide-react';
+import WarehouseService from '@/services/admin/WarehouseService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
-import '../products/ProductList.css';
+import './WarehouseList.css';
 
 const WarehouseList = () => {
     const navigate = useNavigate();
@@ -57,10 +57,10 @@ const WarehouseList = () => {
     };
 
     return (
-        <div className="product-list">
+        <div className="warehouse_list">
             <div className="page-header">
                 <div>
-                    <h1>Quản lý Kho hàng</h1>
+                    <h1><Warehouse size={24} /> Quản lý Kho hàng</h1>
                     <p className="page-subtitle">Danh sách tất cả kho hàng trong hệ thống</p>
                 </div>
                 <button

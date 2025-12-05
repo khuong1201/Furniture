@@ -6,10 +6,12 @@ use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
 Route::middleware(['api', JwtAuthenticate::class])->group(function () {
 
-    Route::get('profile', [UserController::class, 'profile']); 
+    Route::get('profile', [UserController::class, 'profile']);
+    Route::put('profile', [UserController::class, 'updateProfile']);
+    Route::post('auth/change-password', [UserController::class, 'changePassword']);
 
     Route::prefix('admin/users')->group(function () {
-        
+
         Route::get('/', [UserController::class, 'index'])
             ->middleware('permission:user.view');
 
@@ -21,6 +23,6 @@ Route::middleware(['api', JwtAuthenticate::class])->group(function () {
         Route::put('/{uuid}', [UserController::class, 'update']);
 
         Route::delete('/{uuid}', [UserController::class, 'destroy'])
-             ->middleware('permission:user.delete');
+            ->middleware('permission:user.delete');
     });
 });

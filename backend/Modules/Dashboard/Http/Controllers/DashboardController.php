@@ -36,7 +36,7 @@ class DashboardController extends Controller
         }
 
         $data = $this->dashboardService->getSummaryStats();
-        
+
         return response()->json(ApiResponse::success($data));
     }
 
@@ -58,7 +58,29 @@ class DashboardController extends Controller
 
         $year = $request->input('year', date('Y'));
         $data = $this->dashboardService->getRevenueChart($year);
-        
+
+        return response()->json(ApiResponse::success($data));
+    }
+    #[OA\Get(
+        path: "/admin/dashboard/stats",
+        summary: "Thống kê chi tiết (Order Status, Top Products, etc.)",
+        security: [['bearerAuth' => []]],
+        tags: ["Dashboard"],
+        responses: [new OA\Response(response: 200, description: "Success")]
+    )]
+    public function stats(Request $request): JsonResponse
+    {
+        if (!$request->user()->hasPermissionTo('dashboard.view')) {
+            return response()->json(ApiResponse::error('Forbidden', 403), 403);
+        }
+
+        $data = [
+            'order_status' => $this->dashboardService->getOrderStatusDistribution(),
+            'category_sales' => $this->dashboardService->getCategorySales(),
+            'top_products' => $this->dashboardService->getTopSellingProducts(),
+            'top_customers' => $this->dashboardService->getTopCustomers()
+        ];
+
         return response()->json(ApiResponse::success($data));
     }
 }

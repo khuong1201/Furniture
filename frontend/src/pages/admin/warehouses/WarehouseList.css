@@ -1,0 +1,290 @@
+/* Warehouse List - Modern Gold Theme with warehouse_ prefix */
+
+.admin-app-container .warehouse_list {
+    padding: 0;
+}
+
+/* === Page Header === */
+.admin-app-container .warehouse_list .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
+}
+
+.admin-app-container .warehouse_list .page-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--admin-text);
+    margin: 0 0 8px 0;
+}
+
+.admin-app-container .warehouse_list .page-header h1 svg {
+    color: var(--admin-primary-dark);
+}
+
+.admin-app-container .warehouse_list .page-subtitle {
+    color: var(--admin-text-muted);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* === Buttons === */
+.admin-app-container .warehouse_list .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-app-container .warehouse_list .btn-primary {
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+}
+
+.admin-app-container .warehouse_list .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
+}
+
+.admin-app-container .warehouse_list .btn-secondary {
+    background: white;
+    color: var(--admin-text-secondary);
+    border: 1px solid var(--admin-border);
+}
+
+.admin-app-container .warehouse_list .btn-secondary:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+    color: var(--admin-primary-dark);
+}
+
+/* === Filters Section === */
+.admin-app-container .warehouse_list .filters-section {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+}
+
+.admin-app-container .warehouse_list .search-box {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.admin-app-container .warehouse_list .search-box svg {
+    position: absolute;
+    left: 16px;
+    color: var(--admin-primary);
+}
+
+.admin-app-container .warehouse_list .search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 48px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.admin-app-container .warehouse_list .search-box input:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+}
+
+.admin-app-container .warehouse_list .search-box input::placeholder {
+    color: var(--admin-text-muted);
+}
+
+/* === Table Container === */
+.admin-app-container .warehouse_list .table-container {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    overflow: hidden;
+}
+
+/* === Data Table === */
+.admin-app-container .warehouse_list .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-app-container .warehouse_list .data-table thead {
+    background: linear-gradient(135deg, var(--admin-accent-light) 0%, #fdfcfa 100%);
+    border-bottom: 2px solid var(--admin-border);
+}
+
+.admin-app-container .warehouse_list .data-table th {
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--admin-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-app-container .warehouse_list .data-table th.text-right {
+    text-align: right;
+}
+
+.admin-app-container .warehouse_list .data-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--admin-border-light);
+    font-size: 14px;
+    color: var(--admin-text);
+}
+
+.admin-app-container .warehouse_list .data-table td.text-right {
+    text-align: right;
+}
+
+.admin-app-container .warehouse_list .data-table tbody tr {
+    transition: background 0.2s;
+}
+
+.admin-app-container .warehouse_list .data-table tbody tr:hover {
+    background: var(--admin-accent-light);
+}
+
+.admin-app-container .warehouse_list .data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-app-container .warehouse_list .data-table td strong {
+    color: var(--admin-primary-dark);
+    font-weight: 600;
+}
+
+/* === Action Buttons === */
+.admin-app-container .warehouse_list .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.admin-app-container .warehouse_list .btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    background: white;
+    color: var(--admin-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-app-container .warehouse_list .btn-icon:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+    transform: translateY(-1px);
+}
+
+.admin-app-container .warehouse_list .btn-icon.btn-danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.admin-app-container .warehouse_list .btn-icon.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+
+/* === States === */
+.admin-app-container .warehouse_list .loading-state,
+.admin-app-container .warehouse_list .error-state,
+.admin-app-container .warehouse_list .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+}
+
+.admin-app-container .warehouse_list .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--admin-border-light);
+    border-top-color: var(--admin-primary);
+    border-radius: 50%;
+    animation: warehouse_spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes warehouse_spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.admin-app-container .warehouse_list .loading-state p,
+.admin-app-container .warehouse_list .error-state p {
+    color: var(--admin-text-secondary);
+    font-size: 14px;
+    margin: 0 0 16px 0;
+}
+
+.admin-app-container .warehouse_list .empty-state svg {
+    color: var(--admin-text-muted);
+    margin-bottom: 16px;
+}
+
+.admin-app-container .warehouse_list .empty-state p {
+    color: var(--admin-text-muted);
+    font-size: 16px;
+    margin: 0 0 20px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+    .warehouse_list .page-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .warehouse_list .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .warehouse_list .data-table th,
+    .warehouse_list .data-table td {
+        padding: 12px 14px;
+    }
+
+    .warehouse_list .data-table th:nth-child(3),
+    .warehouse_list .data-table td:nth-child(3) {
+        display: none;
+    }
+}

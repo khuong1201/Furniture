@@ -10,7 +10,7 @@ import {
     AlertCircle,
     Key
 } from 'lucide-react';
-import PermissionService from '@/services/PermissionService';
+import PermissionService from '@/services/admin/PermissionService';
 import Modal from '@/components/admin/shared/Modal';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './PermissionList.css';
@@ -36,7 +36,9 @@ const PermissionList = () => {
         try {
             setLoading(true);
             const response = await PermissionService.getAll();
-            setPermissions(response.data || []);
+            // Handle paginated response
+            const permsData = response.data?.data || response.data || [];
+            setPermissions(Array.isArray(permsData) ? permsData : []);
         } catch (err) {
             setError('Không thể tải danh sách quyền');
             console.error(err);
@@ -108,7 +110,7 @@ const PermissionList = () => {
 
     if (loading) {
         return (
-            <div className="loading-state">
+            <div className="permission_loading-state">
                 <Loader className="spinner" size={40} />
                 <p>Đang tải...</p>
             </div>
@@ -116,14 +118,14 @@ const PermissionList = () => {
     }
 
     return (
-        <div className="permission-list-page">
+        <div className="permission_list-page">
             {/* Header */}
-            <div className="page-header">
-                <div className="page-title">
+            <div className="permission_page-header">
+                <div className="permission_page-title">
                     <h1>Quản lý Quyền</h1>
-                    <p className="page-subtitle">Quản lý các quyền hạn trong hệ thống</p>
+                    <p className="permission_page-subtitle">Quản lý các quyền hạn trong hệ thống</p>
                 </div>
-                <button className="btn-add" onClick={handleOpenCreate}>
+                <button className="permission_btn-add" onClick={handleOpenCreate}>
                     <Plus size={20} />
                     Thêm quyền
                 </button>
@@ -131,7 +133,7 @@ const PermissionList = () => {
 
             {/* Error */}
             {error && (
-                <div className="error-alert">
+                <div className="permission_error-alert">
                     <AlertCircle size={20} />
                     <span>{error}</span>
                     <button onClick={() => setError('')}>×</button>
@@ -139,9 +141,9 @@ const PermissionList = () => {
             )}
 
             {/* Search */}
-            <div className="search-filters">
-                <div className="search-box">
-                    <Search size={20} className="search-icon" />
+            <div className="permission_search-filters">
+                <div className="permission_search-box">
+                    <Search size={20} className="permission_search-icon" />
                     <input
                         type="text"
                         placeholder="Tìm kiếm quyền..."
@@ -152,40 +154,40 @@ const PermissionList = () => {
             </div>
 
             {/* Permissions Grid by Module */}
-            <div className="permissions-grid">
+            <div className="permissions_grid">
                 {Object.keys(groupedPermissions).length === 0 ? (
-                    <div className="empty-state">
+                    <div className="permission_empty-state">
                         <Shield size={64} />
                         <h3>Chưa có quyền nào</h3>
                         <p>Bắt đầu bằng cách thêm quyền mới</p>
                     </div>
                 ) : (
                     Object.entries(groupedPermissions).map(([module, perms]) => (
-                        <div key={module} className="permission-group">
-                            <div className="group-header">
+                        <div key={module} className="permission_group">
+                            <div className="permission_group-header">
                                 <Key size={18} />
                                 <h3>{module.charAt(0).toUpperCase() + module.slice(1)}</h3>
                                 <span className="count">{perms.length}</span>
                             </div>
-                            <div className="group-content">
+                            <div className="permission_group-content">
                                 {perms.map((permission) => (
-                                    <div key={permission.uuid} className="permission-item">
-                                        <div className="permission-info">
-                                            <span className="permission-name">{permission.name}</span>
+                                    <div key={permission.uuid} className="permission_item">
+                                        <div className="permission_info">
+                                            <span className="permission_name">{permission.name}</span>
                                             {permission.description && (
-                                                <span className="permission-desc">{permission.description}</span>
+                                                <span className="permission_desc">{permission.description}</span>
                                             )}
                                         </div>
-                                        <div className="permission-actions">
+                                        <div className="permission_actions">
                                             <button
-                                                className="action-btn btn-edit"
+                                                className="permission_action-btn permission_btn-edit"
                                                 onClick={() => handleOpenEdit(permission)}
                                                 title="Sửa"
                                             >
                                                 <Edit2 size={16} />
                                             </button>
                                             <button
-                                                className="action-btn btn-delete"
+                                                className="permission_action-btn permission_btn-delete"
                                                 onClick={() => handleOpenDelete(permission)}
                                                 title="Xóa"
                                             >
@@ -208,7 +210,7 @@ const PermissionList = () => {
                 size="sm"
             >
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
+                    <div className="permission_form-group">
                         <label>Tên quyền *</label>
                         <input
                             type="text"
@@ -217,9 +219,9 @@ const PermissionList = () => {
                             placeholder="vd: product.create"
                             required
                         />
-                        <span className="help-text">Format: module.action (vd: order.view)</span>
+                        <span className="permission_help-text">Format: module.action (vd: order.view)</span>
                     </div>
-                    <div className="form-group">
+                    <div className="permission_form-group">
                         <label>Mô tả</label>
                         <textarea
                             value={formData.description}
@@ -228,11 +230,11 @@ const PermissionList = () => {
                             rows={3}
                         />
                     </div>
-                    <div className="modal-footer">
-                        <button type="button" className="modal-btn modal-btn-secondary" onClick={() => setIsModalOpen(false)}>
+                    <div className="permission_modal-footer">
+                        <button type="button" className="permission_modal-btn permission_modal-btn-secondary" onClick={() => setIsModalOpen(false)}>
                             Hủy
                         </button>
-                        <button type="submit" className="modal-btn modal-btn-primary" disabled={saving}>
+                        <button type="submit" className="permission_modal-btn permission_modal-btn-primary" disabled={saving}>
                             {saving ? 'Đang lưu...' : (selectedPermission ? 'Cập nhật' : 'Tạo mới')}
                         </button>
                     </div>

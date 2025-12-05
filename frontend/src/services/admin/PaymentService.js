@@ -1,4 +1,4 @@
-class ProductService {
+class PaymentService {
     static _instance = null;
 
     constructor() {
@@ -10,10 +10,10 @@ class ProductService {
     }
 
     static get instance() {
-        if (!ProductService._instance) {
-            ProductService._instance = new ProductService();
+        if (!PaymentService._instance) {
+            PaymentService._instance = new PaymentService();
         }
-        return ProductService._instance;
+        return PaymentService._instance;
     }
 
     setToken(token) {
@@ -26,7 +26,6 @@ class ProductService {
 
     async _request(endpoint, options = {}) {
         try {
-            // Auto-set token from localStorage
             const token = localStorage.getItem('access_token');
             if (token) {
                 this.setToken(token);
@@ -50,65 +49,43 @@ class ProductService {
 
             return result;
         } catch (error) {
-            console.error(`Product Service Error (${endpoint}):`, error);
+            console.error(`Payment Service Error (${endpoint}):`, error);
             throw error;
         }
     }
 
-    // Get products list (admin)
-    async getProducts(params = {}) {
+    // Get all payments with pagination
+    async getAll(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/products${queryString ? `?${queryString}` : ''}`);
+        return this._request(`/payments${queryString ? `?${queryString}` : ''}`);
     }
 
-    // Get single product
-    async getProduct(uuid) {
-        return this._request(`/public/products/${uuid}`);
+    // Get single payment
+    async getById(uuid) {
+        return this._request(`/payments/${uuid}`);
     }
 
-    // Create product
-    async createProduct(data) {
-        return this._request('/admin/products', {
+    // Create payment
+    async create(data) {
+        return this._request('/payments', {
             method: 'POST',
             body: JSON.stringify(data),
         });
     }
 
-    // Update product
-    async updateProduct(uuid, data) {
-        return this._request(`/admin/products/${uuid}`, {
+    // Update payment
+    async update(uuid, data) {
+        return this._request(`/payments/${uuid}`, {
             method: 'PUT',
             body: JSON.stringify(data),
         });
     }
 
-    // Delete product
-    async deleteProduct(uuid) {
-        return this._request(`/admin/products/${uuid}`, {
-            method: 'DELETE',
-        });
-    }
-
     // Static methods
-    static async getProducts(params) {
-        return ProductService.instance.getProducts(params);
-    }
-
-    static async getProduct(uuid) {
-        return ProductService.instance.getProduct(uuid);
-    }
-
-    static async createProduct(data) {
-        return ProductService.instance.createProduct(data);
-    }
-
-    static async updateProduct(uuid, data) {
-        return ProductService.instance.updateProduct(uuid, data);
-    }
-
-    static async deleteProduct(uuid) {
-        return ProductService.instance.deleteProduct(uuid);
-    }
+    static getAll(params) { return PaymentService.instance.getAll(params); }
+    static getById(uuid) { return PaymentService.instance.getById(uuid); }
+    static create(data) { return PaymentService.instance.create(data); }
+    static update(uuid, data) { return PaymentService.instance.update(uuid, data); }
 }
 
-export default ProductService;
+export default PaymentService;

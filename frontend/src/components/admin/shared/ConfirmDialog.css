@@ -1,0 +1,114 @@
+/* Confirm Dialog - Modern Gold Theme */
+
+.admin-app-container .confirm-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.admin-app-container .confirm-dialog {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-app-container .confirm-dialog-header {
+    padding: 24px 24px 0;
+}
+
+.admin-app-container .confirm-dialog-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.admin-app-container .confirm-dialog-body {
+    padding: 16px 24px 24px;
+}
+
+.admin-app-container .confirm-dialog-body p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--admin-text-secondary);
+    line-height: 1.6;
+}
+
+.admin-app-container .confirm-dialog-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    background: var(--admin-accent-light);
+    border-top: 1px solid var(--admin-border-light);
+    justify-content: flex-end;
+}
+
+.admin-app-container .confirm-dialog-footer .btn {
+    padding: 10px 20px;
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.admin-app-container .confirm-dialog-footer .btn-cancel {
+    background: white;
+    color: var(--admin-text-secondary);
+    border: 1px solid var(--admin-border);
+}
+
+.admin-app-container .confirm-dialog-footer .btn-cancel:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+}
+
+.admin-app-container .confirm-dialog-footer .btn-confirm {
+    background: #ef4444;
+    color: white;
+}
+
+.admin-app-container .confirm-dialog-footer .btn-confirm:hover {
+    background: #dc2626;
+}
+
+.admin-app-container .confirm-dialog-footer .btn-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

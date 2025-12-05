@@ -1,373 +1,314 @@
-/* Shipping Management Styles */
-.shipping-management,
-.shipping-form-page {
-    padding: 24px;
-    max-width: 1200px;
+/* Shipping Management - Modern Gold Theme */
+
+.admin-app-container .shipping_management {
+    max-width: 1400px;
     margin: 0 auto;
 }
 
-.page-header {
+/* === Header === */
+.admin-app-container .shipping_page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
 }
 
-.header-content h1 {
+.admin-app-container .shipping_header-content h1 {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--admin-text);
+    margin: 0 0 8px 0;
+}
+
+.admin-app-container .shipping_header-content h1 svg {
+    color: var(--admin-primary);
+}
+
+.admin-app-container .shipping_page-subtitle {
+    color: var(--admin-text-muted);
+    font-size: 14px;
     margin: 0;
 }
 
-.header-content p {
-    color: #64748b;
-    font-size: 14px;
-    margin: 8px 0 0 0;
-}
-
-/* Shippings Container */
-.shippings-container {
-    background: white;
-    border-radius: 20px;
-    border: 1px solid rgba(254, 240, 138, 0.3);
-    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
-    padding: 24px;
-}
-
-.shippings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-}
-
-/* Shipping Card */
-.shipping-card {
-    display: flex;
-    gap: 16px;
-    background: #fefce8;
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid rgba(254, 240, 138, 0.3);
-    transition: all 0.3s;
-}
-
-.shipping-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.12);
-}
-
-.shipping-icon {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
-}
-
-.shipping-info {
-    flex: 1;
-}
-
-.shipping-info h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 6px 0;
-}
-
-.shipping-info p {
-    color: #64748b;
-    font-size: 13px;
-    margin: 0 0 12px 0;
-}
-
-.shipping-details {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-}
-
-.shipping-details span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    color: #475569;
-}
-
-.shipping-details span svg {
-    color: #d97706;
-}
-
-.shipping-status .status {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status.active {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.status.inactive {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.shipping-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* Form Styles */
-.form-container {
-    background: white;
-    border-radius: 20px;
-    border: 1px solid rgba(254, 240, 138, 0.3);
-    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
-    overflow: hidden;
-}
-
-.form-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 24px;
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border-bottom: 1px solid rgba(254, 240, 138, 0.5);
-}
-
-.btn-back {
+/* === Buttons === */
+.admin-app-container .shipping_btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
-    background: white;
-    border: 1px solid rgba(254, 240, 138, 0.5);
-    border-radius: 10px;
-    color: #64748b;
-    cursor: pointer;
-}
-
-.form-header h1 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 22px;
-    color: #92400e;
-    margin: 0;
-}
-
-.shipping-form {
-    padding: 32px;
-}
-
-.form-section {
-    margin-bottom: 28px;
-    padding-bottom: 28px;
-    border-bottom: 1px solid rgba(254, 240, 138, 0.3);
-}
-
-.form-section:last-of-type {
-    border-bottom: none;
-}
-
-.form-section h3 {
-    font-size: 15px;
-    font-weight: 600;
-    color: #92400e;
-    margin: 0 0 20px 0;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #1e293b;
-    font-size: 14px;
-}
-
-.form-group label svg {
-    color: #d97706;
-}
-
-.form-input,
-.form-textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid rgba(254, 240, 138, 0.5);
-    border-radius: 10px;
-    font-size: 14px;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-    outline: none;
-    border-color: #fbbf24;
-    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-@media (max-width: 600px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 14px;
-    color: #1e293b;
-    cursor: pointer;
-}
-
-.checkbox-label input {
-    width: 18px;
-    height: 18px;
-    accent-color: #fbbf24;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(254, 240, 138, 0.3);
-}
-
-/* Buttons */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: 12px;
+    padding: 12px 20px;
+    border-radius: var(--admin-radius);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: all 0.3s;
+    transition: all 0.2s;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+.admin-app-container .shipping_btn-primary {
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
+.admin-app-container .shipping_btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
 
-.btn-secondary {
+.admin-app-container .shipping_btn-secondary {
     background: white;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    color: var(--admin-text-secondary);
+    border: 1px solid var(--admin-border);
 }
 
-.btn-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+/* === Shipping Methods Grid === */
+.admin-app-container .shipping_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+/* === Shipping Card === */
+.admin-app-container .shipping_card {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.admin-app-container .shipping_card:hover {
+    box-shadow: 0 4px 16px rgba(203, 168, 144, 0.1);
+}
+
+.admin-app-container .shipping_header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px;
+    background: var(--admin-accent-light);
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-app-container .shipping_icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--admin-radius);
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.admin-app-container .shipping_info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin: 0 0 4px 0;
+}
+
+.admin-app-container .shipping_info p {
+    font-size: 13px;
+    color: var(--admin-text-muted);
+    margin: 0;
+}
+
+.admin-app-container .shipping_body {
+    padding: 20px;
+}
+
+.admin-app-container .shipping_detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--admin-border-light);
+}
+
+.admin-app-container .shipping_detail:last-child {
+    border-bottom: none;
+}
+
+.admin-app-container .shipping_detail-label {
+    font-size: 14px;
+    color: var(--admin-text-secondary);
+}
+
+.admin-app-container .shipping_detail-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--admin-text);
+}
+
+.admin-app-container .shipping_price-value {
+    color: var(--admin-primary-dark);
+    font-weight: 600;
+}
+
+.admin-app-container .shipping_footer {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--admin-border-light);
+    background: white;
+}
+
+.admin-app-container .shipping_btn-icon {
+    flex: 1;
+    height: 38px;
+    border-radius: var(--admin-radius);
     border: 1px solid;
     background: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    transition: all 0.2s;
 }
 
-.btn-edit {
-    border-color: rgba(254, 240, 138, 0.5);
-    color: #d97706;
+.admin-app-container .shipping_btn-edit {
+    border-color: var(--admin-border);
+    color: var(--admin-text);
 }
 
-.btn-delete {
+.admin-app-container .shipping_btn-edit:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+}
+
+.admin-app-container .shipping_btn-delete {
     border-color: rgba(239, 68, 68, 0.2);
     color: #ef4444;
 }
 
-/* States */
-.loading-state,
-.empty-state {
+.admin-app-container .shipping_btn-delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* === Status === */
+.admin-app-container .shipping_status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.admin-app-container .shipping_status-active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.admin-app-container .shipping_status-inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+/* === States === */
+.admin-app-container .shipping_loading-state,
+.admin-app-container .shipping_empty-state {
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 80px 24px;
+    padding: 60px 24px;
     text-align: center;
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
 }
 
-.spinner {
+.admin-app-container .shipping_spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #fef3c7;
-    border-top: 4px solid #f59e0b;
+    border: 4px solid var(--admin-border-light);
+    border-top-color: var(--admin-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
+    to {
         transform: rotate(360deg);
     }
 }
 
-.empty-state svg {
-    color: #fbbf24;
-    opacity: 0.5;
+.admin-app-container .shipping_empty-state svg {
+    color: var(--admin-text-muted);
     margin-bottom: 16px;
 }
 
-.empty-state h3 {
-    color: #1e293b;
-    margin: 0 0 24px 0;
+.admin-app-container .shipping_empty-state h3 {
+    color: var(--admin-text);
+    margin: 0 0 20px 0;
 }
 
-/* Alert */
-.alert {
+/* === Form === */
+.admin-app-container .shipping_form-container {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    padding: 28px;
+}
+
+.admin-app-container .shipping_form-group {
+    margin-bottom: 20px;
+}
+
+.admin-app-container .shipping_form-group label {
+    display: block;
+    font-weight: 500;
+    color: var(--admin-text);
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.admin-app-container .shipping_form-group input,
+.admin-app-container .shipping_form-group select,
+.admin-app-container .shipping_form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+}
+
+.admin-app-container .shipping_form-group input:focus,
+.admin-app-container .shipping_form-group select:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+}
+
+.admin-app-container .shipping_form-actions {
     display: flex;
-    align-items: center;
     gap: 12px;
-    padding: 16px 20px;
-    border-radius: 12px;
-    margin: 0 32px 24px 32px;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--admin-border-light);
 }
 
-.alert-error {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    color: #991b1b;
-    border: 1px solid #f87171;
+/* === Responsive === */
+@media (max-width: 768px) {
+    .shipping_page-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .shipping_grid {
+        grid-template-columns: 1fr;
+    }
 }

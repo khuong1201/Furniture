@@ -45,7 +45,7 @@ const SettingsPage = () => {
     ];
 
     return (
-        <div className="settings-page">
+        <div className="settings_page">
             <div className="settings-header">
                 <h1><Settings size={28} /> Cài đặt hệ thống</h1>
                 <p>Quản lý các thiết lập của cửa hàng</p>

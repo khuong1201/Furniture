@@ -4,8 +4,8 @@ import {
     Truck, Plus, Edit, Trash2, AlertCircle, RefreshCw,
     MapPin, DollarSign, Clock
 } from 'lucide-react';
-import ShippingService from '@/services/ShippingService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import ShippingService from '@/services/admin/ShippingService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './ShippingManagement.css';
 
 const ShippingList = () => {
@@ -47,7 +47,7 @@ const ShippingList = () => {
     const formatPrice = (price) => parseInt(price || 0).toLocaleString('vi-VN') + ' đ';
 
     return (
-        <div className="shipping-management">
+        <div className="shipping_management">
             <div className="page-header">
                 <div className="header-content">
                     <h1><Truck size={28} /> Phương thức vận chuyển</h1>
@@ -74,15 +74,15 @@ const ShippingList = () => {
                 ) : (
                     <div className="shippings-grid">
                         {shippings.map(shipping => (
-                            <div key={shipping.uuid} className="shipping-card">
-                                <div className="shipping-icon">
+                            <div key={shipping.uuid} className="shipping_card">
+                                <div className="shipping_icon">
                                     <Truck size={24} />
                                 </div>
-                                <div className="shipping-info">
+                                <div className="shipping_info">
                                     <h3>{shipping.name}</h3>
                                     <p>{shipping.description || 'Không có mô tả'}</p>
 
-                                    <div className="shipping-details">
+                                    <div className="shipping_details">
                                         <span><DollarSign size={14} /> {formatPrice(shipping.base_cost)}</span>
                                         <span><Clock size={14} /> {shipping.estimated_days || '2-5'} ngày</span>
                                         <span><MapPin size={14} /> {shipping.zones?.length || 'Toàn quốc'}</span>
