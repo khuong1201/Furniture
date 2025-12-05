@@ -26,8 +26,8 @@ return new class extends Migration
             
             $table->integer('limit_per_user')->default(1); 
             
-            $table->timestamp('start_date')->index();
-            $table->timestamp('end_date')->index();
+            $table->timestamp('start_date')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
+            $table->timestamp('end_date')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
             $table->boolean('is_active')->default(true)->index(); // Chuẩn hóa thành is_active
             
             $table->softDeletes();
