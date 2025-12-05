@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,7 +16,6 @@ class CreateOrderRequest extends FormRequest
             'address_id' => 'required|exists:addresses,id',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
-
             'items.*.variant_uuid' => 'required|exists:product_variants,uuid',
             'items.*.quantity' => 'required|integer|min:1',
         ];

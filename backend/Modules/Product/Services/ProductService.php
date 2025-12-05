@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Product\Services;
 
 use Modules\Shared\Services\BaseService;
@@ -7,17 +9,21 @@ use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Modules\Product\Domain\Models\Product;
 use Modules\Product\Domain\Models\ProductVariant;
 use Modules\Product\Domain\Models\AttributeValue;
-use Modules\Warehouse\Domain\Models\Warehouse;
+use Modules\Product\Domain\Models\Attribute;
+use Modules\Product\Domain\Models\ProductImage;
 use Modules\Category\Domain\Models\Category;
+// Interfaces để giao tiếp Module khác
+use Modules\Shared\Contracts\MediaServiceInterface;
+use Modules\Shared\Contracts\InventoryServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Inventory\Domain\Models\InventoryStock;
 
 class ProductService extends BaseService
 {
     public function __construct(
         ProductRepositoryInterface $repo,
-        protected ProductImageService $imageService
+        protected MediaServiceInterface $mediaService,
+        protected InventoryServiceInterface $inventoryService
     ) {
         parent::__construct($repo);
     }
@@ -25,6 +31,7 @@ class ProductService extends BaseService
     public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {
+            // 1. Create Product Core
             $productData = [
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
@@ -41,15 +48,15 @@ class ProductService extends BaseService
                 $productData['sku'] = $data['sku'];
             }
 
-
             $product = parent::create($productData);
 
+            // 2. Handle Variants & Inventory
             if ($product->has_variants && !empty($data['variants'])) {
-
                 foreach ($data['variants'] as $variantData) {
                     $this->createVariant($product, $variantData);
                 }
             } else {
+                // Tạo 1 variant ẩn cho sản phẩm đơn để dùng chung logic kho
                 $this->createVariant($product, [
                     'sku' => $data['sku'],
                     'price' => $data['price'],
@@ -59,10 +66,24 @@ class ProductService extends BaseService
                 ]);
             }
 
+            // 3. Handle Images (Gọi Media Module)
             if (!empty($data['images']) && is_array($data['images'])) {
-                $this->imageService->uploadMultiple($product, $data['images']);
+                foreach ($data['images'] as $index => $file) {
+                    // Upload vật lý
+                    $uploadData = $this->mediaService->upload($file, 'products');
+                    
+                    // Lưu metadata vào Product Module
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_url' => $uploadData['url'],
+                        'public_id' => $uploadData['public_id'] ?? null,
+                        'is_primary' => $index === 0,
+                        'sort_order' => $index
+                    ]);
+                }
             }
 
+            // Load relationships để trả về
             return $product->load(['variants.attributeValues', 'images', 'category']);
         });
     }
@@ -72,11 +93,7 @@ class ProductService extends BaseService
         $product = $this->findByUuidOrFail($uuid);
 
         return DB::transaction(function () use ($product, $data) {
-  
-            $updateData = [];
-            if (isset($data['name'])) $updateData['name'] = $data['name'];
-            if (isset($data['description'])) $updateData['description'] = $data['description'];
-            if (isset($data['is_active'])) $updateData['is_active'] = $data['is_active'];
+            $updateData = collect($data)->only(['name', 'description', 'is_active'])->toArray();
             
             if (isset($data['category_uuid'])) {
                 $updateData['category_id'] = Category::where('uuid', $data['category_uuid'])->value('id');
@@ -92,18 +109,8 @@ class ProductService extends BaseService
             if ($product->has_variants && isset($data['variants'])) {
                 $this->syncVariants($product, $data['variants']);
             } 
-            elseif (!$product->has_variants && isset($data['warehouse_stock'])) {
-             
-                $defaultVariant = $product->variants()->first();
-                if ($defaultVariant) {
-                    $this->syncStock($defaultVariant, $data['warehouse_stock']);
-                }
-            }
-
-            if (!empty($data['images']) && is_array($data['images'])) {
-                $this->imageService->uploadMultiple($product, $data['images']);
-            }
-
+            // Note: Logic update ảnh phức tạp nên tách API riêng (StoreProductImageRequest)
+            
             return $product->load(['variants', 'images']);
         });
     }
@@ -117,78 +124,56 @@ class ProductService extends BaseService
             'weight' => $data['weight'] ?? 0,
         ]);
 
+        // Attributes Logic
         if (!empty($data['attributes'])) {
-            $attrValueIds = AttributeValue::whereIn('uuid', $data['attributes'])->pluck('id')->toArray();
+            $attrValueIds = [];
+            foreach ($data['attributes'] as $attrItem) {
+                $attribute = Attribute::where('slug', $attrItem['attribute_slug'])->first();
+                if (!$attribute) continue;
+
+                if (!empty($attrItem['is_new'])) {
+                    $val = AttributeValue::firstOrCreate(
+                        ['attribute_id' => $attribute->id, 'value' => $attrItem['value']],
+                        ['code' => $attrItem['code'] ?? null]
+                    );
+                    $attrValueIds[] = $val->id;
+                } else {
+                    $val = AttributeValue::where('uuid', $attrItem['value'])->first();
+                    if ($val) $attrValueIds[] = $val->id;
+                }
+            }
             $variant->attributeValues()->sync($attrValueIds);
         }
 
+        // Inventory Logic: Gọi sang Module Inventory qua Interface
         if (!empty($data['stock'])) {
-            $this->syncStock($variant, $data['stock']);
+            $this->inventoryService->syncStock($variant->id, $data['stock']);
         }
     }
 
     protected function syncVariants(Product $product, array $variantsData): void
     {
-        $keptVariantIds = [];
-
         foreach ($variantsData as $vData) {
-
             if (isset($vData['uuid'])) {
+                // Update existing variant
                 $variant = ProductVariant::where('uuid', $vData['uuid'])
                     ->where('product_id', $product->id)
                     ->first();
 
                 if ($variant) {
                     $variant->update([
-                        'sku' => $vData['sku'],
-                        'price' => $vData['price'],
-                        'weight' => $vData['weight'] ?? $variant->weight
+                        'sku' => $vData['sku'], 
+                        'price' => $vData['price']
                     ]);
                     
+                    // Sync stock update
                     if (isset($vData['stock'])) {
-                        $this->syncStock($variant, $vData['stock']);
+                        $this->inventoryService->syncStock($variant->id, $vData['stock']);
                     }
-                    
-                    $keptVariantIds[] = $variant->id;
                 }
-            } 
-            else {
-                $newVariant = ProductVariant::create([
-                    'product_id' => $product->id,
-                    'sku' => $vData['sku'],
-                    'price' => $vData['price'],
-                    'weight' => $vData['weight'] ?? 0,
-                ]);
-
-                if (!empty($vData['attributes'])) {
-                    $attrValueIds = AttributeValue::whereIn('uuid', $vData['attributes'])->pluck('id')->toArray();
-                    $newVariant->attributeValues()->sync($attrValueIds);
-                }
-
-                if (!empty($vData['stock'])) {
-                    $this->syncStock($newVariant, $vData['stock']);
-                }
-
-                $keptVariantIds[] = $newVariant->id;
-            }
-        }
-
-        $product->variants()->whereNotIn('id', $keptVariantIds)->delete();
-    }
-
-    protected function syncStock(ProductVariant $variant, array $stockData): void
-    {
-        $variant->stock()->delete(); 
-
-        foreach ($stockData as $stock) {
-            $whId = Warehouse::where('uuid', $stock['warehouse_uuid'])->value('id');
-            
-            if ($whId) {
-                InventoryStock::create([
-                    'warehouse_id' => $whId,
-                    'product_variant_id' => $variant->id,
-                    'quantity' => $stock['quantity']
-                ]);
+            } else {
+                // Create new variant
+                $this->createVariant($product, $vData);
             }
         }
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shared\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
@@ -37,17 +39,17 @@ abstract class EloquentBaseRepository implements BaseRepositoryInterface
         return $this->query()->latest()->paginate($perPage);
     }
 
-    public function findById(int $id): ?Model
+    public function findById(int|string $id): ?Model
     {
-        return $this->model->find($id); 
+        return $this->model->find($id);
     }
 
     public function findByUuid(string $uuid): ?Model
     {
-        return $this->model->where('uuid', $uuid)->first(); 
+        return $this->model->where('uuid', $uuid)->first();
     }
 
-    public function findByUuidAndUser(string $uuid, int $userId): ?Model
+    public function findByUuidAndUser(string $uuid, int|string $userId): ?Model
     {
         return $this->model
             ->where('uuid', $uuid)
@@ -63,12 +65,12 @@ abstract class EloquentBaseRepository implements BaseRepositoryInterface
     public function update(Model $model, array $data): Model
     {
         $model->update($data);
-        return $model->fresh();
+        return $model; 
     }
 
     public function delete(Model $model): bool
     {
-        return $model->delete();
+        return (bool) $model->delete();
     }
 
     public function filter(array $filters): LengthAwarePaginator
@@ -76,11 +78,11 @@ abstract class EloquentBaseRepository implements BaseRepositoryInterface
         $query = $this->query();
 
         foreach ($filters as $key => $value) {
-            if (!empty($value) && $this->model->isFillable($key)) {
+            if (!empty($value) && in_array($key, $this->model->getFillable())) {
                 $query->where($key, 'like', "%{$value}%");
             }
         }
 
-        return $query->paginate(15);
+        return $query->latest()->paginate(15);
     }
 }

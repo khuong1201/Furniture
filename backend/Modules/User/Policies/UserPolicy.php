@@ -1,5 +1,9 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Modules\User\Policies;
+
 use Modules\User\Domain\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 

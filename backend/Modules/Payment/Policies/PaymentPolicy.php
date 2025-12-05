@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Payment\Policies;
 
 use Modules\User\Domain\Models\User;
@@ -12,19 +14,21 @@ class PaymentPolicy
 
     public function viewAny(User $user): bool
     {
-        return true; 
+        return $user->hasPermissionTo('payment.view');
     }
 
     public function view(User $user, Payment $payment): bool
     {
-        $ownerId = $payment->user_id ?? $payment->order->user_id;
+        // Check thông qua Order relationship nếu payment ko có user_id trực tiếp
+        // (Trong migration tôi ko thấy user_id, nên check qua order)
+        $ownerId = $payment->order->user_id;
         
         return $user->id === $ownerId || $user->hasPermissionTo('payment.view');
     }
 
     public function create(User $user): bool
     {
-        return true; 
+        return true; // Authenticated user can initiate payment
     }
 
     public function update(User $user, Payment $payment): bool

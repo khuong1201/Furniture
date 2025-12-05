@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Domain\Repositories;
 
-
 use Modules\Shared\Repositories\BaseRepositoryInterface;
-use Modules\Order\Domain\Models\Order;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface OrderRepositoryInterface extends BaseRepositoryInterface {
-    public function countByStatus();
+    public function countByStatus(): array;
+    public function filter(array $filters): LengthAwarePaginator;
 }

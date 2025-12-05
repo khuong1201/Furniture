@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Cart\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -24,7 +26,16 @@ class CartController extends BaseController
         summary: "Xem giỏ hàng của tôi",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
+        responses: [ 
+            new OA\Response(
+                response: 200, 
+                description: "Success",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "object")
+                ])
+            ) 
+        ]
     )]
     public function index(Request $request): JsonResponse
     {
@@ -78,7 +89,7 @@ class CartController extends BaseController
 
         $this->authorize('update', $cartItem);
 
-        $data = $this->service->updateItem($cartItem, $request->input('quantity'), $request->user()->id);
+        $data = $this->service->updateItem($cartItem, (int)$request->input('quantity'), $request->user()->id);
         
         return response()->json(ApiResponse::success($data, 'Cart updated'));
     }

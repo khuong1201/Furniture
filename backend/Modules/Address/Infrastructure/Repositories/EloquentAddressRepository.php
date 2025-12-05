@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Address\Infrastructure\Repositories;
 
 use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
 use Modules\Address\Domain\Models\Address;
+use Illuminate\Database\Eloquent\Collection;
 
 class EloquentAddressRepository extends EloquentBaseRepository implements AddressRepositoryInterface
 {
@@ -13,11 +16,11 @@ class EloquentAddressRepository extends EloquentBaseRepository implements Addres
         parent::__construct($model);
     }
     
-    public function getAllByUser(int $userId)
+    public function getAllByUser(int $userId): Collection
     {
         return $this->model
             ->where('user_id', $userId)
-            ->orderByDesc('is_default')
+            ->orderByDesc('is_default') 
             ->latest()
             ->get();
     }

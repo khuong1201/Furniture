@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Policies;
 
 use Modules\User\Domain\Models\User;
@@ -17,7 +19,7 @@ class OrderPolicy
 
     public function view(User $user, Order $order): bool
     {
-        return $user->id === $order->user_id || $user->hasPermissionTo('order.view');
+        return $user->id === $order->user_id || $user->hasPermissionTo('order.view_all');
     }
 
     public function cancel(User $user, Order $order): bool

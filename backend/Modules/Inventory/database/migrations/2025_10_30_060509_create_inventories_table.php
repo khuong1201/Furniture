@@ -12,7 +12,6 @@ return new class extends Migration {
             $table->uuid('uuid')->unique();
             
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete();
-            
             $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
             
             $table->integer('quantity')->default(0);
@@ -20,7 +19,7 @@ return new class extends Migration {
             
             $table->timestamps();
 
-            $table->unique(['warehouse_id', 'product_variant_id']);
+            $table->unique(['warehouse_id', 'product_variant_id'], 'wh_variant_unique');
         });
     }
 

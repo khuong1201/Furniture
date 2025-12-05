@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Events;
 
 use Modules\Shipping\Domain\Models\Shipping;

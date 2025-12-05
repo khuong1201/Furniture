@@ -11,7 +11,10 @@ return new class extends Migration
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            // Một user chỉ có 1 cart active tại 1 thời điểm
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->unique();
+            $table->string('voucher_code')->nullable();
+            $table->decimal('voucher_discount', 12, 2)->default(0);
             $table->timestamps();
         });
 
@@ -23,8 +26,7 @@ return new class extends Migration
             $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
             
             $table->integer('quantity')->default(1);
-
-            $table->decimal('price', 12, 2)->default(0); 
+            $table->decimal('price', 12, 2)->default(0)->comment('Giá tại thời điểm add (tham khảo)'); 
             
             $table->timestamps();
 

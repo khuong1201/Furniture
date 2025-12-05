@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Notification\Infrastructure\Repositories;
 
 use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Notification\Domain\Models\Notification;
 use Modules\Notification\Domain\Repositories\NotificationRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentNotificationRepository extends EloquentBaseRepository implements NotificationRepositoryInterface
 {
@@ -13,7 +16,7 @@ class EloquentNotificationRepository extends EloquentBaseRepository implements N
         parent::__construct($model);
     }
 
-    public function getUserNotifications(int $userId, int $perPage = 15)
+    public function getUserNotifications(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return $this->model
             ->where('user_id', $userId)

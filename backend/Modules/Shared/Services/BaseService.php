@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shared\Services;
 
 use Modules\Shared\Repositories\BaseRepositoryInterface;
@@ -38,9 +40,7 @@ abstract class BaseService
         $model = $this->repository->findByUuid($uuid);
 
         if (!$model) {
-            throw new ModelNotFoundException(
-                sprintf('Model with UUID [%s] not found.', $uuid)
-            );
+            throw new ModelNotFoundException("Resource with UUID [{$uuid}] not found.");
         }
 
         return $model;
@@ -50,7 +50,9 @@ abstract class BaseService
     {
         return DB::transaction(function () use ($data) {
             $this->beforeCreate($data);
+            
             $model = $this->repository->create($data);
+            
             $this->afterCreate($model);
             
             return $model;
@@ -59,24 +61,28 @@ abstract class BaseService
 
     public function update(string $uuid, array $data): Model
     {
-        return DB::transaction(function () use ($uuid, $data) {
-            $model = $this->findByUuidOrFail($uuid);
-            
+        $model = $this->findByUuidOrFail($uuid);
+
+        return DB::transaction(function () use ($model, $data) {
             $this->beforeUpdate($model, $data);
-            $updated = $this->repository->update($model, $data);
-            $this->afterUpdate($updated);
             
-            return $updated;
+            $updatedModel = $this->repository->update($model, $data);
+            
+            $this->afterUpdate($updatedModel);
+            
+            return $updatedModel;
         });
     }
 
     public function delete(string $uuid): bool
     {
-        return DB::transaction(function () use ($uuid) {
-            $model = $this->findByUuidOrFail($uuid);
-            
+        $model = $this->findByUuidOrFail($uuid);
+
+        return DB::transaction(function () use ($model) {
             $this->beforeDelete($model);
+            
             $result = $this->repository->delete($model);
+            
             $this->afterDelete($model);
             
             return $result;

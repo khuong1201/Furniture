@@ -1,23 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shared\Traits;
 
 use Modules\Log\Events\ModelActionLogged;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 
 trait Loggable
 {
     public static function bootLoggable(): void
     {
-        if (app()->environment('testing')) {
+        if (app()->runningUnitTests()) {
             return;
         }
 
-        static::created(function ($model) {
+        static::created(function (Model $model) {
             static::logAction($model, 'created');
         });
 
-        static::updated(function ($model) {
+        static::updated(function (Model $model) {
             if ($model->wasChanged()) { 
                 $changes = $model->getChanges();
                 unset($changes['updated_at']);
@@ -28,19 +31,24 @@ trait Loggable
             }
         });
 
-        static::deleted(function ($model) {
+        static::deleted(function (Model $model) {
             static::logAction($model, 'deleted');
         });
     }
 
-    protected static function logAction($model, string $action, array $changes = []): void
+    protected static function logAction(Model $model, string $action, array $changes = []): void
     {
-        $ip = request() ? request()->ip() : '127.0.0.1';
-        
-        $uuid = $model->uuid ?? (string)$model->id;
+        if (!class_exists(ModelActionLogged::class)) {
+            return;
+        }
+
+        $ip = request()?->ip() ?? '127.0.0.1';
+        $userId = Auth::id(); 
+
+        $uuid = $model->getAttribute('uuid') ?? (string) $model->getKey();
 
         event(new ModelActionLogged(
-            Auth::id(), 
+            $userId, 
             $action,
             get_class($model),
             $uuid,

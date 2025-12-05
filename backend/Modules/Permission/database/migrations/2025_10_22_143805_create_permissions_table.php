@@ -13,7 +13,7 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->string('name')->unique(); 
             $table->string('description')->nullable();
-            $table->string('module')->nullable()->comment('Nhóm permission (vd: user, role, product)');
+            $table->string('module')->nullable()->index()->comment('Nhóm permission (vd: user, role)');
             $table->timestamps();
         });
 
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
             $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
             $table->timestamps();
+            
             $table->primary(['role_id', 'permission_id']); 
         });
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Inventory\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -36,7 +38,7 @@ class InventoryController extends BaseController
     {
         $this->authorize('viewAny', InventoryStock::class);
 
-        $data = $this->service->paginate($request->get('per_page', 20), $request->all());
+        $data = $this->service->paginate($request->integer('per_page', 20), $request->all());
         return response()->json(ApiResponse::paginated($data));
     }
 
@@ -62,6 +64,7 @@ class InventoryController extends BaseController
     )]
     public function adjust(AdjustInventoryRequest $request): JsonResponse
     {
+        // Quyền riêng cho việc điều chỉnh kho (thường là thủ kho)
         if (!$request->user()->hasPermissionTo('inventory.adjust')) {
              return response()->json(ApiResponse::error('Forbidden', 403), 403);
         }

@@ -2,25 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Order\Http\Controllers\OrderController;
-use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
-Route::middleware(['api', JwtAuthenticate::class])->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('orders')->group(function() {
     
-    Route::prefix('orders')->group(function() {
+    Route::post('/checkout', [OrderController::class, 'checkout']);
+    Route::get('/', [OrderController::class, 'index']); 
+    Route::get('/{uuid}', [OrderController::class, 'show']);
+    Route::post('/{uuid}/cancel', [OrderController::class, 'cancel']);
 
-        Route::post('/', [OrderController::class, 'store']); 
-
-        Route::post('/checkout', [OrderController::class, 'checkout']);
-
-        Route::get('/', [OrderController::class, 'index']); 
-
-        Route::get('/stats', [OrderController::class, 'stats']);
- 
-        Route::get('/{uuid}', [OrderController::class, 'show']);
-
-        Route::post('/{uuid}/cancel', [OrderController::class, 'cancel']);
-        
-        Route::put('/{uuid}/status', [OrderController::class, 'updateStatus']);
-
-    });
+    Route::get('/stats/all', [OrderController::class, 'stats']);
+    Route::post('/admin/create', [OrderController::class, 'store']); 
+    Route::put('/{uuid}/status', [OrderController::class, 'updateStatus']);
 });

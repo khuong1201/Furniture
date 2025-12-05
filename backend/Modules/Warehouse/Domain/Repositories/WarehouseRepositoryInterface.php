@@ -1,8 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Warehouse\Domain\Repositories;
 
 use Modules\Shared\Repositories\BaseRepositoryInterface;
-use Modules\Warehouse\Domain\Models\Warehouse;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-interface WarehouseRepositoryInterface extends BaseRepositoryInterface {}
+interface WarehouseRepositoryInterface extends BaseRepositoryInterface 
+{
+    public function filter(array $filters): LengthAwarePaginator;
+    public function hasStock(int $warehouseId): bool;
+}

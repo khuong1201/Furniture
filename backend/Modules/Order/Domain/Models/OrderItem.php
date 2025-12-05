@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Domain\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +21,11 @@ class OrderItem extends Model
     ];
 
     protected $casts = [
-        'product_snapshot' => 'array'
+        'product_snapshot' => 'array',
+        'unit_price' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'original_price' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -28,7 +34,6 @@ class OrderItem extends Model
         static::creating(fn($model) => $model->uuid = (string) Str::uuid());
     }
 
-    // Relationship đổi sang Variant
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');

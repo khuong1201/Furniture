@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Collection\Infrastructure\Repositories;
 
 use Modules\Shared\Repositories\EloquentBaseRepository;
@@ -9,13 +11,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentCollectionRepository extends EloquentBaseRepository implements CollectionRepositoryInterface
 {
-    public function __construct(Collection $model) {
+    public function __construct(Collection $model)
+    {
         parent::__construct($model);
     }
 
     public function filter(array $filters): LengthAwarePaginator
     {
-        $query = $this->model->newQuery();
+        $query = $this->query();
 
         if (isset($filters['is_active'])) {
             $query->where('is_active', (bool)$filters['is_active']);

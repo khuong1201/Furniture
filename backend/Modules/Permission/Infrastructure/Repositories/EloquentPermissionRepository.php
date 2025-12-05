@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Permission\Infrastructure\Repositories;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Modules\Permission\Domain\Models\Permission;
 use Modules\Shared\Repositories\EloquentBaseRepository;

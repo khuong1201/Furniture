@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Permission\Http\Middleware;
 
 use Closure;
@@ -13,17 +15,18 @@ class CheckPermission
         protected PermissionService $permissionService
     ) {}
 
-    public function handle(Request $request, Closure $next, string $permission)
+    public function handle(Request $request, Closure $next, string $permission): mixed
     {
         $user = $request->user();
         if (!$user) {
             return response()->json(ApiResponse::error('Unauthenticated', 401), 401);
         }
-
-        $permissionsToCheck = explode('|', $permission);
         
+        $permissionsToCheck = explode('|', $permission);
+        $userId = (int) $user->id;
+
         foreach ($permissionsToCheck as $perm) {
-            if ($this->permissionService->hasPermission($user->id, trim($perm))) {
+            if ($this->permissionService->hasPermission($userId, trim($perm))) {
                 return $next($request);
             }
         }

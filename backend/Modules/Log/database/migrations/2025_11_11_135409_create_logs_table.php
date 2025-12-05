@@ -9,23 +9,26 @@ return new class extends Migration {
     {
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->unique(); 
+            
             $table->unsignedBigInteger('user_id')->nullable()->index();
          
-            $table->string('type', 50)->index();
-            
-            $table->string('action', 100)->index();
+            $table->string('type', 50)->index();  
+            $table->string('action', 100)->index(); 
                       
             $table->string('model', 150)->nullable()->index();
-            $table->uuid('model_uuid')->nullable()->index();
+
+            $table->string('model_uuid', 64)->nullable()->index();
             
             $table->ipAddress('ip_address')->nullable();
             $table->text('message')->nullable(); 
-            $table->json('metadata')->nullable();
+            $table->json('metadata')->nullable(); 
             
             $table->timestamps();
             
             $table->index(['model', 'model_uuid']);
+
+            $table->index('created_at');
         });
     }
 

@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "E-commerce Modular API",
-        "description": "Tài liệu API hệ thống E-commerce (Sử dụng PHP 8 Attributes)",
+        "description": "Tài liệu API hệ thống E-commerce",
         "contact": {
             "email": "admin@system.com"
         },
@@ -24,7 +24,26 @@
                 "operationId": "daee3e5ef82ac6db0e154ac5a54a74a1",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthenticated"
@@ -79,6 +98,14 @@
                                     "is_default": {
                                         "type": "boolean",
                                         "example": false
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "home",
+                                            "office"
+                                        ],
+                                        "example": "home"
                                     }
                                 },
                                 "type": "object"
@@ -122,12 +149,6 @@
                 "responses": {
                     "200": {
                         "description": "Success"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     }
                 },
                 "security": [
@@ -176,12 +197,6 @@
                 "responses": {
                     "200": {
                         "description": "Updated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     }
                 },
                 "security": [
@@ -210,12 +225,6 @@
                 "responses": {
                     "200": {
                         "description": "Deleted"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     }
                 },
                 "security": [
@@ -223,161 +232,6 @@
                         "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Đăng ký tài khoản mới",
-                "description": "Tạo tài khoản và gửi OTP qua email. Chưa trả về Token đăng nhập ngay.",
-                "operationId": "ec3aaa6aae353212c6d4173ea25748b2",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "email",
-                                    "password",
-                                    "password_confirmation"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Nguyen Van A"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "password123"
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "example": "password123"
-                                    },
-                                    "device_name": {
-                                        "type": "string",
-                                        "example": "iphone_13",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Đăng ký thành công, chờ xác thực OTP",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "allOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ApiResponse"
-                                        },
-                                        {
-                                            "properties": {
-                                                "data": {
-                                                    "properties": {
-                                                        "message": {
-                                                            "type": "string",
-                                                            "example": "Please check your email..."
-                                                        },
-                                                        "require_verification": {
-                                                            "type": "boolean",
-                                                            "example": true
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Lỗi Validation (Email trùng, mật khẩu yếu...)"
-                    }
-                }
-            }
-        },
-        "/auth/verify": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Xác thực OTP",
-                "description": "Nhập Email và mã OTP 6 số để kích hoạt tài khoản và lấy Token.",
-                "operationId": "605fe921083e6ba834020a404bfd57d9",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "otp"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    },
-                                    "otp": {
-                                        "type": "string",
-                                        "example": "123456"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Xác thực thành công, trả về Token",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "access_token": {
-                                            "type": "string",
-                                            "example": "eyJ0eXAi..."
-                                        },
-                                        "refresh_token": {
-                                            "type": "string",
-                                            "example": "def456..."
-                                        },
-                                        "expires_in": {
-                                            "type": "integer",
-                                            "example": 3600
-                                        },
-                                        "user": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Sai OTP hoặc OTP hết hạn"
-                    }
-                }
             }
         },
         "/auth/login": {
@@ -405,11 +259,11 @@
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "123456"
+                                        "example": "password"
                                     },
                                     "device_name": {
                                         "type": "string",
-                                        "example": "web_chrome"
+                                        "example": "web"
                                     }
                                 },
                                 "type": "object"
@@ -419,43 +273,97 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login thành công",
+                        "description": "Login Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "allOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ApiResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        {
+                                        "data": {
                                             "properties": {
-                                                "data": {
-                                                    "properties": {
-                                                        "access_token": {
-                                                            "type": "string"
-                                                        },
-                                                        "refresh_token": {
-                                                            "type": "string"
-                                                        },
-                                                        "permissions": {
-                                                            "type": "array",
-                                                            "items": {
-                                                                "type": "string"
-                                                            }
-                                                        }
-                                                    },
+                                                "access_token": {
+                                                    "type": "string"
+                                                },
+                                                "refresh_token": {
+                                                    "type": "string"
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "user": {
                                                     "type": "object"
                                                 }
                                             },
                                             "type": "object"
                                         }
-                                    ]
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Sai tài khoản hoặc mật khẩu"
+                        "description": "Invalid credentials"
+                    },
+                    "403": {
+                        "description": "Account inactive"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Đăng ký tài khoản",
+                "operationId": "ec3aaa6aae353212c6d4173ea25748b2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "device_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registered Successfully"
+                    },
+                    "422": {
+                        "description": "Validation Error"
                     }
                 }
             }
@@ -465,7 +373,7 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Làm mới Token (Refresh Token)",
+                "summary": "Lấy Access Token mới bằng Refresh Token",
                 "operationId": "54138472c166d1a1f706bb95f3eeddb4",
                 "requestBody": {
                     "required": true,
@@ -477,70 +385,9 @@
                                 ],
                                 "properties": {
                                     "refresh_token": {
-                                        "type": "string",
-                                        "example": "abcdef123456..."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Token mới được cấp",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "allOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ApiResponse"
-                                        },
-                                        {
-                                            "properties": {
-                                                "data": {
-                                                    "properties": {
-                                                        "access_token": {
-                                                            "type": "string"
-                                                        },
-                                                        "refresh_token": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Refresh Token không hợp lệ hoặc hết hạn"
-                    }
-                }
-            }
-        },
-        "/auth/logout": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Đăng xuất",
-                "description": "Thu hồi Refresh Token hiện tại.",
-                "operationId": "d5ba94626f1419f9a308da15ed09a40e",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "refresh_token"
-                                ],
-                                "properties": {
-                                    "refresh_token": {
+                                        "type": "string"
+                                    },
+                                    "device_name": {
                                         "type": "string"
                                     }
                                 },
@@ -551,14 +398,43 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Đăng xuất thành công",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
-                                }
-                            }
-                        }
+                        "description": "Token Refreshed"
+                    },
+                    "401": {
+                        "description": "Invalid Refresh Token"
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Đăng xuất",
+                "operationId": "d5ba94626f1419f9a308da15ed09a40e",
+                "responses": {
+                    "200": {
+                        "description": "Logged out"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Thông tin hiện tại",
+                "operationId": "7e7256de38556bc24ecc0dcf65266aa2",
+                "responses": {
+                    "200": {
+                        "description": "Success"
                     }
                 },
                 "security": [
@@ -577,7 +453,23 @@
                 "operationId": "09c3433b5866644b5e6d84c885aa4f44",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -720,6 +612,62 @@
                 ]
             }
         },
+        "/carts/apply-coupon": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Áp dụng mã giảm giá",
+                "operationId": "3cb434fb6dcd66169123e88096ee033d",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "SALE50"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Applied"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/carts/remove-coupon": {
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Gỡ mã giảm giá",
+                "operationId": "7530d6adadae897ba3c50bad29f67880",
+                "responses": {
+                    "200": {
+                        "description": "Removed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/public/categories": {
             "get": {
                 "tags": [
@@ -731,6 +679,7 @@
                     {
                         "name": "tree",
                         "in": "query",
+                        "description": "Trả về dạng cây phân cấp",
                         "schema": {
                             "type": "boolean"
                         }
@@ -740,6 +689,13 @@
                         "in": "query",
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -763,19 +719,27 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "slug"
+                                    "name"
                                 ],
                                 "properties": {
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Electronics"
                                     },
                                     "slug": {
+                                        "type": "string",
+                                        "example": "electronics"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "description": {
                                         "type": "string"
                                     },
-                                    "parent_uuid": {
-                                        "type": "string",
-                                        "format": "uuid"
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "default": true
                                     }
                                 },
                                 "type": "object"
@@ -821,9 +785,14 @@
                                     "name": {
                                         "type": "string"
                                     },
-                                    "parent_uuid": {
-                                        "type": "string",
-                                        "format": "uuid"
+                                    "parent_id": {
+                                        "type": "integer"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
                                     }
                                 },
                                 "type": "object"
@@ -876,7 +845,7 @@
                 "tags": [
                     "Categories"
                 ],
-                "summary": "Xem chi tiết danh mục (Public)",
+                "summary": "Xem chi tiết danh mục",
                 "operationId": "d49a3ecc3083c299e227cb404121eb2c",
                 "parameters": [
                     {
@@ -916,6 +885,13 @@
                         "in": "query",
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -961,11 +937,10 @@
                 "operationId": "ebc20aeba9d988fcb7e9bdea1dbc9b6c",
                 "requestBody": {
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "slug"
+                                    "name"
                                 ],
                                 "properties": {
                                     "name": {
@@ -974,7 +949,14 @@
                                     "slug": {
                                         "type": "string"
                                     },
-                                    "product_ids": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "banner_image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "product_ids[]": {
                                         "type": "array",
                                         "items": {
                                             "type": "integer"
@@ -1002,12 +984,13 @@
             }
         },
         "/admin/collections/{uuid}": {
-            "put": {
+            "post": {
                 "tags": [
                     "Collections"
                 ],
-                "summary": "Cập nhật bộ sưu tập (Admin)",
-                "operationId": "a520f34f6a0255125e4520def87873f9",
+                "summary": "Cập nhật bộ sưu tập (Admin) - Method POST for FormData",
+                "description": "Sử dụng POST với _method=PUT để upload file trong form-data",
+                "operationId": "6b5fb875bdcfda4404063fb3e75d978b",
                 "parameters": [
                     {
                         "name": "uuid",
@@ -1021,13 +1004,21 @@
                 ],
                 "requestBody": {
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "properties": {
+                                    "_method": {
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
                                     "name": {
                                         "type": "string"
                                     },
-                                    "product_ids": {
+                                    "banner_image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "product_ids[]": {
                                         "type": "array",
                                         "items": {
                                             "type": "integer"
@@ -1087,8 +1078,24 @@
                 "tags": [
                     "Dashboard"
                 ],
-                "summary": "Thống kê tổng quan",
+                "summary": "Lấy toàn bộ dữ liệu Dashboard",
+                "description": "Trả về Cards, Revenue Chart, Customer Chart, Top Spenders, Best Sellers.",
                 "operationId": "14ceca394afefb2231852083fc45b254",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "query",
+                        "description": "Khoảng thời gian cho biểu đồ doanh thu",
+                        "schema": {
+                            "type": "string",
+                            "default": "week",
+                            "enum": [
+                                "week",
+                                "year"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -1101,6 +1108,56 @@
                                             "example": true
                                         },
                                         "data": {
+                                            "properties": {
+                                                "cards": {
+                                                    "properties": {
+                                                        "total_revenue": {
+                                                            "type": "number"
+                                                        },
+                                                        "revenue_growth": {
+                                                            "type": "number"
+                                                        },
+                                                        "total_orders": {
+                                                            "type": "integer"
+                                                        },
+                                                        "total_users": {
+                                                            "type": "integer"
+                                                        },
+                                                        "low_stock_variants": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "revenue_chart": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "date": {
+                                                                "type": "string"
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "value": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "customer_stats": {
+                                                    "type": "object"
+                                                },
+                                                "top_spenders": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "best_sellers": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -1108,35 +1165,9 @@
                                 }
                             }
                         }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/admin/dashboard/revenue": {
-            "get": {
-                "tags": [
-                    "Dashboard"
-                ],
-                "summary": "Biểu đồ doanh thu theo năm",
-                "operationId": "70d0a6e6856a52b5b294796c896b68d2",
-                "parameters": [
-                    {
-                        "name": "year",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "example": 2025
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -1314,11 +1345,34 @@
                         }
                     },
                     {
-                        "name": "level",
+                        "name": "type",
                         "in": "query",
-                        "description": "error, info, warning...",
+                        "description": "audit, system_error",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
                         }
                     }
                 ],
@@ -1358,6 +1412,74 @@
                 "responses": {
                     "200": {
                         "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/media": {
+            "post": {
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Upload file (Generic)",
+                "description": "Upload file gắn vào User hiện tại (Ví dụ: Avatar tạm).",
+                "operationId": "33992e41f72a9c0d3895e75e0f3939ba",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "collection": {
+                                        "type": "string",
+                                        "default": "default"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Uploaded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/media/{uuid}": {
+            "delete": {
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Xóa file/ảnh",
+                "operationId": "8e0e6f7ed14a2041f068fe752221dd5e",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
                     }
                 },
                 "security": [
@@ -1415,8 +1537,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1464,8 +1585,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1493,7 +1613,14 @@
                         "name": "status",
                         "in": "query",
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "processing",
+                                "shipped",
+                                "delivered",
+                                "cancelled"
+                            ]
                         }
                     },
                     {
@@ -1526,10 +1653,9 @@
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Tạo đơn hàng mới (Admin/Staff)",
+                "summary": "Tạo đơn hàng thủ công (Admin)",
                 "operationId": "6dc386d376574a4249e0ddb0cbcb2359",
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1540,6 +1666,9 @@
                                 "properties": {
                                     "address_id": {
                                         "type": "integer"
+                                    },
+                                    "notes": {
+                                        "type": "string"
                                     },
                                     "items": {
                                         "type": "array",
@@ -1579,10 +1708,9 @@
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Đặt hàng từ giỏ hàng (User)",
+                "summary": "Đặt hàng từ giỏ hàng (Checkout)",
                 "operationId": "d214f391766889d74685377a5f161aaa",
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1627,30 +1755,10 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/orders/stats": {
-            "get": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Thống kê số lượng đơn theo trạng thái (Admin)",
-                "operationId": "6bc5373615bc0e5df32a8291aefd91c3",
                 "responses": {
                     "200": {
                         "description": "Success"
@@ -1668,8 +1776,7 @@
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Cập nhật trạng thái đơn hàng (Admin)",
-                "description": "Dùng để Duyệt đơn (pending -> processing), Giao hàng (shipped)...",
+                "summary": "Cập nhật trạng thái (Admin)",
                 "operationId": "2da87d031f5ba61349c98a9c8105c22e",
                 "requestBody": {
                     "content": {
@@ -1719,8 +1826,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1741,7 +1847,7 @@
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Lịch sử giao dịch (User xem của mình, Admin xem tất cả)",
+                "summary": "Lịch sử giao dịch",
                 "operationId": "d2cb9e33536e2a3d10ea0e21861315fd",
                 "parameters": [
                     {
@@ -1758,7 +1864,7 @@
                             "type": "string",
                             "enum": [
                                 "pending",
-                                "completed",
+                                "paid",
                                 "failed"
                             ]
                         }
@@ -1779,7 +1885,7 @@
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Tạo yêu cầu thanh toán (Thường dùng khi Retry payment)",
+                "summary": "Tạo yêu cầu thanh toán (Initiate Payment)",
                 "operationId": "919d9707a0f0b62ff9bb94318680424b",
                 "requestBody": {
                     "required": true,
@@ -1788,20 +1894,19 @@
                             "schema": {
                                 "required": [
                                     "order_uuid",
-                                    "payment_method"
+                                    "method"
                                 ],
                                 "properties": {
                                     "order_uuid": {
                                         "type": "string",
                                         "format": "uuid"
                                     },
-                                    "payment_method": {
+                                    "method": {
                                         "type": "string",
                                         "enum": [
                                             "cod",
-                                            "banking",
                                             "momo",
-                                            "stripe"
+                                            "vnpay"
                                         ]
                                     }
                                 },
@@ -1812,7 +1917,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Payment Initiated (Return payment URL)"
+                        "description": "Payment Initiated"
                     }
                 },
                 "security": [
@@ -1835,8 +1940,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1855,7 +1959,7 @@
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Cập nhật trạng thái thanh toán (Admin Only - Manual)",
+                "summary": "Cập nhật trạng thái (Admin Only)",
                 "operationId": "3e17e5a5f80fdbfe49a6536073361ca6",
                 "requestBody": {
                     "content": {
@@ -1896,21 +2000,14 @@
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Webhook nhận kết quả thanh toán (Public)",
-                "description": "API này dành cho Payment Gateway (Momo, Stripe, VNPAY) gọi lại. Không cần Token.",
+                "summary": "Webhook nhận kết quả thanh toán",
                 "operationId": "62edbc63f5e9271506b563cdbf3d58b6",
                 "parameters": [
                     {
                         "name": "provider",
                         "in": "path",
-                        "required": true,
                         "schema": {
-                            "type": "string",
-                            "enum": [
-                                "momo",
-                                "vnpay",
-                                "stripe"
-                            ]
+                            "type": "string"
                         }
                     }
                 ],
@@ -1919,6 +2016,127 @@
                         "description": "IPN Received"
                     }
                 }
+            }
+        },
+        "/admin/permissions": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Danh sách Permissions",
+                "operationId": "e5fd5ca862c74d1c6e3ea0017ab9a814",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Tạo Permission",
+                "operationId": "cc51094ec0d89bee1d1a6644706945fd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "product.view"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "module": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/my-permissions": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Quyền của tôi",
+                "operationId": "dc80f999cd8f0559ceeb47a87ce4b29b",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/admin/attributes": {
@@ -1937,10 +2155,10 @@
                         }
                     },
                     {
-                        "name": "per_page",
+                        "name": "search",
                         "in": "query",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1973,7 +2191,7 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Màu sắc"
+                                        "example": "Color"
                                     },
                                     "slug": {
                                         "type": "string",
@@ -1992,12 +2210,10 @@
                                         "items": {
                                             "properties": {
                                                 "value": {
-                                                    "type": "string",
-                                                    "example": "Đỏ"
+                                                    "type": "string"
                                                 },
                                                 "code": {
-                                                    "type": "string",
-                                                    "example": "#FF0000"
+                                                    "type": "string"
                                                 }
                                             },
                                             "type": "object"
@@ -2026,7 +2242,7 @@
                 "tags": [
                     "Product Attributes"
                 ],
-                "summary": "Xem chi tiết thuộc tính",
+                "summary": "Xem chi tiết",
                 "operationId": "afdc562bcdad746dbce008a2c8b01e97",
                 "parameters": [
                     {
@@ -2078,18 +2294,6 @@
                                     "values": {
                                         "type": "array",
                                         "items": {
-                                            "properties": {
-                                                "uuid": {
-                                                    "description": "Gửi UUID nếu update, không gửi nếu tạo mới",
-                                                    "type": "string"
-                                                },
-                                                "value": {
-                                                    "type": "string"
-                                                },
-                                                "code": {
-                                                    "type": "string"
-                                                }
-                                            },
                                             "type": "object"
                                         }
                                     }
@@ -2144,30 +2348,19 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Lấy danh sách sản phẩm (Public)",
-                "description": "Chỉ trả về các sản phẩm đang hoạt động (Active). Hỗ trợ lọc theo danh mục, giá, tên.",
+                "summary": "Danh sách sản phẩm (Public)",
                 "operationId": "f089d65f31dc82c6e3b80e06c542463f",
                 "parameters": [
                     {
                         "name": "page",
                         "in": "query",
                         "schema": {
-                            "type": "integer",
-                            "default": 1
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "default": 15
+                            "type": "integer"
                         }
                     },
                     {
                         "name": "search",
                         "in": "query",
-                        "description": "Tìm theo tên hoặc SKU",
                         "schema": {
                             "type": "string"
                         }
@@ -2175,61 +2368,14 @@
                     {
                         "name": "category_uuid",
                         "in": "query",
-                        "description": "Lọc theo danh mục",
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    },
-                    {
-                        "name": "price_min",
-                        "in": "query",
-                        "schema": {
-                            "type": "number"
-                        }
-                    },
-                    {
-                        "name": "price_max",
-                        "in": "query",
-                        "schema": {
-                            "type": "number"
-                        }
-                    },
-                    {
-                        "name": "sort_by",
-                        "in": "query",
-                        "description": "Sắp xếp danh sách",
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "best_selling",
-                                "latest",
-                                "price_asc",
-                                "price_desc"
-                            ]
+                            "type": "string"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "data": {
-                                            "description": "Paginated Data",
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Success"
                     }
                 }
             }
@@ -2239,45 +2385,11 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Lấy danh sách sản phẩm (Admin)",
-                "description": "Trả về tất cả sản phẩm bao gồm cả ẩn (Inactive). Dành cho trang quản lý.",
+                "summary": "Danh sách sản phẩm (Admin)",
                 "operationId": "90b09429681f249365da59a28870cfb5",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "is_active",
-                        "in": "query",
-                        "schema": {
-                            "type": "boolean"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Success"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -2290,11 +2402,9 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Tạo sản phẩm mới",
-                "description": "Tạo sản phẩm đơn giản hoặc sản phẩm có biến thể.",
+                "summary": "Tạo sản phẩm",
                 "operationId": "6cac846a61b72104adff1ee91bd8f69b",
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2304,66 +2414,20 @@
                                 ],
                                 "properties": {
                                     "name": {
-                                        "type": "string",
-                                        "example": "Áo Thun Premium"
+                                        "type": "string"
                                     },
                                     "category_uuid": {
-                                        "type": "string",
-                                        "format": "uuid"
-                                    },
-                                    "description": {
                                         "type": "string"
-                                    },
-                                    "has_variants": {
-                                        "type": "boolean",
-                                        "example": true
-                                    },
-                                    "is_active": {
-                                        "type": "boolean",
-                                        "default": true
                                     },
                                     "price": {
-                                        "description": "Bắt buộc nếu has_variants=false",
                                         "type": "number"
                                     },
-                                    "sku": {
-                                        "description": "Bắt buộc nếu has_variants=false",
-                                        "type": "string"
+                                    "has_variants": {
+                                        "type": "boolean"
                                     },
                                     "variants": {
                                         "type": "array",
                                         "items": {
-                                            "properties": {
-                                                "sku": {
-                                                    "type": "string"
-                                                },
-                                                "price": {
-                                                    "type": "number"
-                                                },
-                                                "attributes": {
-                                                    "description": "Mảng UUID của Attribute Values (VD: Màu Đỏ, Size M)",
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "format": "uuid"
-                                                    }
-                                                },
-                                                "stock": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "properties": {
-                                                            "warehouse_uuid": {
-                                                                "type": "string",
-                                                                "format": "uuid"
-                                                            },
-                                                            "quantity": {
-                                                                "type": "integer"
-                                                            }
-                                                        },
-                                                        "type": "object"
-                                                    }
-                                                }
-                                            },
                                             "type": "object"
                                         }
                                     }
@@ -2376,12 +2440,6 @@
                 "responses": {
                     "201": {
                         "description": "Created"
-                    },
-                    "422": {
-                        "description": "Validation Error"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -2396,7 +2454,7 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Xem chi tiết sản phẩm",
+                "summary": "Chi tiết sản phẩm",
                 "operationId": "b96e795a251da1d56654b459cec75057",
                 "parameters": [
                     {
@@ -2404,17 +2462,13 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Success"
-                    },
-                    "404": {
-                        "description": "Not found"
                     }
                 }
             }
@@ -2425,7 +2479,6 @@
                     "Products"
                 ],
                 "summary": "Cập nhật sản phẩm",
-                "description": "Cập nhật thông tin chung và đồng bộ biến thể (Thêm/Sửa/Xóa Variant).",
                 "operationId": "ff7d7b298b0d62cf0b4503308d3af809",
                 "parameters": [
                     {
@@ -2433,8 +2486,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2445,23 +2497,6 @@
                                 "properties": {
                                     "name": {
                                         "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    },
-                                    "category_uuid": {
-                                        "type": "string",
-                                        "format": "uuid"
-                                    },
-                                    "variants": {
-                                        "description": "Gửi mảng variants đầy đủ. Có UUID là update, không có là create. Thiếu là delete.",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "object"
-                                        }
                                     }
                                 },
                                 "type": "object"
@@ -2472,12 +2507,6 @@
                 "responses": {
                     "200": {
                         "description": "Updated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     }
                 },
                 "security": [
@@ -2498,20 +2527,13 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Deleted"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     }
                 },
                 "security": [
@@ -2526,7 +2548,7 @@
                 "tags": [
                     "Product Images"
                 ],
-                "summary": "Upload ảnh cho sản phẩm",
+                "summary": "Upload ảnh",
                 "operationId": "34871052eb1f635905f8fcb6c557c603",
                 "parameters": [
                     {
@@ -2534,8 +2556,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2574,17 +2595,15 @@
                 "tags": [
                     "Product Images"
                 ],
-                "summary": "Xóa ảnh sản phẩm",
+                "summary": "Xóa ảnh",
                 "operationId": "f7978e2e0e8a4fb631fc0685898fe068",
                 "parameters": [
                     {
                         "name": "uuid",
                         "in": "path",
-                        "description": "UUID của Image",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2628,6 +2647,13 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
                     }
                 ],
                 "responses": {
@@ -2661,6 +2687,10 @@
                                 ],
                                 "properties": {
                                     "name": {
+                                        "type": "string",
+                                        "example": "Summer Sale"
+                                    },
+                                    "description": {
                                         "type": "string"
                                     },
                                     "type": {
@@ -2671,7 +2701,8 @@
                                         ]
                                     },
                                     "value": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "example": 10
                                     },
                                     "start_date": {
                                         "type": "string",
@@ -2686,6 +2717,16 @@
                                         "items": {
                                             "type": "integer"
                                         }
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "default": true
+                                    },
+                                    "min_order_value": {
+                                        "type": "number"
+                                    },
+                                    "max_discount_amount": {
+                                        "type": "number"
                                     }
                                 },
                                 "type": "object"
@@ -2759,8 +2800,14 @@
                                     "name": {
                                         "type": "string"
                                     },
-                                    "status": {
+                                    "is_active": {
                                         "type": "boolean"
+                                    },
+                                    "product_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -2813,7 +2860,7 @@
                 "tags": [
                     "Reviews"
                 ],
-                "summary": "Xem danh sách đánh giá",
+                "summary": "Xem danh sách đánh giá (Public/Admin)",
                 "operationId": "537151cfc85509ee58521c13903a8fe3",
                 "parameters": [
                     {
@@ -2829,6 +2876,21 @@
                         "in": "query",
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "rating",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "admin_view",
+                        "in": "query",
+                        "description": "Nếu true (và là admin) sẽ thấy cả review chưa duyệt",
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],
@@ -2851,8 +2913,7 @@
                             "schema": {
                                 "required": [
                                     "product_uuid",
-                                    "rating",
-                                    "content"
+                                    "rating"
                                 ],
                                 "properties": {
                                     "product_uuid": {
@@ -2864,8 +2925,14 @@
                                         "maximum": 5,
                                         "minimum": 1
                                     },
-                                    "content": {
+                                    "comment": {
                                         "type": "string"
+                                    },
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -2898,8 +2965,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2911,8 +2977,12 @@
                                     "rating": {
                                         "type": "integer"
                                     },
-                                    "content": {
+                                    "comment": {
                                         "type": "string"
+                                    },
+                                    "is_approved": {
+                                        "description": "Admin only",
+                                        "type": "boolean"
                                     }
                                 },
                                 "type": "object"
@@ -2923,9 +2993,6 @@
                 "responses": {
                     "200": {
                         "description": "Updated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -2946,14 +3013,206 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
+                            "type": "string"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/roles": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Danh sách Roles",
+                "operationId": "32a55927e34b1d69e3065488f553dacf",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search keyword",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Tạo Role mới",
+                "operationId": "f646a9f30ec9c63fb375d03abfb9e9cd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "editor"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "priority": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/roles/{uuid}": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Chi tiết Role",
+                "operationId": "63829330ccbf6f4f4712f4002971eef3",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Cập nhật Role",
+                "operationId": "d8d62fcdcd8bb6d8675c2220ab8d3e6d",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "403": {
+                        "description": "Forbidden (System Role)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Xóa Role",
+                "operationId": "fcec5264356704791561fd53a98e1914",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    },
+                    "403": {
+                        "description": "Forbidden (System Role)"
                     }
                 },
                 "security": [
@@ -2987,7 +3246,27 @@
                         }
                     },
                     {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "shipped",
+                                "delivered",
+                                "returned"
+                            ]
+                        }
+                    },
+                    {
                         "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
                         "in": "query",
                         "schema": {
                             "type": "integer"
@@ -2997,6 +3276,9 @@
                 "responses": {
                     "200": {
                         "description": "Success"
+                    },
+                    "403": {
+                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -3169,9 +3451,9 @@
         "/admin/users": {
             "get": {
                 "tags": [
-                    "Users (Admin & Self)"
+                    "Users"
                 ],
-                "summary": "Xem danh sách người dùng (Admin)",
+                "summary": "Xem danh sách người dùng",
                 "operationId": "ebdb37e0aca7226f6630d2b6f1de6946",
                 "parameters": [
                     {
@@ -3186,6 +3468,21 @@
                         "in": "query",
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search keyword",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],
@@ -3205,9 +3502,9 @@
             },
             "post": {
                 "tags": [
-                    "Users (Admin & Self)"
+                    "Users"
                 ],
-                "summary": "Tạo người dùng mới (Admin)",
+                "summary": "Tạo người dùng",
                 "operationId": "88de0372c28d80c0be353a8bcce497e7",
                 "requestBody": {
                     "required": true,
@@ -3231,10 +3528,13 @@
                                         "type": "string",
                                         "format": "password"
                                     },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    },
                                     "roles": {
                                         "type": "array",
                                         "items": {
-                                            "type": "string"
+                                            "type": "integer"
                                         }
                                     }
                                 },
@@ -3246,6 +3546,9 @@
                 "responses": {
                     "201": {
                         "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
                     },
                     "403": {
                         "description": "Forbidden"
@@ -3261,7 +3564,7 @@
         "/admin/users/{uuid}": {
             "get": {
                 "tags": [
-                    "Users (Admin & Self)"
+                    "Users"
                 ],
                 "summary": "Xem chi tiết người dùng",
                 "operationId": "0c8ff92257b9f5d7e945b3a8ee6edad6",
@@ -3280,11 +3583,11 @@
                     "200": {
                         "description": "Success"
                     },
-                    "403": {
-                        "description": "Forbidden (Not Owner/Admin)"
-                    },
                     "404": {
                         "description": "Not Found"
+                    },
+                    "403": {
+                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -3295,7 +3598,7 @@
             },
             "put": {
                 "tags": [
-                    "Users (Admin & Self)"
+                    "Users"
                 ],
                 "summary": "Cập nhật thông tin",
                 "operationId": "2d7ab603a4edd1e1187a11eefe3bb856",
@@ -3318,10 +3621,16 @@
                                     "name": {
                                         "type": "string"
                                     },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    },
                                     "roles": {
                                         "type": "array",
                                         "items": {
-                                            "type": "string"
+                                            "type": "integer"
                                         }
                                     }
                                 },
@@ -3336,6 +3645,9 @@
                     },
                     "403": {
                         "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
                     }
                 },
                 "security": [
@@ -3346,10 +3658,262 @@
             },
             "delete": {
                 "tags": [
-                    "Users (Admin & Self)"
+                    "Users"
                 ],
-                "summary": "Xóa người dùng (Admin)",
+                "summary": "Xóa người dùng",
                 "operationId": "13d69b0c1b0fb851225843080eac0c32",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Xem thông tin cá nhân",
+                "operationId": "02215cf763020c25fc4b65d33aa9cb9f",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/vouchers": {
+            "get": {
+                "tags": [
+                    "Vouchers"
+                ],
+                "summary": "Danh sách Voucher",
+                "operationId": "e2a5dde2fcdd1a978c34f43e57257c37",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Vouchers"
+                ],
+                "summary": "Tạo Voucher",
+                "operationId": "35f637451d4640e6df954c7488aa5b11",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code",
+                                    "value",
+                                    "type",
+                                    "name",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "SALE50"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "fixed",
+                                            "percentage"
+                                        ]
+                                    },
+                                    "value": {
+                                        "type": "number"
+                                    },
+                                    "quantity": {
+                                        "type": "integer"
+                                    },
+                                    "min_order_value": {
+                                        "type": "number"
+                                    },
+                                    "limit_per_user": {
+                                        "type": "integer"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/vouchers/{uuid}": {
+            "get": {
+                "tags": [
+                    "Vouchers"
+                ],
+                "summary": "Xem chi tiết Voucher",
+                "operationId": "e758e2538ccc3d06000bd80c24a43bc4",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Vouchers"
+                ],
+                "summary": "Cập nhật Voucher",
+                "operationId": "b1977c67bb4f04656651cae5ae3ae46e",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "quantity": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Vouchers"
+                ],
+                "summary": "Xóa Voucher",
+                "operationId": "c51b52d3abf7485d79968f1368944af0",
                 "parameters": [
                     {
                         "name": "uuid",
@@ -3373,66 +3937,12 @@
                 ]
             }
         },
-        "/profile": {
-            "get": {
-                "tags": [
-                    "Users (Admin & Self)"
-                ],
-                "summary": "Xem thông tin người dùng hiện tại",
-                "operationId": "02215cf763020c25fc4b65d33aa9cb9f",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "uuid": {
-                                                    "type": "string"
-                                                },
-                                                "name": {
-                                                    "type": "string"
-                                                },
-                                                "email": {
-                                                    "type": "string"
-                                                },
-                                                "roles": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "User not found"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/admin/warehouses": {
             "get": {
                 "tags": [
                     "Warehouses"
                 ],
-                "summary": "Xem danh sách Kho hàng (Admin)",
+                "summary": "Xem danh sách Kho hàng",
                 "operationId": "6320efc130774dac5aa7c13dafd0ae2b",
                 "parameters": [
                     {
@@ -3443,7 +3953,14 @@
                         }
                     },
                     {
-                        "name": "per_page",
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "manager_id",
                         "in": "query",
                         "schema": {
                             "type": "integer"
@@ -3453,9 +3970,6 @@
                 "responses": {
                     "200": {
                         "description": "Success"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -3468,7 +3982,7 @@
                 "tags": [
                     "Warehouses"
                 ],
-                "summary": "Tạo Kho hàng mới (Admin)",
+                "summary": "Tạo Kho hàng mới",
                 "operationId": "1a7c4e3a6a3f36dc8ca5a75d54dff1db",
                 "requestBody": {
                     "required": true,
@@ -3476,20 +3990,24 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "code"
+                                    "name"
                                 ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Kho Trung Tâm"
+                                        "example": "Kho Hồ Chí Minh"
                                     },
-                                    "code": {
+                                    "location": {
                                         "type": "string",
-                                        "example": "NB01"
+                                        "example": "Quận 7, TP.HCM"
                                     },
-                                    "address": {
-                                        "type": "string"
+                                    "manager_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "default": true
                                     }
                                 },
                                 "type": "object"
@@ -3530,9 +4048,6 @@
                 "responses": {
                     "200": {
                         "description": "Success"
-                    },
-                    "404": {
-                        "description": "Not found"
                     }
                 },
                 "security": [
@@ -3566,8 +4081,14 @@
                                     "name": {
                                         "type": "string"
                                     },
-                                    "address": {
+                                    "location": {
                                         "type": "string"
+                                    },
+                                    "manager_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
                                     }
                                 },
                                 "type": "object"
@@ -3614,12 +4135,131 @@
                     }
                 ]
             }
+        },
+        "/wishlist": {
+            "get": {
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Xem danh sách yêu thích của tôi",
+                "operationId": "e49e161583e37d955615b2d03da889ad",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/wishlist/toggle": {
+            "post": {
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Thêm/Xóa sản phẩm khỏi Wishlist (Toggle)",
+                "description": "Cơ chế Toggle: Nếu sản phẩm chưa có trong wishlist thì thêm vào, nếu có rồi thì xóa đi.",
+                "operationId": "8da0dd201eb59034c5b91f9f95b991f8",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_uuid"
+                                ],
+                                "properties": {
+                                    "product_uuid": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Toggled Successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product added to wishlist"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/wishlist/{uuid}": {
+            "delete": {
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Xóa 1 item khỏi Wishlist (Theo UUID Wishlist)",
+                "operationId": "569c468d2edc411fe87246fc09906947",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
             "ApiResponse": {
-                "title": "Standard Response",
                 "properties": {
                     "success": {
                         "type": "boolean",
@@ -3648,19 +4288,19 @@
     "tags": [
         {
             "name": "Address",
-            "description": "API quản lý địa chỉ giao hàng của người dùng"
+            "description": "API quản lý địa chỉ giao hàng"
         },
         {
             "name": "Auth",
-            "description": "Quản lý xác thực người dùng (Login, Register, OTP...)"
+            "description": "Xác thực & Phân quyền"
         },
         {
             "name": "Cart",
-            "description": "API quản lý Giỏ hàng"
+            "description": "API Giỏ hàng"
         },
         {
             "name": "Categories",
-            "description": "API quản lý Danh mục sản phẩm (Public xem, Admin quản lý)"
+            "description": "API quản lý Danh mục sản phẩm"
         },
         {
             "name": "Collections",
@@ -3679,8 +4319,12 @@
             "description": "API xem nhật ký hệ thống (Admin Only)"
         },
         {
+            "name": "Media",
+            "description": "API quản lý File/Ảnh hệ thống"
+        },
+        {
             "name": "Notifications",
-            "description": "API quản lý thông báo (User)"
+            "description": "API quản lý thông báo cá nhân"
         },
         {
             "name": "Orders",
@@ -3688,19 +4332,23 @@
         },
         {
             "name": "Payments",
-            "description": "API quản lý Thanh toán & Giao dịch"
+            "description": "API quản lý Thanh toán"
+        },
+        {
+            "name": "Permissions",
+            "description": "Quản lý quyền hạn"
         },
         {
             "name": "Product Attributes",
-            "description": "Quản lý thuộc tính (Màu sắc, Size...)"
+            "description": "API quản lý thuộc tính"
         },
         {
             "name": "Products",
-            "description": "API quản lý sản phẩm (Hỗ trợ biến thể/Variant)"
+            "description": "API quản lý sản phẩm"
         },
         {
             "name": "Product Images",
-            "description": "API quản lý ảnh sản phẩm (Admin)"
+            "description": "API quản lý ảnh sản phẩm"
         },
         {
             "name": "Promotions",
@@ -3711,16 +4359,28 @@
             "description": "API quản lý Đánh giá sản phẩm"
         },
         {
+            "name": "Roles",
+            "description": "Quản lý vai trò (RBAC)"
+        },
+        {
             "name": "Shipping",
             "description": "API quản lý Vận chuyển (Admin/Shipper)"
         },
         {
-            "name": "Users (Admin & Self)",
+            "name": "Users",
             "description": "API quản lý người dùng"
+        },
+        {
+            "name": "Vouchers",
+            "description": "Quản lý Mã giảm giá (Admin)"
         },
         {
             "name": "Warehouses",
             "description": "API quản lý Kho hàng (Admin Only)"
+        },
+        {
+            "name": "Wishlist",
+            "description": "API quản lý danh sách yêu thích"
         }
     ],
     "security": [

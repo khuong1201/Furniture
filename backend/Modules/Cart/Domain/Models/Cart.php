@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Cart\Domain\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +14,7 @@ class Cart extends Model
 {
     use HasFactory, Loggable; 
 
-    protected $fillable = ['uuid', 'user_id'];
+    protected $fillable = ['uuid', 'user_id', 'voucher_code', 'voucher_discount'];
 
     protected static function boot()
     {
@@ -28,12 +30,5 @@ class Cart extends Model
     public function items()
     {
         return $this->hasMany(CartItem::class);
-    }
-
-    public function getTotalAmountAttribute()
-    {
-        return $this->items->sum(function ($item) {
-            return $item->quantity * $item->price;
-        });
     }
 }

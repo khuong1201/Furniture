@@ -2,6 +2,7 @@
 
 namespace Modules\Notification\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -9,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Notification\Domain\Repositories\NotificationRepositoryInterface;
 use Modules\Notification\Infrastructure\Repositories\EloquentNotificationRepository;
+use Modules\Notification\Domain\Models\Notification;
+use Modules\Notification\Policies\NotificationPolicy;
 
 class NotificationServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,7 @@ class NotificationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Notification::class, NotificationPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

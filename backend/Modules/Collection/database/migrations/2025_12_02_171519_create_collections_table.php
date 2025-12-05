@@ -14,8 +14,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->string('banner_image')->nullable();
+            $table->string('banner_image')->nullable(); // URL ảnh
             $table->boolean('is_active')->default(true);
+            
             $table->softDeletes();
             $table->timestamps();
             

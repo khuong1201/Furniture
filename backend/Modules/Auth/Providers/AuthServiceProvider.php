@@ -45,6 +45,10 @@ class AuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(AuthRepositoryInterface::class, EloquentAuthRepository::class);
+        $this->app->bind(
+            \Modules\Auth\Domain\Repositories\RefreshTokenRepositoryInterface::class,
+            \Modules\Auth\Infrastructure\Repositories\EloquentRefreshTokenRepository::class
+        );
         $this->app->singleton(AuthService::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);

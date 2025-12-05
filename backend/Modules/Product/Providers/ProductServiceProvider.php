@@ -11,7 +11,6 @@ use RecursiveIteratorIterator;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductImageRepositoryInterface;
 use Modules\Product\Infrastructure\Repositories\EloquentProductRepository;
-use Modules\Product\Infrastructure\Repositories\EloquentProductImageRepository;
 use Modules\Product\Domain\Models\Product;
 use Modules\Product\Domain\Models\ProductImage;
 use Modules\Product\Policies\ProductPolicy;
@@ -49,7 +48,6 @@ class ProductServiceProvider extends ServiceProvider
             \Modules\Product\Infrastructure\Repositories\EloquentAttributeRepository::class
         );
         $this->app->bind(ProductRepositoryInterface::class, EloquentProductRepository::class);
-        $this->app->bind(ProductImageRepositoryInterface::class, EloquentProductImageRepository::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }

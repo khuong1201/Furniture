@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Log\Policies;
 
 use Modules\User\Domain\Models\User;
@@ -19,7 +21,7 @@ class LogPolicy
     {
         return $user->hasPermissionTo('log.view');
     }
-
+    
     public function create(User $user): bool
     {
         return false;

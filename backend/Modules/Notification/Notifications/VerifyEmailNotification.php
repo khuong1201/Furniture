@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Notification\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use Modules\User\Models\User;
+// Fix Namespace: Model User phải trỏ đúng Domain
+use Modules\User\Domain\Models\User;
 
 class VerifyEmailNotification extends Notification
 {
@@ -13,12 +16,12 @@ class VerifyEmailNotification extends Notification
 
     public function __construct(public string $otp) {}
 
-    public function via($notifiable): array
+    public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
-    public function toMail($notifiable): MailMessage
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
             ->subject('Verify Your Account - OTP')

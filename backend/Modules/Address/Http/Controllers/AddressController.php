@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Address\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
@@ -12,11 +14,7 @@ use Modules\Address\Http\Requests\StoreAddressRequest;
 use Modules\Address\Http\Requests\UpdateAddressRequest;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(
-    name: "Address",
-    description: "API quản lý địa chỉ giao hàng của người dùng"
-)]
-
+#[OA\Tag(name: "Address", description: "API quản lý địa chỉ giao hàng")]
 class AddressController extends BaseController
 {
     public function __construct(AddressService $service) 
@@ -30,7 +28,16 @@ class AddressController extends BaseController
         security: [['bearerAuth' => []]],
         tags: ["Address"],
         responses: [
-            new OA\Response(response: 200, description: "Success"),
+            new OA\Response(
+                response: 200, 
+                description: "Success",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "success", type: "boolean", example: true),
+                        new OA\Property(property: "data", type: "array", items: new OA\Items(type: "object"))
+                    ]
+                )
+            ),
             new OA\Response(response: 401, description: "Unauthenticated")
         ]
     )]
@@ -58,7 +65,8 @@ class AddressController extends BaseController
                     new OA\Property(property: "district", type: "string"),
                     new OA\Property(property: "ward", type: "string"),
                     new OA\Property(property: "street", type: "string"),
-                    new OA\Property(property: "is_default", type: "boolean", example: false)
+                    new OA\Property(property: "is_default", type: "boolean", example: false),
+                    new OA\Property(property: "type", type: "string", enum: ["home", "office"], example: "home")
                 ]
             )
         ),
@@ -82,22 +90,13 @@ class AddressController extends BaseController
         summary: "Xem chi tiết địa chỉ",
         security: [['bearerAuth' => []]],
         tags: ["Address"],
-        parameters: [
-            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
-        ],
-        responses: [
-            new OA\Response(response: 200, description: "Success"),
-            new OA\Response(response: 403, description: "Forbidden"),
-            new OA\Response(response: 404, description: "Not Found")
-        ]
+        parameters: [ new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid")) ],
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
-
     public function show(string $uuid): JsonResponse
     {
         $address = $this->service->findByUuidOrFail($uuid);
-
         $this->authorize('view', $address);
-
         return response()->json(ApiResponse::success($address));
     }
 
@@ -106,9 +105,7 @@ class AddressController extends BaseController
         summary: "Cập nhật địa chỉ",
         security: [['bearerAuth' => []]],
         tags: ["Address"],
-        parameters: [
-            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
-        ],
+        parameters: [ new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid")) ],
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
@@ -118,16 +115,11 @@ class AddressController extends BaseController
                 ]
             )
         ),
-        responses: [
-            new OA\Response(response: 200, description: "Updated"),
-            new OA\Response(response: 403, description: "Forbidden"),
-            new OA\Response(response: 404, description: "Not Found")
-        ]
+        responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
     public function update(UpdateAddressRequest $request, string $uuid): JsonResponse
     {
         $address = $this->service->findByUuidOrFail($uuid);
-
         $this->authorize('update', $address);
 
         $updated = $this->service->update($uuid, $request->validated());
@@ -140,19 +132,12 @@ class AddressController extends BaseController
         summary: "Xóa địa chỉ",
         security: [['bearerAuth' => []]],
         tags: ["Address"],
-        parameters: [
-            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
-        ],
-        responses: [
-            new OA\Response(response: 200, description: "Deleted"),
-            new OA\Response(response: 403, description: "Forbidden"),
-            new OA\Response(response: 404, description: "Not Found")
-        ]
+        parameters: [ new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid")) ],
+        responses: [ new OA\Response(response: 200, description: "Deleted") ]
     )]
     public function destroy(string $uuid): JsonResponse 
     {
         $address = $this->service->findByUuidOrFail($uuid);
-
         $this->authorize('delete', $address);
         
         $this->service->delete($uuid); 

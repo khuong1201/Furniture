@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -25,7 +27,7 @@ class OrderController extends BaseController
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         parameters: [
-            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string", enum: ["pending", "processing", "shipped", "delivered", "cancelled"])),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
@@ -38,25 +40,26 @@ class OrderController extends BaseController
         $filters = $request->all();
         $user = $request->user();
 
-        if (!$user->hasPermissionTo('order.view')) { 
+        // User thường chỉ xem được đơn của mình
+        if (!$user->hasPermissionTo('order.view_all')) { 
             $filters['user_id'] = $user->id;
         }
 
-        $data = $this->service->paginate($request->get('per_page', 15), $filters);
+        $data = $this->service->paginate($request->integer('per_page', 15), $filters);
         return response()->json(ApiResponse::paginated($data));
     }
 
     #[OA\Post(
         path: "/orders",
-        summary: "Tạo đơn hàng mới (Admin/Staff)",
+        summary: "Tạo đơn hàng thủ công (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         requestBody: new OA\RequestBody(
-            required: true,
             content: new OA\JsonContent(
                 required: ["address_id", "items"],
                 properties: [
                     new OA\Property(property: "address_id", type: "integer"),
+                    new OA\Property(property: "notes", type: "string"),
                     new OA\Property(property: "items", type: "array", items: new OA\Items(
                         properties: [
                             new OA\Property(property: "variant_uuid", type: "string", format: "uuid"),
@@ -71,7 +74,6 @@ class OrderController extends BaseController
     public function store(CreateOrderRequest $request): JsonResponse
     {
         $data = $request->validated();
-
         if (!isset($data['user_id'])) {
             $data['user_id'] = $request->user()->id;
         }
@@ -82,11 +84,10 @@ class OrderController extends BaseController
     
     #[OA\Post(
         path: "/orders/checkout",
-        summary: "Đặt hàng từ giỏ hàng (User)",
+        summary: "Đặt hàng từ giỏ hàng (Checkout)",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         requestBody: new OA\RequestBody(
-            required: true,
             content: new OA\JsonContent(
                 required: ["address_id"],
                 properties: [
@@ -100,13 +101,13 @@ class OrderController extends BaseController
     public function checkout(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'address_id' => 'required|exists:addresses,id',
+            'address_id' => 'required|integer|exists:addresses,id',
             'notes' => 'nullable|string'
         ]);
 
         $order = $this->service->createFromCart($validated);
         
-        return response()->json(ApiResponse::success($order, 'Order placed successfully from cart', 201), 201);
+        return response()->json(ApiResponse::success($order, 'Order placed successfully', 201), 201);
     }
 
     #[OA\Get(
@@ -114,63 +115,38 @@ class OrderController extends BaseController
         summary: "Xem chi tiết đơn hàng",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
-        parameters: [
-            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
-        ],
+        parameters: [ new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string")) ],
         responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
     public function show(string $uuid): JsonResponse
     {
         $order = $this->service->findByUuidOrFail($uuid);
-        
         $this->authorize('view', $order);
 
-        $order->load(['items.variant.product.images', 'items.variant.attributeValues.attribute']);
+        $order->load(['items.variant.product.images', 'user']);
         
         return response()->json(ApiResponse::success($order));
     }
 
-    #[OA\Get(
-        path: "/orders/stats",
-        summary: "Thống kê số lượng đơn theo trạng thái (Admin)",
-        security: [['bearerAuth' => []]],
-        tags: ["Orders"],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
-    )]
-    
-    public function stats(Request $request): JsonResponse
-    {
-        if (!$request->user()->hasPermissionTo('order.view')) {
-             return response()->json(ApiResponse::error('Forbidden', 403), 403);
-        }
-
-        $stats = $this->service->getOrderStats();
-        return response()->json(ApiResponse::success($stats));
-    }
-
     #[OA\Put(
         path: "/orders/{uuid}/status",
-        summary: "Cập nhật trạng thái đơn hàng (Admin)",
-        description: "Dùng để Duyệt đơn (pending -> processing), Giao hàng (shipped)...",
+        summary: "Cập nhật trạng thái (Admin)",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 required: ["status"],
-                properties: [
-                    new OA\Property(property: "status", type: "string", enum: ["processing", "shipped", "delivered", "cancelled"])
-                ]
+                properties: [ new OA\Property(property: "status", type: "string", enum: ["processing", "shipped", "delivered", "cancelled"]) ]
             )
         ),
         responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
-
     public function updateStatus(Request $request, string $uuid): JsonResponse
     {
-        $this->authorize('update', \Modules\Order\Domain\Models\Order::class); // Check quyền order.edit
+        $this->authorize('update', Order::class);
 
         $request->validate([
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
+            'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled'
         ]);
 
         $order = $this->service->updateStatus($uuid, $request->input('status'));
@@ -183,15 +159,12 @@ class OrderController extends BaseController
         summary: "Hủy đơn hàng",
         security: [['bearerAuth' => []]],
         tags: ["Orders"],
-        parameters: [
-            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
-        ],
+        parameters: [ new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string")) ],
         responses: [ new OA\Response(response: 200, description: "Cancelled") ]
     )]
     public function cancel(string $uuid): JsonResponse
     {
         $order = $this->service->findByUuidOrFail($uuid);
-
         $this->authorize('cancel', $order);
 
         $cancelledOrder = $this->service->cancel($uuid);

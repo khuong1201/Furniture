@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Domain\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,6 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Modules\User\Domain\Models\User;
 use Modules\Shared\Traits\Loggable;
+use Modules\Order\Enums\OrderStatus; 
+use Modules\Order\Enums\PaymentStatus;
 
 class Order extends Model
 {
@@ -16,13 +20,17 @@ class Order extends Model
     protected $fillable = [
         'uuid', 'user_id', 'shipping_address_snapshot', 
         'status', 'payment_status', 'shipping_status', 
-        'total_amount', 'ordered_at', 'notes'
+        'total_amount', 'ordered_at', 'notes',
+        'voucher_code', 'voucher_discount'
     ];
 
     protected $casts = [
+        'status' => OrderStatus::class,
+        'payment_status' => PaymentStatus::class,
         'shipping_address_snapshot' => 'array',
         'ordered_at' => 'datetime',
         'total_amount' => 'decimal:2',
+        'voucher_discount' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -39,10 +47,5 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
-    }
-
-    protected static function newFactory()
-    {
-        return \Modules\Order\Database\factories\OrderFactory::new();
     }
 }

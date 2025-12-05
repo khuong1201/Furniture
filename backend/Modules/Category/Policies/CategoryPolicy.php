@@ -1,24 +1,31 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Modules\Category\Policies;
+
 use Modules\User\Domain\Models\User;
-use Modules\Category\Domain\Models\Category;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class CategoryPolicy {
+class CategoryPolicy
+{
     use HandlesAuthorization;
 
-    public function viewAny(?User $user): bool { return true; } 
-    public function view(?User $user, Category $category): bool { return true; } 
-
-    public function create(User $user): bool {
-        return $user->hasPermissionTo('category.create');
+    public function viewAny(?User $user): bool { return true; }
+    public function view(?User $user): bool { return true; }
+    
+    public function create(User $user): bool 
+    { 
+        return $user->hasPermissionTo('category.create'); 
     }
-
-    public function update(User $user, Category $category): bool {
-        return $user->hasPermissionTo('category.edit');
+    
+    public function update(User $user): bool 
+    { 
+        return $user->hasPermissionTo('category.edit'); 
     }
-
-    public function delete(User $user, Category $category): bool {
-        return $user->hasPermissionTo('category.delete');
+    
+    public function delete(User $user): bool 
+    { 
+        return $user->hasPermissionTo('category.delete'); 
     }
 }

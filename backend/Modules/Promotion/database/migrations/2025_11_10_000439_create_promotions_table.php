@@ -13,17 +13,25 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('type', ['percentage', 'fixed']); 
-            $table->decimal('value', 12, 2);
             
-            $table->dateTime('start_date')->index(); 
-            $table->dateTime('end_date')->index();
-            $table->boolean('status')->default(true); 
+            // percentage: giảm %, fixed: giảm số tiền cố định
+            $table->enum('type', ['percentage', 'fixed'])->default('percentage'); 
+            $table->decimal('value', 12, 2); // Giá trị giảm (vd: 10% hoặc 50.000)
+            
+            $table->decimal('min_order_value', 12, 2)->nullable()->comment('Giá trị đơn hàng tối thiểu'); 
+            $table->decimal('max_discount_amount', 12, 2)->nullable()->comment('Giảm tối đa bao nhiêu (cho loại %)');
+            
+            $table->integer('quantity')->default(0)->comment('Tổng số lượng mã (0 = không giới hạn)'); 
+            $table->integer('used_count')->default(0); 
+            
+            $table->integer('limit_per_user')->default(1); 
+            
+            $table->timestamp('start_date')->index();
+            $table->timestamp('end_date')->index();
+            $table->boolean('is_active')->default(true)->index(); // Chuẩn hóa thành is_active
             
             $table->softDeletes();
             $table->timestamps();
-            
-            $table->index(['status', 'start_date', 'end_date']);
         });
 
         Schema::create('product_promotion', function (Blueprint $table) {

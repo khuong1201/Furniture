@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Cart\Infrastructure\Repositories;
 
 use Modules\Shared\Repositories\EloquentBaseRepository;
@@ -18,7 +20,6 @@ class EloquentCartRepository extends EloquentBaseRepository implements CartRepos
         return $this->model->with([
             'items.variant.product.images',     
             'items.variant.attributeValues.attribute', 
-            'items.variant.stock'               
         ])
         ->where('user_id', $userId)
         ->first();

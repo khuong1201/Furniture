@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Promotion\Infrastructure\Repositories;
 
 use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Promotion\Domain\Models\Promotion;
 use Modules\Promotion\Domain\Repositories\PromotionRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentPromotionRepository extends EloquentBaseRepository implements PromotionRepositoryInterface
 {
@@ -14,7 +16,7 @@ class EloquentPromotionRepository extends EloquentBaseRepository implements Prom
         parent::__construct($model);
     }
 
-    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function filter(array $filters): LengthAwarePaginator
     {
         $query = $this->query();
 
@@ -22,7 +24,11 @@ class EloquentPromotionRepository extends EloquentBaseRepository implements Prom
             $query->where('name', 'like', "%{$filters['search']}%");
         }
 
-        if (isset($filters['is_active']) && $filters['is_active']) {
+        if (isset($filters['is_active'])) {
+            $query->where('is_active', (bool)$filters['is_active']);
+        }
+        
+        if (!empty($filters['valid_now']) && $filters['valid_now']) {
             $query->active();
         }
 

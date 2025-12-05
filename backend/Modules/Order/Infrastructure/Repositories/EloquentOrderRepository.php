@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Order\Infrastructure\Repositories;
 
 use Modules\Order\Domain\Models\Order;
 use Modules\Order\Domain\Repositories\OrderRepositoryInterface;
 use Modules\Shared\Repositories\EloquentBaseRepository;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentOrderRepository extends EloquentBaseRepository implements OrderRepositoryInterface
 {
@@ -16,17 +20,16 @@ class EloquentOrderRepository extends EloquentBaseRepository implements OrderRep
     public function countByStatus(): array
     {
         return $this->model
-            ->select('status', \DB::raw('count(*) as count'))
+            ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
     }
 
-    public function filter(array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function filter(array $filters): LengthAwarePaginator
     {
         $query = $this->query()->with([
-            'items.variant.product.images',
-            'items.variant.attributeValues.attribute',
+            'items.variant.product', 
             'user'
         ]);
 

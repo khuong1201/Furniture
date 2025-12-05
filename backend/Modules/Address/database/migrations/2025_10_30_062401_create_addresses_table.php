@@ -15,13 +15,14 @@ return new class extends Migration
             
             $table->string('full_name', 100);
             $table->string('phone', 20);
-
+            
             $table->string('province', 100);
             $table->string('district', 100);
             $table->string('ward', 100);
             $table->string('street', 255);
             
             $table->boolean('is_default')->default(false);
+            $table->string('type', 20)->default('home')->comment('home, office');
             
             $table->softDeletes();
             $table->timestamps();

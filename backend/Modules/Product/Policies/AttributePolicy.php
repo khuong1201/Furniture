@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Product\Policies;
 
 use Modules\User\Domain\Models\User;
@@ -12,26 +14,26 @@ class AttributePolicy
 
     public function viewAny(User $user): bool
     {
-        return true; 
+        return $user->hasPermissionTo('attribute.view') || $user->hasPermissionTo('product.view');
     }
 
     public function view(User $user, Attribute $attribute): bool
     {
-        return true;
+        return $user->hasPermissionTo('attribute.view') || $user->hasPermissionTo('product.view');
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('product.create');
+        return $user->hasPermissionTo('attribute.create');
     }
 
     public function update(User $user, Attribute $attribute): bool
     {
-        return $user->hasPermissionTo('product.edit');
+        return $user->hasPermissionTo('attribute.edit');
     }
 
     public function delete(User $user, Attribute $attribute): bool
     {
-        return $user->hasPermissionTo('product.delete');
+        return $user->hasPermissionTo('attribute.delete');
     }
 }

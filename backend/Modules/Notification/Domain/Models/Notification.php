@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Notification\Domain\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Modules\User\Domain\Models\User;
 use Modules\Shared\Traits\Loggable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
@@ -21,27 +24,15 @@ class Notification extends Model
         'read_at' => 'datetime',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
-        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
+        static::creating(fn(Notification $model) => $model->uuid = (string) Str::uuid());
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function markAsRead(): void
-    {
-        if (is_null($this->read_at)) {
-            $this->update(['read_at' => now()]);
-        }
-    }
-
-    public function markAsUnread(): void
-    {
-        $this->update(['read_at' => null]);
     }
 
     public function isRead(): bool

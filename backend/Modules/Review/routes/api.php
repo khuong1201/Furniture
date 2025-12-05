@@ -4,15 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Modules\Review\Http\Controllers\ReviewController;
 use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
-Route::prefix('reviews')->group(function () {
-    Route::get('/', [ReviewController::class, 'index']);     
-    Route::get('/{uuid}', [ReviewController::class, 'show']); 
-});
+// Public Read
+Route::get('reviews', [ReviewController::class, 'index']);
 
-Route::prefix('reviews')->middleware([JwtAuthenticate::class])->group(function () {
+// Protected Write
+Route::middleware(['auth:sanctum'])->prefix('reviews')->group(function () {
     Route::post('/', [ReviewController::class, 'store']);
-    
     Route::put('/{uuid}', [ReviewController::class, 'update']);
-    
     Route::delete('/{uuid}', [ReviewController::class, 'destroy']);
 });

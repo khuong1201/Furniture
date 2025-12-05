@@ -1,25 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Role\Listeners;
 
 use Modules\Role\Events\RoleAssigned;
-use Modules\Shared\Services\CacheService; 
+use Modules\User\Domain\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class InvalidatePermissionCache
+class InvalidatePermissionCache implements ShouldQueue
 {
-    public function __construct(
-        protected CacheService $cacheService
-    ) {}
+    public $queue = 'default';
 
     public function handle(RoleAssigned $event): void
     {
         try {
-            $cacheKey = "user_permissions_{$event->user->id}";
-            $this->cacheService->forget($cacheKey);
-
-            Log::info("Permission cache invalidated for User ID: {$event->user->id}");
-
+            if ($event->user instanceof User) {
+                $event->user->clearPermissionCache();
+                Log::info("Permission cache invalidated for User ID: {$event->user->id}");
+            }
         } catch (\Exception $e) {
             Log::error("Failed to invalidate permission cache: " . $e->getMessage());
         }

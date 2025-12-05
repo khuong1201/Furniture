@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Cart\Services;
 
 use Modules\Shared\Services\BaseService;
@@ -7,30 +9,39 @@ use Modules\Cart\Domain\Repositories\CartRepositoryInterface;
 use Modules\Cart\Domain\Models\Cart;
 use Modules\Cart\Domain\Models\CartItem;
 use Modules\Product\Domain\Models\ProductVariant;
-use Modules\Product\Domain\Models\InventoryStock;
+use Modules\Inventory\Domain\Models\InventoryStock;
+use Modules\Shared\Contracts\CartServiceInterface;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class CartService extends BaseService
+class CartService extends BaseService implements CartServiceInterface
 {
     public function __construct(CartRepositoryInterface $repository)
     {
         parent::__construct($repository);
     }
     
-    public function findCartItemOrFail(string $uuid): CartItem
+    // --- IMPLEMENTATION INTERFACE ---
+    
+    // Sửa lại method này để khớp với interface: clearCart(int $userId)
+    public function clearCart(int|Cart $userOrCart): void
     {
-        $item = CartItem::where('uuid', $uuid)->first();
-
-        if (!$item) {
-            throw new ModelNotFoundException("Cart Item with UUID [{$uuid}] not found.");
+        if (is_int($userOrCart)) {
+            $cart = $this->repository->findByUser($userOrCart);
+        } else {
+            $cart = $userOrCart;
         }
 
-        return $item;
+        if ($cart) {
+            $cart->items()->delete();
+            // Reset voucher
+            $cart->update(['voucher_code' => null, 'voucher_discount' => 0]);
+        }
     }
 
-    public function getMyCart(int $userId)
+    // Interface yêu cầu trả về array, method này đã đúng logic
+    public function getMyCart(int $userId): array
     {
         $cart = $this->repository->findByUser($userId);
         
@@ -50,27 +61,13 @@ class CartService extends BaseService
             $product = $variant->product;
             $originalPrice = $variant->price; 
 
-            $discountAmount = 0;
-            $activePromotions = $product->promotions->filter(function ($p) {
-                return $p->status && $p->start_date <= now() && $p->end_date >= now();
-            });
-
-            $bestPromotion = $activePromotions->sortByDesc(function ($promo) use ($originalPrice) {
-                return ($promo->type === 'percentage') 
-                    ? $originalPrice * ($promo->value / 100) 
-                    : $promo->value;
-            })->first();
-
-            if ($bestPromotion) {
-                $discountAmount = ($bestPromotion->type === 'percentage') 
-                    ? $originalPrice * ($bestPromotion->value / 100) 
-                    : $bestPromotion->value;
-            }
-
+            $discountAmount = 0; // Logic promo tạm thời = 0
+            
             $finalPrice = max(0, $originalPrice - $discountAmount);
             $subtotal = $finalPrice * $item->quantity;
             $totalAmount += $subtotal;
 
+            // Check tồn kho
             $totalStock = InventoryStock::where('product_variant_id', $variant->id)->sum('quantity');
             
             $cartItems[] = [
@@ -79,31 +76,43 @@ class CartService extends BaseService
                     'name' => $product->name,
                     'sku' => $variant->sku,
                     'image' => $variant->image_url ?? $product->images->first()?->image_url,
-                    'attributes' => $variant->attributeValues->map(function($val) {
-                        return [
-                            'name' => $val->attribute->name,
-                            'value' => $val->value
-                        ];
-                    })
+                    'attributes' => $variant->attributeValues->map(fn($val) => [
+                        'name' => $val->attribute->name,
+                        'value' => $val->value
+                    ])
                 ],
                 'quantity' => $item->quantity,
                 'stock_available' => (int)$totalStock,
                 'is_stock_sufficient' => $totalStock >= $item->quantity,
                 'price' => [
                     'original' => (float)$originalPrice,
-                    'discount' => (float)$discountAmount,
                     'final' => (float)$finalPrice,
                     'subtotal' => (float)$subtotal
                 ]
             ];
         }
 
+        $finalTotal = max(0, $totalAmount - $cart->voucher_discount);
+
         return [
             'uuid' => $cart->uuid,
             'items' => $cartItems,
-            'total_amount' => $totalAmount,
+            'total_amount' => $finalTotal,
+            'voucher_discount' => $cart->voucher_discount,
+            'voucher_code' => $cart->voucher_code,
             'item_count' => count($cartItems)
         ];
+    }
+
+    // --- END IMPLEMENTATION ---
+
+    public function findCartItemOrFail(string $uuid): CartItem
+    {
+        $item = CartItem::where('uuid', $uuid)->first();
+        if (!$item) {
+            throw new ModelNotFoundException("Cart Item with UUID [{$uuid}] not found.");
+        }
+        return $item;
     }
 
     public function addToCart(int $userId, array $data)
@@ -161,10 +170,9 @@ class CartService extends BaseService
         $item->delete();
         return $this->getMyCart($userId);
     }
-
-    public function clearCart(Cart $cart)
+    
+    public function getRepository(): CartRepositoryInterface
     {
-        $cart->items()->delete();
-        return true;
+        return $this->repository;
     }
 }

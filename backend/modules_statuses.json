@@ -18,5 +18,8 @@
     "Notification": true,
     "Cart": true,
     "Collection": true,
-    "Dashboard": true
+    "Dashboard": true,
+    "Voucher": true,
+    "Wishlist": true,
+    "Media": true
 }

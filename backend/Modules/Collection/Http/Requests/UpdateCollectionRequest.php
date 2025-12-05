@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Collection\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,14 +14,14 @@ class UpdateCollectionRequest extends FormRequest
 
     public function rules(): array
     {
-        $uuid = $this->route('collection');
+        $uuid = $this->route('collection') ?? $this->route('uuid');
         $id = Collection::where('uuid', $uuid)->value('id');
 
         return [
             'name' => 'sometimes|string|max:255',
-            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('collections', 'slug')->ignore($id)],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('collections', 'slug')->ignore($id)],
             'description' => 'nullable|string',
-            'banner_image' => 'nullable|string',
+            'banner_image' => 'nullable|image|max:5120',
             'is_active' => 'boolean',
             'product_ids' => 'nullable|array',
             'product_ids.*' => 'integer|exists:products,id',

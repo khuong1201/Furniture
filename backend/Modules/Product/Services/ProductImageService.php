@@ -1,60 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Product\Services;
 
-use Modules\Shared\Services\BaseService; 
-use Modules\Product\Domain\Repositories\ProductImageRepositoryInterface;
-use Modules\Shared\Services\CloudinaryStorageService;
 use Modules\Product\Domain\Models\Product;
+use Modules\Product\Domain\Models\ProductImage;
+use Modules\Shared\Contracts\MediaServiceInterface;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class ProductImageService extends BaseService
+class ProductImageService
 {
     public function __construct(
-        ProductImageRepositoryInterface $repository,
-        protected CloudinaryStorageService $storage
-    ) {
-        parent::__construct($repository);
+        protected MediaServiceInterface $storage
+    ) {}
+
+    public function upload(Product $product, UploadedFile $file, bool $isPrimary = false): ProductImage
+    {
+        return DB::transaction(function () use ($product, $file, $isPrimary) {
+            $uploadData = $this->storage->upload($file, 'products/' . $product->uuid);
+
+            if ($isPrimary) {
+                $product->images()->update(['is_primary' => false]);
+            }
+
+            return ProductImage::create([
+                'product_id' => $product->id,
+                'image_url'  => $uploadData['url'],
+                'public_id'  => $uploadData['public_id'] ?? null,
+                'is_primary' => $isPrimary,
+                'sort_order' => 0
+            ]);
+        });
     }
 
-    public function upload(Product $product, UploadedFile $file, bool $isPrimary = false): Model
+    public function delete(string $uuid): void
     {
-        if ($isPrimary) {
-            $this->repository->unsetPrimary($product->id);
-        }
-
-        $result = $this->storage->upload($file, "products/{$product->uuid}");
-
-        return $this->repository->create([
-            'uuid' => \Illuminate\Support\Str::uuid()->toString(), 
-            'product_id' => $product->id,
-            'image_url' => $result['url'],
-            'public_id' => $result['public_id'],
-            'is_primary' => $isPrimary
-        ]);
-    }
-
-    public function uploadMultiple(Product $product, array $files): void
-    {
-        $hasPrimary = $product->images()->where('is_primary', true)->exists();
-
-        foreach ($files as $index => $file) {
-            $isPrimary = (!$hasPrimary && $index === 0);
-            $this->upload($product, $file, $isPrimary);
-        }
-    }
-
-    public function delete(string $uuid): bool
-    {
-        $image = $this->repository->findByUuid($uuid);
-        
-        if (!$image) return false;
+        $image = ProductImage::where('uuid', $uuid)->firstOrFail();
 
         if ($image->public_id) {
             $this->storage->delete($image->public_id);
         }
-        
-        return $this->repository->delete($image);
+
+        $image->delete();
+    }
+    
+    public function findByUuidOrFail(string $uuid): ProductImage
+    {
+        $image = ProductImage::where('uuid', $uuid)->first();
+        if (!$image) {
+            throw new ModelNotFoundException("Image with UUID {$uuid} not found.");
+        }
+        return $image;
     }
 }

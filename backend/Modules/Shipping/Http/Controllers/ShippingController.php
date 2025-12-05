@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -28,9 +30,14 @@ class ShippingController extends BaseController
         parameters: [
             new OA\Parameter(name: "tracking_number", in: "query", schema: new OA\Schema(type: "string")),
             new OA\Parameter(name: "order_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
+            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string", enum: ["pending", "shipped", "delivered", "returned"])),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
+        responses: [ 
+            new OA\Response(response: 200, description: "Success"),
+            new OA\Response(response: 403, description: "Forbidden")
+        ]
     )]
     public function index(Request $request): JsonResponse
     {
@@ -38,7 +45,7 @@ class ShippingController extends BaseController
 
         $filters = $request->all();
 
-        $data = $this->service->paginate($request->get('per_page', 15), $filters);
+        $data = $this->service->paginate($request->integer('per_page', 15), $filters);
         return response()->json(ApiResponse::paginated($data));
     }
 

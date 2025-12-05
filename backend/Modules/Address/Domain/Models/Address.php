@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Address\Domain\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,19 +18,17 @@ class Address extends Model
 
     protected $fillable = [
         'uuid', 'user_id', 'full_name', 'phone',
-        'province', 'district', 'ward', 'street', 'is_default'
+        'province', 'district', 'ward', 'street', 'is_default', 'type'
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
-        static::creating(function ($model) {
-            $model->uuid = (string) Str::uuid();
-        });
+        static::creating(fn(Address $model) => $model->uuid = (string) Str::uuid());
     }
 
     public function user(): BelongsTo

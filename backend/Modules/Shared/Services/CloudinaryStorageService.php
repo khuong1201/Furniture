@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shared\Services;
 
 use Modules\Shared\Contracts\ImageStorageInterface;
 use Illuminate\Http\UploadedFile;
 use Cloudinary\Cloudinary;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use InvalidArgumentException;
 
 class CloudinaryStorageService implements ImageStorageInterface
 {
@@ -13,6 +17,11 @@ class CloudinaryStorageService implements ImageStorageInterface
 
     public function __construct()
     {
+        $config = config('cloudinary');
+        if (empty($config['cloud_name']) || empty($config['api_key'])) {
+             Log::warning("Cloudinary config is missing.");
+        }
+
         $this->cloudinary = new Cloudinary([
             'cloud' => [
                 'cloud_name' => config('cloudinary.cloud_name'),
@@ -27,10 +36,9 @@ class CloudinaryStorageService implements ImageStorageInterface
 
     public function upload(UploadedFile $file, string $folder): array
     {
+        $this->validateFile($file);
+
         try {
-            // Validate file trước khi upload
-            $this->validateFile($file);
-            
             $uploaded = $this->cloudinary->uploadApi()->upload(
                 $file->getRealPath(),
                 [
@@ -42,8 +50,8 @@ class CloudinaryStorageService implements ImageStorageInterface
             );
 
             return [
-                'url' => $uploaded['secure_url'],
-                'public_id' => $uploaded['public_id'],
+                'url' => (string) $uploaded['secure_url'],
+                'public_id' => (string) $uploaded['public_id'],
                 'format' => $uploaded['format'] ?? null,
                 'width' => $uploaded['width'] ?? null,
                 'height' => $uploaded['height'] ?? null,
@@ -55,9 +63,7 @@ class CloudinaryStorageService implements ImageStorageInterface
                 'error' => $e->getMessage()
             ]);
             
-            throw new \RuntimeException(
-                'Failed to upload image to Cloudinary: ' . $e->getMessage()
-            );
+            throw new RuntimeException('Failed to upload image: ' . $e->getMessage());
         }
     }
 
@@ -79,15 +85,15 @@ class CloudinaryStorageService implements ImageStorageInterface
 
     protected function validateFile(UploadedFile $file): void
     {
-        $maxSize = 10 * 1024 * 1024; // 10MB
-        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $maxSize = 10 * 1024 * 1024; 
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
 
         if ($file->getSize() > $maxSize) {
-            throw new \InvalidArgumentException('File size exceeds 10MB limit.');
+            throw new InvalidArgumentException('File size exceeds 10MB limit.');
         }
 
         if (!in_array($file->getMimeType(), $allowedMimes)) {
-            throw new \InvalidArgumentException('Invalid file type. Only images are allowed.');
+            throw new InvalidArgumentException('Invalid file type. Only images are allowed.');
         }
     }
 }

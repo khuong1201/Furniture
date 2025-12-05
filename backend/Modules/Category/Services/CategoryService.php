@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Category\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Category\Domain\Repositories\CategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Collection;
 
 class CategoryService extends BaseService
 {
@@ -14,7 +17,7 @@ class CategoryService extends BaseService
         parent::__construct($repository);
     }
 
-    public function getTree()
+    public function getTree(): Collection
     {
         return $this->repository->getTree();
     }
@@ -27,26 +30,28 @@ class CategoryService extends BaseService
 
     protected function beforeUpdate(Model $model, array &$data): void
     {
-        if (isset($data['parent_id']) && $data['parent_id']) {
+        if (!empty($data['parent_id'])) {
             if ($data['parent_id'] == $model->id) {
-                throw ValidationException::withMessages(['parent_id' => 'A category cannot be its own parent.']);
+                throw ValidationException::withMessages(['parent_id' => 'Danh mục không thể là cha của chính nó.']);
             }
 
-            if ($this->isDescendant($model->id, $data['parent_id'])) {
-                throw ValidationException::withMessages(['parent_id' => 'Cannot assign a descendant category as parent.']);
+            if ($this->isDescendant($model->id, (int)$data['parent_id'])) {
+                throw ValidationException::withMessages(['parent_id' => 'Không thể gán danh mục con làm danh mục cha (Vòng lặp vô hạn).']);
             }
         }
     }
 
-    protected function isDescendant($categoryId, $targetId): bool
+    protected function isDescendant(int|string $categoryId, int|string $targetId): bool
     {
         $category = $this->repository->findById($categoryId);
-        $children = $category->allChildren;
+        if (!$category) return false;
         
-        return $this->checkIdInTree($children, $targetId);
+        $category->load('allChildren'); 
+        
+        return $this->checkIdInTree($category->allChildren, $targetId);
     }
     
-    private function checkIdInTree($nodes, $targetId): bool 
+    private function checkIdInTree(Collection $nodes, int|string $targetId): bool 
     {
         foreach ($nodes as $node) {
             if ($node->id == $targetId) return true;

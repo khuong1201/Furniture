@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->string('device_name')->nullable();
             $table->string('ip', 45)->nullable(); 
             $table->text('user_agent')->nullable();
+            
+            $table->boolean('is_revoked')->default(false);
             $table->timestamp('expires_at')->index();
             $table->timestamps();
         });

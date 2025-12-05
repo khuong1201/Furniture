@@ -13,15 +13,15 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             
-            $table->string('method'); 
+            $table->string('method', 50); // cod, momo, vnpay...
             $table->decimal('amount', 12, 2); 
             $table->string('currency', 3)->default('VND');
             
-            $table->enum('status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->string('status', 20)->default('pending')->index(); // pending, paid, failed, refunded
             $table->timestamp('paid_at')->nullable();
             
-            $table->string('transaction_id')->nullable();
-            $table->json('payment_data')->nullable();
+            $table->string('transaction_id')->nullable()->comment('Mã giao dịch từ cổng thanh toán');
+            $table->json('payment_data')->nullable()->comment('Metadata từ cổng thanh toán');
             
             $table->softDeletes();
             $table->timestamps();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Payment\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -12,10 +14,7 @@ use Modules\Payment\Http\Requests\UpdatePaymentRequest;
 use Modules\Payment\Domain\Models\Payment;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(
-    name: "Payments",
-    description: "API quản lý Thanh toán & Giao dịch"
-)]
+#[OA\Tag(name: "Payments", description: "API quản lý Thanh toán")]
 class PaymentController extends BaseController
 {
     public function __construct(PaymentService $service)
@@ -25,12 +24,12 @@ class PaymentController extends BaseController
 
     #[OA\Get(
         path: "/payments",
-        summary: "Lịch sử giao dịch (User xem của mình, Admin xem tất cả)",
+        summary: "Lịch sử giao dịch",
         security: [['bearerAuth' => []]],
         tags: ["Payments"],
         parameters: [
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string", enum: ["pending", "completed", "failed"])),
+            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string", enum: ["pending", "paid", "failed"])),
         ],
         responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
@@ -41,39 +40,39 @@ class PaymentController extends BaseController
         $filters = $request->all();
         $user = $request->user();
 
-        if (!$user->hasPermissionTo('payment.view')) {
-             $filters['user_id'] = $user->id;
+        if (!$user->hasPermissionTo('payment.view_all')) {
+             $filters['user_id'] = $user->id; // Filter by relationship via Order usually, handled in Repo logic
         }
 
-        $data = $this->service->paginate($request->get('per_page', 15), $filters);
+        $data = $this->service->paginate($request->integer('per_page', 15), $filters);
         return response()->json(ApiResponse::paginated($data));
     }
 
     #[OA\Post(
         path: "/payments",
-        summary: "Tạo yêu cầu thanh toán (Thường dùng khi Retry payment)",
+        summary: "Tạo yêu cầu thanh toán (Initiate Payment)",
         security: [['bearerAuth' => []]],
         tags: ["Payments"],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ["order_uuid", "payment_method"],
+                required: ["order_uuid", "method"],
                 properties: [
                     new OA\Property(property: "order_uuid", type: "string", format: "uuid"),
-                    new OA\Property(property: "payment_method", type: "string", enum: ["cod", "banking", "momo", "stripe"]),
+                    new OA\Property(property: "method", type: "string", enum: ["cod", "momo", "vnpay"]),
                 ]
             )
         ),
-        responses: [ new OA\Response(response: 200, description: "Payment Initiated (Return payment URL)") ]
+        responses: [ new OA\Response(response: 200, description: "Payment Initiated") ]
     )]
     public function store(StorePaymentRequest $request): JsonResponse
     {
         $this->authorize('create', Payment::class);
 
         $data = $request->validated();
-        $data['user_id'] = $request->user()->id;
-
-        $result = $this->service->create($data);
+        // User ID taken from token for security check in service
+        
+        $result = $this->service->initiatePayment($data);
         
         return response()->json(ApiResponse::success($result, 'Payment initiated', 201), 201);
     }
@@ -83,23 +82,19 @@ class PaymentController extends BaseController
         summary: "Xem chi tiết giao dịch",
         security: [['bearerAuth' => []]],
         tags: ["Payments"],
-        parameters: [
-            new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
-        ],
+        parameters: [ new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string")) ],
         responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
     public function show(string $uuid): JsonResponse
     {
         $payment = $this->service->findByUuidOrFail($uuid);
-
         $this->authorize('view', $payment);
-
         return response()->json(ApiResponse::success($payment));
     }
 
     #[OA\Put(
         path: "/payments/{uuid}",
-        summary: "Cập nhật trạng thái thanh toán (Admin Only - Manual)",
+        summary: "Cập nhật trạng thái (Admin Only)",
         security: [['bearerAuth' => []]],
         tags: ["Payments"],
         requestBody: new OA\RequestBody(
@@ -115,7 +110,6 @@ class PaymentController extends BaseController
     public function update(UpdatePaymentRequest $request, string $uuid): JsonResponse
     {
         $payment = $this->service->findByUuidOrFail($uuid);
-        
         $this->authorize('update', $payment);
 
         $data = $this->service->update($uuid, $request->validated());
@@ -125,12 +119,9 @@ class PaymentController extends BaseController
 
     #[OA\Post(
         path: "/payments/callback/{provider}",
-        summary: "Webhook nhận kết quả thanh toán (Public)",
-        description: "API này dành cho Payment Gateway (Momo, Stripe, VNPAY) gọi lại. Không cần Token.",
+        summary: "Webhook nhận kết quả thanh toán",
         tags: ["Payments"],
-        parameters: [
-            new OA\Parameter(name: "provider", in: "path", required: true, schema: new OA\Schema(type: "string", enum: ["momo", "vnpay", "stripe"]))
-        ],
+        parameters: [ new OA\Parameter(name: "provider", in: "path", schema: new OA\Schema(type: "string")) ],
         responses: [ new OA\Response(response: 200, description: "IPN Received") ]
     )]
     public function callback(Request $request, string $provider): JsonResponse
@@ -139,7 +130,6 @@ class PaymentController extends BaseController
             $this->service->processCallback($provider, $request->all());
             return response()->json(['message' => 'IPN received', 'status' => 200]);
         } catch (\Exception $e) {
-
             \Illuminate\Support\Facades\Log::error("Payment Callback Failed [$provider]: " . $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 400);
         }

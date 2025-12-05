@@ -2,13 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Log\Http\Controllers\LogController;
-use Modules\Auth\Http\Middleware\JwtAuthenticate;
 
-Route::middleware(['api', JwtAuthenticate::class])->prefix('admin/logs')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('admin/logs')->group(function () {
     
     Route::get('/', [LogController::class, 'index'])
-        ->middleware('permission:log.view'); 
+        ->middleware('can:viewAny,' . \Modules\Log\Domain\Models\Log::class); 
         
     Route::get('/{uuid}', [LogController::class, 'show'])
-        ->middleware('permission:log.view');
+        ->middleware('can:view,uuid'); 
 });

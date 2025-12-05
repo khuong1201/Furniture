@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Cart\Domain\Repositories;
 
 use Modules\Shared\Repositories\BaseRepositoryInterface;

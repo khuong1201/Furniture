@@ -34,4 +34,19 @@ class EloquentReviewRepository extends EloquentBaseRepository implements ReviewR
 
         return $query->latest()->paginate($filters['per_page'] ?? 10);
     }
+
+    public function getStats(int $productId): array
+    {
+        $stats = $this->model
+            ->where('product_id', $productId)
+            ->where('is_approved', true)
+            ->selectRaw('avg(rating) as avg_rating, count(*) as count_rating')
+            ->first();
+
+        return [
+            'avg_rating' => round((float)($stats->avg_rating ?? 0), 2),
+            'count_rating' => (int)($stats->count_rating ?? 0)
+        ];
+    }
+    
 }

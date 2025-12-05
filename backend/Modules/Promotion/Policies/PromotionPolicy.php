@@ -1,5 +1,9 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Modules\Promotion\Policies;
+
 use Modules\User\Domain\Models\User;
 use Modules\Promotion\Domain\Models\Promotion;
 use Illuminate\Auth\Access\HandlesAuthorization;

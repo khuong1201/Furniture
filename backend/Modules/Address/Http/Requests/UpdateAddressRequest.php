@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Address\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAddressRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
+    public function authorize(): bool { return true; }
 
     public function rules(): array
     {
@@ -21,13 +20,7 @@ class UpdateAddressRequest extends FormRequest
             'ward' => ['sometimes', 'string', 'max:100'],
             'street' => ['sometimes', 'string', 'max:255'],
             'is_default' => ['sometimes', 'boolean'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'phone.regex' => 'Số điện thoại không hợp lệ.',
+            'type' => ['nullable', 'string', 'in:home,office'],
         ];
     }
 }

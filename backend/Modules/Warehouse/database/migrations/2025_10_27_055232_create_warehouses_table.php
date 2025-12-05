@@ -6,17 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->string('name', 150);
+            $table->string('name', 150)->unique(); // Name should be unique
             $table->string('location', 255)->nullable();
+            
+            // Manager có thể null (kho chưa có quản lý)
             $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
+            
+            $table->boolean('is_active')->default(true); // Thêm trạng thái hoạt động
+            
             $table->softDeletes();
             $table->timestamps();
             
@@ -24,9 +26,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('warehouses');

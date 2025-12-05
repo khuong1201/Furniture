@@ -9,6 +9,4 @@ Route::middleware(['api', JwtAuthenticate::class])->prefix('admin/dashboard')->g
     Route::get('/summary', [DashboardController::class, 'summary'])
         ->middleware('permission:dashboard.view');
 
-    Route::get('/revenue', [DashboardController::class, 'revenue'])
-        ->middleware('permission:dashboard.view');
 });

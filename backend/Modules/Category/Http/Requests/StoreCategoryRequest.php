@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Category\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreCategoryRequest extends FormRequest
 {
@@ -13,8 +14,10 @@ class StoreCategoryRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:100|unique:categories,name',
+            'slug' => 'nullable|string|max:150|unique:categories,slug',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => 'nullable|integer|exists:categories,id',
+            'is_active' => 'boolean' // Thêm is_active cho đồng bộ migration
         ];
     }
 }

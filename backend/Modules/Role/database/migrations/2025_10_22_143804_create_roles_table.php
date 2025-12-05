@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->string('name', 100)->unique();
-            $table->string('slug', 100)->unique();
+            $table->string('slug', 100)->unique(); 
             $table->text('description')->nullable();
             $table->string('guard_name', 50)->default('web');
             $table->boolean('is_system')->default(false)->comment('Role hệ thống không được xóa');
@@ -29,9 +29,10 @@ return new class extends Migration
             $table->timestamp('assigned_at')->useCurrent();
             $table->foreignId('assigned_by')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->timestamps();
+            $table->timestamps(); 
+            
             $table->primary(['role_id', 'user_id']);
-            $table->index('user_id');
+            $table->index('user_id'); 
         });
     }
 

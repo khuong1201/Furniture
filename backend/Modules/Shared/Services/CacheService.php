@@ -1,27 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shared\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Closure;
 
 class CacheService
 {
-    protected int $ttl = 3600; 
+    protected int $defaultTtl = 3600;
 
-    public function remember(string $key, \Closure $callback, ?int $ttl = null)
+    public function remember(string $key, Closure $callback, ?int $ttl = null): mixed
     {
-        return Cache::remember($key, $ttl ?? $this->ttl, $callback);
+        return Cache::remember($key, $ttl ?? $this->defaultTtl, $callback);
     }
 
-    public function forget(string $key): void
+    public function forget(string $key): bool
     {
-        Cache::forget($key);
+        return Cache::forget($key);
     }
 
-    public function flush(string $pattern = ''): void
+    public function flush(?string $tag = null): void
     {
-        if ($pattern) {
-            Cache::tags([$pattern])->flush();
+        if ($tag) {
+            Cache::tags([$tag])->flush();
+        } else {
+            Cache::flush();
         }
     }
 }

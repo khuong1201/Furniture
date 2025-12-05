@@ -1,10 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Modules\Warehouse\Policies;
+
 use Modules\User\Domain\Models\User;
 use Modules\Warehouse\Domain\Models\Warehouse;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class WarehousePolicy {
+class WarehousePolicy 
+{
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool {

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Log\Domain\Repositories;
 
 use Modules\Shared\Repositories\BaseRepositoryInterface;
-use Modules\Log\Domain\Models\Log;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface LogRepositoryInterface extends BaseRepositoryInterface
 {
-    public function filter(array $filters);
+    public function getLogsByFilters(array $filters, int $perPage = 20): LengthAwarePaginator;
 }

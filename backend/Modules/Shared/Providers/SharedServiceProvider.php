@@ -7,8 +7,6 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Modules\Share\Contracts\ImageStorageInterface;
-use Modules\Share\Service\CloudinaryStorageService;
 use Modules\Shared\Repositories\EloquentBaseRepository;
 use Modules\Shared\Repositories\BaseRepositoryInterface;
 
@@ -39,7 +37,10 @@ class SharedServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app['router']->pushMiddlewareToGroup('api', \Modules\Shared\Http\Middleware\LogExceptions::class);
-        $this->app->bind(ImageStorageInterface::class, CloudinaryStorageService::class);
+        $this->app->bind(
+            \Modules\Shared\Contracts\ImageStorageInterface::class,
+            \Modules\Shared\Services\CloudinaryStorageService::class
+        );
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
         $this->app->bind(BaseRepositoryInterface::class, EloquentBaseRepository::class);

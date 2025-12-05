@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Permission\Services;
 
 use Modules\Shared\Services\BaseService;
@@ -29,6 +31,6 @@ class PermissionService extends BaseService
     public function hasPermission(int $userId, string $permission): bool
     {
         $permissions = $this->getUserPermissions($userId);
-        return in_array($permission, $permissions);
+        return in_array($permission, $permissions, true);
     }
 }

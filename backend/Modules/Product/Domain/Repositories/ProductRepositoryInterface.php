@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Product\Domain\Repositories;
 
 use Modules\Shared\Repositories\BaseRepositoryInterface;
-use Modules\Product\Domain\Models\Product;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-interface ProductRepositoryInterface extends BaseRepositoryInterface {}
+interface ProductRepositoryInterface extends BaseRepositoryInterface 
+{
+    public function filter(array $filters): LengthAwarePaginator;
+}

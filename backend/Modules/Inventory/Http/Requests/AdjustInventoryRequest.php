@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Inventory\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,7 +15,7 @@ class AdjustInventoryRequest extends FormRequest
         return [
             'variant_uuid' => 'required|exists:product_variants,uuid',
             'warehouse_uuid' => 'required|exists:warehouses,uuid',
-            'quantity' => 'required|integer|not_in:0', 
+            'quantity' => 'required|integer|not_in:0', // Không cho phép 0
             'reason' => 'nullable|string|max:255',
         ];
     }

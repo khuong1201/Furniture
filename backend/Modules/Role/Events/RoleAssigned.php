@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Role\Events;
 
 use Modules\User\Domain\Models\User;

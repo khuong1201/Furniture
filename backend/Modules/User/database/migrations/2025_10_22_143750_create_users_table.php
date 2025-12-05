@@ -13,18 +13,20 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable()->index();
+            $table->string('phone', 20)->nullable()->index(); 
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('verification_code', 6)->nullable();
+
+            $table->string('verification_code', 10)->nullable();
             $table->timestamp('verification_expires_at')->nullable();
+            
             $table->string('password');
             $table->boolean('is_active')->default(true);
-            $table->string('avatar_url')->nullable();
+            $table->string('avatar_url', 2048)->nullable(); 
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('is_active');
+            $table->index(['is_active', 'created_at']);
         });
     }
 

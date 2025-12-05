@@ -12,14 +12,15 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->string('name', 100);
-            $table->string('slug', 150)->unique()->index(); 
+            $table->string('slug', 150)->unique()->index();
             $table->text('description')->nullable();
             
             $table->foreignId('parent_id')
                   ->nullable()
                   ->constrained('categories')
-                  ->nullOnDelete(); 
+                  ->nullOnDelete();
             
+            $table->boolean('is_active')->default(true)->index();
             $table->softDeletes();
             $table->timestamps();
         });
