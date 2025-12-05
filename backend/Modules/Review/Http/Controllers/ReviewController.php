@@ -32,11 +32,18 @@ class ReviewController extends BaseController
             new OA\Parameter(name: "rating", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "admin_view", in: "query", schema: new OA\Schema(type: "boolean"), description: "Nếu true (và là admin) sẽ thấy cả review chưa duyệt"),
         ],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
+        responses: [new OA\Response(response: 200, description: "Success")]
     )]
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->all();
+        $perPage = $request->get('per_page', 10);
+        $query = $this->service->getRepository()->query()->with(['user', 'product'])->latest();
+
+        if ($request->has('product_uuid')) {
+            $query->whereHas('product', fn($q) => $q->where('uuid', $request->product_uuid));
+        }
+
+        $data = $query->paginate($perPage);
 
         // Nếu user thường gọi, force chỉ xem được approved
         if (!$request->user() || !$request->user()->hasPermissionTo('review.view_all')) {
@@ -66,7 +73,7 @@ class ReviewController extends BaseController
                 ]
             )
         ),
-        responses: [ new OA\Response(response: 201, description: "Created") ]
+        responses: [new OA\Response(response: 201, description: "Created")]
     )]
     public function store(StoreReviewRequest $request): JsonResponse
     {
@@ -116,7 +123,7 @@ class ReviewController extends BaseController
 
         $this->authorize('delete', $review);
 
-        $this->service->delete($uuid); 
+        $this->service->delete($uuid);
 
         return response()->json(ApiResponse::success(null, 'Review deleted successfully'));
     }

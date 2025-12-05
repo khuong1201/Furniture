@@ -1,0 +1,153 @@
+.product-card {
+    min-width: 220px;   
+    max-width: 280px; 
+    flex-shrink: 0;
+    background: #FDFDFD;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .product-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    transform: translateY(-10px);
+  }
+
+  /* --- IMAGE --- */
+  .product-img {
+    position: relative;
+    height: 256px;
+  }
+  .product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* --- TAGS --- */
+.discount-tag {
+  position: absolute;
+  top: 8px;
+  right: 3px;
+  background: #FFC3A4;
+  color: #FE6D20;
+  padding-left: 16px;
+  padding-right: 8px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.fire-icon {
+  position: absolute;
+  top: 8px;
+  right: 54px;
+
+
+  max-width: 24px;
+  max-height: 24px;
+
+  object-fit: contain;
+  display: block;
+
+  animation: firePulse 1s infinite;
+  z-index: 5;
+}
+
+.discount-text {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Hiệu ứng rung cháy cháy nhẹ */
+@keyframes firePulse {
+  0%   { transform: scale(1) rotate(0); }
+  25%  { transform: scale(1.1) rotate(5deg); }
+  50%  { transform: scale(1.2) rotate(0); }
+  75%  { transform: scale(1.1) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.tag-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-height: 49px;
+  max-width: 36px;
+}
+
+
+  /* --- INFO --- */
+  .product-info-cart {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .product-info-cart h4 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: #2D2A29;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rating-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .rating-star {
+    width: 24px;
+    height: 24px;
+    color: #FFBB00; 
+  }
+  .rating-number {
+    font-size: 20px;
+    font-weight: 500;
+    color: #2D2A29; 
+  }
+
+  .rating-separator {
+    color: #727070; 
+    margin: 0 8px; 
+    font-weight: 300;
+  }
+  .rating-sold {
+    font-size: 16px;
+    color: #727070; 
+    font-weight: 500;
+  }
+
+  /* --- PRICE + BUTTON --- */
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .price-info {
+    color: #E82525;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .btn-add-cart1 {
+    min-width: 100px;
+    background: #CBA890;    
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2D2A29;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-add:hover {
+    background: #b08d6e;
+  } 

@@ -20,6 +20,11 @@ abstract class BaseService
         $this->repository = $repository;
     }
 
+    public function getRepository(): BaseRepositoryInterface
+    {
+        return $this->repository;
+    }
+
     public function getAll(bool $withTrashed = false): Collection
     {
         return $this->repository->all($withTrashed);
@@ -54,7 +59,7 @@ abstract class BaseService
             $model = $this->repository->create($data);
             
             $this->afterCreate($model);
-            
+
             return $model;
         });
     }
@@ -84,15 +89,27 @@ abstract class BaseService
             $result = $this->repository->delete($model);
             
             $this->afterDelete($model);
-            
+
             return $result;
         });
     }
 
-    protected function beforeCreate(array &$data): void {}
-    protected function afterCreate(Model $model): void {}
-    protected function beforeUpdate(Model $model, array &$data): void {}
-    protected function afterUpdate(Model $model): void {}
-    protected function beforeDelete(Model $model): void {}
-    protected function afterDelete(Model $model): void {}
+    protected function beforeCreate(array &$data): void
+    {
+    }
+    protected function afterCreate(Model $model): void
+    {
+    }
+    protected function beforeUpdate(Model $model, array &$data): void
+    {
+    }
+    protected function afterUpdate(Model $model): void
+    {
+    }
+    protected function beforeDelete(Model $model): void
+    {
+    }
+    protected function afterDelete(Model $model): void
+    {
+    }
 }

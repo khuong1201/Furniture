@@ -120,6 +120,42 @@ class UserController extends BaseController
         return response()->json(ApiResponse::success($user->load(['roles', 'roles.permissions'])));
     }
 
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone' => 'sometimes|nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+        $user->load('roles');
+
+        return response()->json(ApiResponse::success($user, 'Cập nhật hồ sơ thành công'));
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if (!password_verify($validated['current_password'], $user->password)) {
+            return response()->json(ApiResponse::error('Mật khẩu hiện tại không đúng'), 400);
+        }
+
+        $user->update([
+            'password' => bcrypt($validated['password'])
+        ]);
+
+        return response()->json(ApiResponse::success(null, 'Đổi mật khẩu thành công'));
+    }
+
     #[OA\Put(
         path: "/admin/users/{uuid}",
         summary: "Cập nhật thông tin",

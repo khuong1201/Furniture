@@ -5,10 +5,12 @@ use Modules\User\Http\Controllers\UserController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::get('profile', [UserController::class, 'profile']); 
+    Route::get('profile', [UserController::class, 'profile']);
+    Route::put('profile', [UserController::class, 'updateProfile']);
+    Route::post('auth/change-password', [UserController::class, 'changePassword']);
 
     Route::prefix('admin/users')->group(function () {
-        
+
         Route::get('/', [UserController::class, 'index'])
             ->middleware('can:viewAny,' . \Modules\User\Domain\Models\User::class);
 

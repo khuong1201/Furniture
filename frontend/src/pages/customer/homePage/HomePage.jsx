@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import './HomePage.css';
-import { useProduct } from '@/hooks/useProducts';
-import {Link, useNavigate } from 'react-router-dom';
+import ProductCard from '@/pages/customer/components/ProductCard.jsx'
+import { useProduct } from '@/hooks/useProduct';
+import {Link, useNavigate} from 'react-router-dom';
 import { AiOutlineLoading3Quarters, AiOutlineWarning } from 'react-icons/ai';
 
 import bedIcon from '@/assets/icons/categories/bed.svg';
@@ -12,14 +13,15 @@ import wardrobesIcon from '@/assets/icons/categories/wardrobes.svg';
 import lightIcon from '@/assets/icons/categories/light.svg';
 import shelfIcon from '@/assets/icons/categories/shelf.svg';
 import outdoorIcon from '@/assets/icons/categories/outdoor.svg';
+import trending from '@/assets/icons/trending.svg';
 
 function HomePage() {
 
-  const { products, loading, error, getAllProduct } = useProduct();
+  const { products, loading, error, fetchProducts } = useProduct();
 
   useEffect(() => {
-    getAllProduct();
-  }, [getAllProduct]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   const categories = [
     { name: "Bed", img: bedIcon },
@@ -66,72 +68,66 @@ function HomePage() {
       </section>
 
       {/* --- PHẦN 3: FLASH SALE (DÙNG API TỪ HOOK) --- */}
-      <section className="product-section">
-        <div className="section-header">
-          <h3>Flash Sale <span className="timer">01 : 23 : 20</span></h3>
-          <a href="#" className="view-all">View all</a>
-        </div>
+      {!loading && !error && (
+        <>
+          <section className="pd-sale-section">
+            <div className="flash-header">
+              <h3>Flash Sale <span className="timer">01 : 23 : 20</span></h3>
+              <a href="#" className="view-all">View all</a>
+            </div>
 
-        {/* 4. Hiển thị dữ liệu khi đã tải xong */}
-        {!loading && !error && (
-          <div className="product-grid">
-            {products.map((item) => (
-       
-              <div key={item.id} className="product-card">
-                <Link to={`/customer/product/${item.uuid || item.id}`}>
-                  <div className="product-img">
-                    <span className="discount-tag">-50%</span>
-                    <img 
-                      src={item.image ? `http://localhost:8000/storage/${item.image}` : 'https://placehold.co/300x250?text=No+Image'} 
-                      alt={item.name} 
-                      onError={(e) => { e.target.src = 'https://placehold.co/300x250?text=Error'; }}
-                    />
-                  </div>
-                </Link>  
-                <div className="product-info">
-                  
-                  <Link to={`/customer/product/${item.uuid || item.id}`} className="product-link">
-                    <h4>{item.name}</h4> 
-                  </Link>
-                  
-                  <div className="rating">
-                    
-                    <span className="rating-star">★</span>
-                    
-                    <span className='rating-number'>{item.rating || 4.5}</span>
-                    
-                    
-                    {/* 4. Số lượt bán */}
-                    <span className="rating-separator">|</span>
-                    <span className="rating-sold">
-                      {item.sold || 155} sold
-                    </span>
-                  </div>
-                  
-                  <div className="price-row">
-                    <span className="price">
-                      {Number(item.price).toLocaleString('vi-VN')} VND
-                    </span>
-                    <button className="btn-add">Add to cart</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            {/* 4. Hiển thị dữ liệu khi đã tải xong */}
+            <div className="product-horizontal">
+              {products.map((item) => (
+                <ProductCard 
+                  key={item.uuid || item.id}  
+                  item={item}
+                  variant="flash"
+                />
+              ))}
+            </div>
+          </section>
 
-        {/* Top Trending */}
-        <div className="section-header">
-          <h3>Top Trending</h3>
-          <a href="#" className="view-all">View all</a>
-        </div>
+          {/* Top Trending */} 
+          <section className='pd-trending-section'> 
+            <div className="trending-header"> 
+              <h3>Top Trending
+                <img src={trending} alt='trending' className="trending-icon" />
+              </h3> 
+              <a href="#" className="view-all">
+                View all
+              </a> 
+            </div> 
 
-        {/* Today's Suggestions */}
-        <div className="section-header">
-          <h3>Today's Suggestions</h3>
-        </div>
-      </section>  
+            <div className="product-horizontal">
+              {products.map((item) => (
+                <ProductCard 
+                  key={item.uuid || item.id}  
+                  item={item}
+                  variant="top"
+                />
+              ))}
+            </div>  
+          </section>
+          
+            {/* Today's Suggestions */}
+          <section className='pd-suggestion-section'>
+            <div className="suggestion-header">
+              <h3>Today's Suggestions</h3> 
+            </div>
 
+            <div className="product-grid">
+              {products.map((item) => (
+                <ProductCard 
+                  key={item.uuid || item.id}  
+                  item={item}
+                  variant="default"
+                />
+              ))}
+            </div>
+          </section>
+        </> 
+      )}
     </div>
   );
 }

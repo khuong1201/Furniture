@@ -1,0 +1,547 @@
+/* Collection Management - Modern Gold Theme - Using CSS Variables */
+
+.admin-app-container .collection_management,
+.admin-app-container .collection-form-page {
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* === Page Header === */
+.admin-app-container .collection_page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
+}
+
+.admin-app-container .header-content h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--admin-text);
+    margin: 0;
+}
+
+.admin-app-container .header-content h1 svg {
+    color: var(--admin-primary);
+}
+
+.admin-app-container .header-content p {
+    color: var(--admin-text-muted);
+    font-size: 14px;
+    margin: 8px 0 0 0;
+}
+
+/* === Search Bar === */
+.admin-app-container .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: white;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    margin-bottom: 24px;
+}
+
+.admin-app-container .search-bar svg {
+    color: var(--admin-primary);
+}
+
+.admin-app-container .search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+.admin-app-container .search-bar input::placeholder {
+    color: var(--admin-text-muted);
+}
+
+.admin-app-container .btn-refresh {
+    padding: 10px;
+    background: var(--admin-accent-light);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    cursor: pointer;
+    color: var(--admin-primary);
+    transition: all 0.2s;
+}
+
+.admin-app-container .btn-refresh:hover {
+    background: var(--admin-primary);
+    color: white;
+}
+
+/* === Collections Grid === */
+.admin-app-container .collections-container {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    padding: 24px;
+}
+
+.admin-app-container .collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* === Collection Card === */
+.admin-app-container .collection_card {
+    background: var(--admin-accent-light);
+    border-radius: var(--admin-radius);
+    overflow: hidden;
+    border: 1px solid var(--admin-border-light);
+    transition: all 0.2s;
+}
+
+.admin-app-container .collection_card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(203, 168, 144, 0.12);
+}
+
+.admin-app-container .collection_image {
+    height: 150px;
+    background: linear-gradient(135deg, var(--admin-accent-light) 0%, #fdfaf5 100%);
+    overflow: hidden;
+}
+
+.admin-app-container .collection_image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-app-container .collection_image .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--admin-text-muted);
+}
+
+.admin-app-container .collection_info {
+    padding: 16px;
+    background: white;
+}
+
+.admin-app-container .collection_info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin: 0 0 6px 0;
+}
+
+.admin-app-container .collection_info p {
+    color: var(--admin-text-muted);
+    font-size: 13px;
+    margin: 0 0 12px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.admin-app-container .collection_meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-app-container .collection_meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--admin-text-secondary);
+}
+
+.admin-app-container .collection_meta .status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.admin-app-container .status.active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.admin-app-container .status.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.admin-app-container .collection_actions {
+    display: flex;
+    gap: 6px;
+    padding: 12px 16px;
+    background: white;
+    border-top: 1px solid var(--admin-border-light);
+}
+
+/* === Form Styles === */
+.admin-app-container .form-container {
+    background: white;
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-light);
+    overflow: hidden;
+}
+
+.admin-app-container .form-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--admin-accent-light) 0%, #fdfaf5 100%);
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-app-container .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: white;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    color: var(--admin-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-app-container .btn-back:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+    color: var(--admin-primary-dark);
+}
+
+.admin-app-container .form-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    color: var(--admin-primary-dark);
+    margin: 0;
+}
+
+.admin-app-container .collection-form {
+    padding: 28px;
+}
+
+.admin-app-container .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 28px;
+}
+
+@media (max-width: 900px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.admin-app-container .form-section {
+    margin-bottom: 24px;
+}
+
+.admin-app-container .form-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--admin-primary-dark);
+    margin: 0 0 16px 0;
+}
+
+.admin-app-container .form-group {
+    margin-bottom: 20px;
+}
+
+.admin-app-container .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--admin-text);
+    font-size: 14px;
+}
+
+.admin-app-container .form-input,
+.admin-app-container .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.admin-app-container .form-input:focus,
+.admin-app-container .form-textarea:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+}
+
+/* Image Upload */
+.admin-app-container .image-upload {
+    margin-bottom: 16px;
+}
+
+.admin-app-container .image-preview {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    border-radius: var(--admin-radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.admin-app-container .image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-app-container .image-preview .remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-app-container .upload-placeholder {
+    width: 100%;
+    height: 180px;
+    background: var(--admin-accent-light);
+    border: 2px dashed var(--admin-border);
+    border-radius: var(--admin-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--admin-text-muted);
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+
+.admin-app-container .upload-placeholder:hover {
+    border-color: var(--admin-primary);
+    color: var(--admin-primary);
+}
+
+.admin-app-container .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--admin-text);
+    cursor: pointer;
+}
+
+.admin-app-container .checkbox-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--admin-primary);
+}
+
+.admin-app-container .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--admin-border-light);
+}
+
+/* === Buttons === */
+.admin-app-container .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--admin-radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.admin-app-container .collection_btn-primary {
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+}
+
+.admin-app-container .collection_btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
+}
+
+.admin-app-container .collection_btn-secondary {
+    background: white;
+    color: var(--admin-text-secondary);
+    border: 1px solid var(--admin-border);
+}
+
+.admin-app-container .collection_btn-secondary:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+}
+
+.admin-app-container .btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--admin-radius);
+    border: 1px solid;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.admin-app-container .btn-edit {
+    border-color: rgba(203, 168, 144, 0.3);
+    color: var(--admin-primary);
+}
+
+.admin-app-container .btn-edit:hover {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+}
+
+.admin-app-container .btn-delete {
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.admin-app-container .btn-delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+
+/* === States === */
+.admin-app-container .collection_loading-state,
+.admin-app-container .collection_empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.admin-app-container .collection_spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--admin-border-light);
+    border-top-color: var(--admin-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.admin-app-container .collection_empty-state svg {
+    color: var(--admin-text-muted);
+    margin-bottom: 16px;
+}
+
+.admin-app-container .collection_empty-state h3 {
+    color: var(--admin-text);
+    margin: 0 0 20px 0;
+}
+
+/* === Pagination === */
+.admin-app-container .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.admin-app-container .btn-page {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.admin-app-container .btn-page:hover:not(:disabled) {
+    background: var(--admin-accent-light);
+    border-color: var(--admin-primary);
+}
+
+.admin-app-container .btn-page:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* === Alert === */
+.admin-app-container .alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: var(--admin-radius);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.admin-app-container .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #991b1b;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .collection_page-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .collections-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+}
