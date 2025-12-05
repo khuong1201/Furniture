@@ -30,35 +30,28 @@ class OrderService {
   // 4. Hàm request dùng chung
   async _request(endpoint, options = {}) {
     try {
-      // Auto-set token from localStorage
       const token = localStorage.getItem('access_token');
+      const headers = { ...this.headers, ...options.headers };
+
       if (token) {
-        this.setToken(token);
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const url = `${this.baseUrl}${endpoint}`;
-      const config = {
-        ...options,
-        headers: {
-          ...this.headers,
-          ...options.headers,
-        },
-      };
-
-      const response = await fetch(url, config);
+      const response = await fetch(url, { ...options, headers });
       const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.message || `Lỗi API: ${response.status}`);
       }
 
-      return result;
+      // ✅ Trả về data cốt lõi để Hook dễ xử lý
+      return result.data || result;
     } catch (error) {
       console.error(`Order Service Error (${endpoint}):`, error);
       throw error;
     }
   }
-
   // ================================
   // ========== APIs =================
   // ================================
@@ -80,15 +73,16 @@ class OrderService {
   }
 
   // ✅ Lấy danh sách đơn hàng: GET /orders
-  async getOrders(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this._request(`/orders${queryString ? `?${queryString}` : ''}`, {
+  async getMyOrders(params = {}) {
+    // Lọc bỏ param rỗng
+    const validParams = Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v != null && v !== '')
+    );
+    const queryString = new URLSearchParams(validParams).toString();
+    
+    return this._request(`/orders?${queryString}`, {
       method: 'GET',
     });
-  }
-
-  async getMyOrders() {
-    return this.getOrders();
   }
 
   // ✅ Lấy chi tiết đơn theo UUID: GET /orders/{uuid}
@@ -115,10 +109,6 @@ class OrderService {
 
   static checkout(data) {
     return OrderService.instance.checkout(data);
-  }
-
-  static getOrders(params) {
-    return OrderService.instance.getOrders(params);
   }
 
   static getMyOrders() {

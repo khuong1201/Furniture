@@ -3,8 +3,8 @@ import {
     Star, Search, Trash2, Eye, AlertCircle, RefreshCw,
     ChevronLeft, ChevronRight, User, MessageSquare, ThumbsUp, ThumbsDown
 } from 'lucide-react';
-import ReviewService from '@/services/ReviewService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import ReviewService from '@/services/admin/ReviewService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './ReviewManagement.css';
 
 const ReviewList = () => {

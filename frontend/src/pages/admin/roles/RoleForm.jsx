@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, Shield, Save, AlertCircle, Key, CheckSquare, Square
 } from 'lucide-react';
-import RoleService from '@/services/RoleService';
+import RoleService from '@/services/admin/RoleService';
 import './RoleManagement.css';
 
 const RoleForm = () => {

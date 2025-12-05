@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Warehouse } from 'lucide-react';
-import WarehouseService from '@/services/WarehouseService';
-import UserService from '@/services/UserService';
+import WarehouseService from '@/services/admin/WarehouseService';
+import UserService from '@/services/admin/UserService';
 import './WarehouseForm.css';
 
 const WarehouseForm = () => {

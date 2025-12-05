@@ -13,7 +13,7 @@ import {
     CheckCircle,
     Settings
 } from 'lucide-react';
-import CategoryService from '@/services/CategoryService';
+import CategoryService from '@/services/admin/CategoryService';
 import './CategoryManagement.css';
 
 const CategoryForm = () => {

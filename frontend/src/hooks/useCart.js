@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import CartService from '@/services/CartService';
+import CartService from '@/services/customer/CartService';
 
 export const useCart = () => {
   const [cartItems, setCartItems] = useState([]);

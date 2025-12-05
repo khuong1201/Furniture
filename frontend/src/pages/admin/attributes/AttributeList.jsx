@@ -9,7 +9,7 @@ import {
     Loader,
     AlertCircle
 } from 'lucide-react';
-import AttributeService from '@/services/AttributeService';
+import AttributeService from '@/services/admin/AttributeService';
 import Modal from '@/components/admin/shared/Modal';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './AttributeList.css';

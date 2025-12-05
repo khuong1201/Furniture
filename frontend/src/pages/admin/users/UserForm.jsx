@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import UserService from '@/services/UserService';
-import RoleService from '@/services/RoleService';
+import UserService from '@/services/admin/UserService';
+import RoleService from '@/services/admin/RoleService';
 import './UserForm.css';
 
 const UserForm = () => {

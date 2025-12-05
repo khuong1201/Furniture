@@ -131,154 +131,156 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="admin-layout">
-      {/* Sidebar */}
-      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">
-          <h2 className="sidebar-logo">
-            <div className="logo-icon-sidebar">
-              <LayoutDashboard size={24} />
-            </div>
-            {sidebarOpen && <span className="logo-text">Admin Panel</span>}
-          </h2>
-        </div>
+    <div className="admin-app-container">
+      <div className="admin-layout">
+        {/* Sidebar */}
+        <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+          <div className="sidebar-header">
+            <h2 className="sidebar-logo">
+              <div className="logo-icon-sidebar">
+                <LayoutDashboard size={24} />
+              </div>
+              {sidebarOpen && <span className="logo-text">Admin Panel</span>}
+            </h2>
+          </div>
 
-        <nav className="sidebar-nav">
-          {menuGroups.map((group) => {
-            const GroupIcon = group.icon;
-            const isExpanded = expandedGroups.includes(group.id);
-            const isGroupItemActive = isGroupActive(group);
+          <nav className="sidebar-nav">
+            {menuGroups.map((group) => {
+              const GroupIcon = group.icon;
+              const isExpanded = expandedGroups.includes(group.id);
+              const isGroupItemActive = isGroupActive(group);
 
-            if (group.single) {
+              if (group.single) {
+                return (
+                  <Link
+                    key={group.id}
+                    to={group.path}
+                    className={`nav-item ${isActive(group.path) ? 'active' : ''}`}
+                    onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+                  >
+                    <GroupIcon size={20} className="nav-icon" />
+                    {sidebarOpen && <span>{group.label}</span>}
+                  </Link>
+                );
+              }
+
               return (
-                <Link
-                  key={group.id}
-                  to={group.path}
-                  className={`nav-item ${isActive(group.path) ? 'active' : ''}`}
-                  onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
-                >
-                  <GroupIcon size={20} className="nav-icon" />
-                  {sidebarOpen && <span>{group.label}</span>}
-                </Link>
-              );
-            }
+                <div key={group.id} className="nav-group">
+                  <button
+                    className={`nav-group-header ${isGroupItemActive ? 'active' : ''}`}
+                    onClick={() => sidebarOpen && toggleGroup(group.id)}
+                  >
+                    <GroupIcon size={20} className="nav-icon" />
+                    {sidebarOpen && (
+                      <>
+                        <span className="group-label">{group.label}</span>
+                        <ChevronRight
+                          size={16}
+                          className={`expand-icon ${isExpanded ? 'expanded' : ''}`}
+                        />
+                      </>
+                    )}
+                  </button>
 
-            return (
-              <div key={group.id} className="nav-group">
-                <button
-                  className={`nav-group-header ${isGroupItemActive ? 'active' : ''}`}
-                  onClick={() => sidebarOpen && toggleGroup(group.id)}
-                >
-                  <GroupIcon size={20} className="nav-icon" />
-                  {sidebarOpen && (
-                    <>
-                      <span className="group-label">{group.label}</span>
-                      <ChevronRight
-                        size={16}
-                        className={`expand-icon ${isExpanded ? 'expanded' : ''}`}
-                      />
-                    </>
+                  {sidebarOpen && isExpanded && (
+                    <div className="nav-group-items">
+                      {group.items.map((item) => {
+                        const ItemIcon = item.icon;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`nav-sub-item ${isActive(item.path) ? 'active' : ''}`}
+                            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+                          >
+                            <ItemIcon size={18} className="nav-icon" />
+                            <span>{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   )}
+                </div>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <div className={`admin-main ${sidebarOpen ? '' : 'sidebar-closed'}`}>
+          {/* Header */}
+          <header className="admin-header">
+            <div className="header-left">
+              <button className="toggle-sidebar-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                <Menu size={20} />
+              </button>
+
+              <div className="search-box">
+                <Search size={16} className="search-icon" />
+                <input type="text" placeholder="Tìm kiếm..." />
+              </div>
+            </div>
+
+            <div className="header-right">
+              <button className="icon-btn">
+                <Bell size={20} />
+                <span className="badge">3</span>
+              </button>
+
+              <div className="profile-dropdown">
+                <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>
+                  <div className="avatar">
+                    <User size={20} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <span className="profile-name">{user?.name || 'Admin'}</span>
+                    <span className="profile-role">Administrator</span>
+                  </div>
+                  <ChevronDown size={16} />
                 </button>
 
-                {sidebarOpen && isExpanded && (
-                  <div className="nav-group-items">
-                    {group.items.map((item) => {
-                      const ItemIcon = item.icon;
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className={`nav-sub-item ${isActive(item.path) ? 'active' : ''}`}
-                          onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
-                        >
-                          <ItemIcon size={18} className="nav-icon" />
-                          <span>{item.label}</span>
-                        </Link>
-                      );
-                    })}
+                {profileOpen && (
+                  <div className="dropdown-menu">
+                    <Link to="/admin/profile" className="dropdown-item">
+                      <User size={16} />
+                      Hồ sơ
+                    </Link>
+                    <Link to="/admin/settings" className="dropdown-item">
+                      <Settings size={16} />
+                      Cài đặt
+                    </Link>
+                    <hr />
+                    <button className="dropdown-item logout" onClick={handleLogout}>
+                      <LogOut size={16} />
+                      Đăng xuất
+                    </button>
                   </div>
                 )}
               </div>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <div className={`admin-main ${sidebarOpen ? '' : 'sidebar-closed'}`}>
-        {/* Header */}
-        <header className="admin-header">
-          <div className="header-left">
-            <button className="toggle-sidebar-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <Menu size={20} />
-            </button>
-
-            <div className="search-box">
-              <Search size={16} className="search-icon" />
-              <input type="text" placeholder="Tìm kiếm..." />
             </div>
+          </header>
+
+          {/* Content */}
+          <div className="admin-content">
+            <Outlet />
           </div>
 
-          <div className="header-right">
-            <button className="icon-btn">
-              <Bell size={20} />
-              <span className="badge">3</span>
-            </button>
-
-            <div className="profile-dropdown">
-              <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>
-                <div className="avatar">
-                  <User size={20} />
+          {/* Footer */}
+          <footer className="admin-footer">
+            <div className="footer-content">
+              <div className="footer-left">
+                <p className="copyright">© 2024 Jewelry Admin Panel</p>
+              </div>
+              <div className="footer-right">
+                <div className="footer-links">
+                  <a href="#" className="footer-link">Trợ giúp</a>
+                  <span className="separator">•</span>
+                  <a href="#" className="footer-link">Tài liệu</a>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <span className="profile-name">{user?.name || 'Admin'}</span>
-                  <span className="profile-role">Administrator</span>
-                </div>
-                <ChevronDown size={16} />
-              </button>
-
-              {profileOpen && (
-                <div className="dropdown-menu">
-                  <Link to="/admin/profile" className="dropdown-item">
-                    <User size={16} />
-                    Hồ sơ
-                  </Link>
-                  <Link to="/admin/settings" className="dropdown-item">
-                    <Settings size={16} />
-                    Cài đặt
-                  </Link>
-                  <hr />
-                  <button className="dropdown-item logout" onClick={handleLogout}>
-                    <LogOut size={16} />
-                    Đăng xuất
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="admin-content">
-          <Outlet />
-        </div>
-
-        {/* Footer */}
-        <footer className="admin-footer">
-          <div className="footer-content">
-            <div className="footer-left">
-              <p className="copyright">© 2024 Jewelry Admin Panel</p>
-            </div>
-            <div className="footer-right">
-              <div className="footer-links">
-                <a href="#" className="footer-link">Trợ giúp</a>
-                <span className="separator">•</span>
-                <a href="#" className="footer-link">Tài liệu</a>
               </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
     </div>
   );

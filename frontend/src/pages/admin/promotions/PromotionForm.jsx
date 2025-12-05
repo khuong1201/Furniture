@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, Tag, Calendar, Percent, DollarSign, Save, AlertCircle
 } from 'lucide-react';
-import PromotionService from '@/services/PromotionService';
+import PromotionService from '@/services/admin/PromotionService';
 import './PromotionManagement.css';
 
 const PromotionForm = () => {

@@ -1,12 +1,12 @@
 /* Shipping Management - Modern Gold Theme */
 
-.shipping_management {
+.admin-app-container .shipping_management {
     max-width: 1400px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.shipping_page-header {
+.admin-app-container .shipping_page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -17,7 +17,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.shipping_header-content h1 {
+.admin-app-container .shipping_header-content h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -27,18 +27,18 @@
     margin: 0 0 8px 0;
 }
 
-.shipping_header-content h1 svg {
+.admin-app-container .shipping_header-content h1 svg {
     color: var(--admin-primary);
 }
 
-.shipping_page-subtitle {
+.admin-app-container .shipping_page-subtitle {
     color: var(--admin-text-muted);
     font-size: 14px;
     margin: 0;
 }
 
 /* === Buttons === */
-.shipping_btn {
+.admin-app-container .shipping_btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -51,32 +51,32 @@
     transition: all 0.2s;
 }
 
-.shipping_btn-primary {
+.admin-app-container .shipping_btn-primary {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
 
-.shipping_btn-primary:hover {
+.admin-app-container .shipping_btn-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
 
-.shipping_btn-secondary {
+.admin-app-container .shipping_btn-secondary {
     background: white;
     color: var(--admin-text-secondary);
     border: 1px solid var(--admin-border);
 }
 
 /* === Shipping Methods Grid === */
-.shipping_grid {
+.admin-app-container .shipping_grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 20px;
 }
 
 /* === Shipping Card === */
-.shipping_card {
+.admin-app-container .shipping_card {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
@@ -84,11 +84,11 @@
     transition: all 0.2s;
 }
 
-.shipping_card:hover {
+.admin-app-container .shipping_card:hover {
     box-shadow: 0 4px 16px rgba(203, 168, 144, 0.1);
 }
 
-.shipping_header {
+.admin-app-container .shipping_header {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -97,7 +97,7 @@
     border-bottom: 1px solid var(--admin-border);
 }
 
-.shipping_icon {
+.admin-app-container .shipping_icon {
     width: 48px;
     height: 48px;
     border-radius: var(--admin-radius);
@@ -108,51 +108,51 @@
     color: white;
 }
 
-.shipping_info h3 {
+.admin-app-container .shipping_info h3 {
     font-size: 16px;
     font-weight: 600;
     color: var(--admin-text);
     margin: 0 0 4px 0;
 }
 
-.shipping_info p {
+.admin-app-container .shipping_info p {
     font-size: 13px;
     color: var(--admin-text-muted);
     margin: 0;
 }
 
-.shipping_body {
+.admin-app-container .shipping_body {
     padding: 20px;
 }
 
-.shipping_detail {
+.admin-app-container .shipping_detail {
     display: flex;
     justify-content: space-between;
     padding: 12px 0;
     border-bottom: 1px solid var(--admin-border-light);
 }
 
-.shipping_detail:last-child {
+.admin-app-container .shipping_detail:last-child {
     border-bottom: none;
 }
 
-.shipping_detail-label {
+.admin-app-container .shipping_detail-label {
     font-size: 14px;
     color: var(--admin-text-secondary);
 }
 
-.shipping_detail-value {
+.admin-app-container .shipping_detail-value {
     font-size: 14px;
     font-weight: 500;
     color: var(--admin-text);
 }
 
-.shipping_price-value {
+.admin-app-container .shipping_price-value {
     color: var(--admin-primary-dark);
     font-weight: 600;
 }
 
-.shipping_footer {
+.admin-app-container .shipping_footer {
     display: flex;
     gap: 8px;
     padding: 16px 20px;
@@ -160,7 +160,7 @@
     background: white;
 }
 
-.shipping_btn-icon {
+.admin-app-container .shipping_btn-icon {
     flex: 1;
     height: 38px;
     border-radius: var(--admin-radius);
@@ -175,27 +175,27 @@
     transition: all 0.2s;
 }
 
-.shipping_btn-edit {
+.admin-app-container .shipping_btn-edit {
     border-color: var(--admin-border);
     color: var(--admin-text);
 }
 
-.shipping_btn-edit:hover {
+.admin-app-container .shipping_btn-edit:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
-.shipping_btn-delete {
+.admin-app-container .shipping_btn-delete {
     border-color: rgba(239, 68, 68, 0.2);
     color: #ef4444;
 }
 
-.shipping_btn-delete:hover {
+.admin-app-container .shipping_btn-delete:hover {
     background: rgba(239, 68, 68, 0.1);
 }
 
 /* === Status === */
-.shipping_status-badge {
+.admin-app-container .shipping_status-badge {
     display: inline-flex;
     align-items: center;
     padding: 4px 12px;
@@ -204,19 +204,19 @@
     font-weight: 500;
 }
 
-.shipping_status-active {
+.admin-app-container .shipping_status-active {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
 }
 
-.shipping_status-inactive {
+.admin-app-container .shipping_status-inactive {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
 }
 
 /* === States === */
-.shipping_loading-state,
-.shipping_empty-state {
+.admin-app-container .shipping_loading-state,
+.admin-app-container .shipping_empty-state {
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
@@ -228,7 +228,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.shipping_spinner {
+.admin-app-container .shipping_spinner {
     width: 48px;
     height: 48px;
     border: 4px solid var(--admin-border-light);
@@ -244,29 +244,29 @@
     }
 }
 
-.shipping_empty-state svg {
+.admin-app-container .shipping_empty-state svg {
     color: var(--admin-text-muted);
     margin-bottom: 16px;
 }
 
-.shipping_empty-state h3 {
+.admin-app-container .shipping_empty-state h3 {
     color: var(--admin-text);
     margin: 0 0 20px 0;
 }
 
 /* === Form === */
-.shipping_form-container {
+.admin-app-container .shipping_form-container {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     padding: 28px;
 }
 
-.shipping_form-group {
+.admin-app-container .shipping_form-group {
     margin-bottom: 20px;
 }
 
-.shipping_form-group label {
+.admin-app-container .shipping_form-group label {
     display: block;
     font-weight: 500;
     color: var(--admin-text);
@@ -274,9 +274,9 @@
     margin-bottom: 8px;
 }
 
-.shipping_form-group input,
-.shipping_form-group select,
-.shipping_form-group textarea {
+.admin-app-container .shipping_form-group input,
+.admin-app-container .shipping_form-group select,
+.admin-app-container .shipping_form-group textarea {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--admin-border);
@@ -284,14 +284,14 @@
     font-size: 14px;
 }
 
-.shipping_form-group input:focus,
-.shipping_form-group select:focus {
+.admin-app-container .shipping_form-group input:focus,
+.admin-app-container .shipping_form-group select:focus {
     outline: none;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.shipping_form-actions {
+.admin-app-container .shipping_form-actions {
     display: flex;
     gap: 12px;
     justify-content: flex-end;

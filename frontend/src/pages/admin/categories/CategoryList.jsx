@@ -13,7 +13,7 @@ import {
   Settings,
   Search
 } from 'lucide-react';
-import CategoryService from '@/services/CategoryService';
+import CategoryService from '@/services/admin/CategoryService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './CategoryManagement.css';
 

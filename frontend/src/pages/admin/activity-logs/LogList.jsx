@@ -10,7 +10,7 @@ import {
     Loader,
     AlertCircle
 } from 'lucide-react';
-import LogService from '@/services/LogService';
+import LogService from '@/services/admin/LogService';
 import Modal from '@/components/admin/shared/Modal';
 import './LogList.css';
 

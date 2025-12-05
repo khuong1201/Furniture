@@ -4,8 +4,8 @@ import {
     Truck, Plus, Edit, Trash2, AlertCircle, RefreshCw,
     MapPin, DollarSign, Clock
 } from 'lucide-react';
-import ShippingService from '@/services/ShippingService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import ShippingService from '@/services/admin/ShippingService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './ShippingManagement.css';
 
 const ShippingList = () => {

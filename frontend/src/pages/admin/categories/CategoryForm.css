@@ -1,12 +1,12 @@
 /* Category Form - Modern Gold Theme */
 
-.category-form {
+.admin-app-container .category-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.form-row {
+.admin-app-container .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
@@ -18,31 +18,31 @@
     }
 }
 
-.category_form_form-group {
+.admin-app-container .category_form_form-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.category_form_form-group.full-width {
+.admin-app-container .category_form_form-group.full-width {
     grid-column: 1 / -1;
 }
 
-.category_form_form-group label {
+.admin-app-container .category_form_form-group label {
     font-weight: 500;
     color: var(--admin-text);
     font-size: 14px;
 }
 
-.category_form_form-group label.required::after {
+.admin-app-container .category_form_form-group label.required::after {
     content: '*';
     color: #ef4444;
     margin-left: 4px;
 }
 
-.category_form_form-group input,
-.category_form_form-group select,
-.category_form_form-group textarea {
+.admin-app-container .category_form_form-group input,
+.admin-app-container .category_form_form-group select,
+.admin-app-container .category_form_form-group textarea {
     padding: 12px 16px;
     border: 1px solid var(--admin-border);
     border-radius: var(--admin-radius);
@@ -51,26 +51,26 @@
     background: white;
 }
 
-.category_form_form-group input:focus,
-.category_form_form-group select:focus,
-.category_form_form-group textarea:focus {
+.admin-app-container .category_form_form-group input:focus,
+.admin-app-container .category_form_form-group select:focus,
+.admin-app-container .category_form_form-group textarea:focus {
     outline: none;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.category_form_form-group textarea {
+.admin-app-container .category_form_form-group textarea {
     min-height: 100px;
     resize: vertical;
 }
 
-.category_form_form-group .helper-text {
+.admin-app-container .category_form_form-group .helper-text {
     font-size: 12px;
     color: var(--admin-text-muted);
 }
 
 /* Toggle */
-.toggle-wrapper {
+.admin-app-container .toggle-wrapper {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -80,7 +80,7 @@
     border: 1px solid var(--admin-border);
 }
 
-.toggle-wrapper span {
+.admin-app-container .toggle-wrapper span {
     font-size: 14px;
     color: var(--admin-text);
 }

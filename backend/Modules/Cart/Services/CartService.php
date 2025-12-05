@@ -7,7 +7,7 @@ use Modules\Cart\Domain\Repositories\CartRepositoryInterface;
 use Modules\Cart\Domain\Models\Cart;
 use Modules\Cart\Domain\Models\CartItem;
 use Modules\Product\Domain\Models\ProductVariant;
-use Modules\Product\Domain\Models\InventoryStock;
+use Modules\Inventory\Domain\Models\InventoryStock;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

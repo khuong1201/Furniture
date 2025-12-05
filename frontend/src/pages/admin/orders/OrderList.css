@@ -1,11 +1,11 @@
 /* Order List - Modern Gold Theme with order_ prefix */
 
-.order_list {
+.admin-app-container .order_list {
     padding: 0;
 }
 
 /* === Page Header === */
-.order_list .page-header {
+.admin-app-container .order_list .page-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -17,7 +17,7 @@
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
 }
 
-.order_list .page-header h1 {
+.admin-app-container .order_list .page-header h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -27,18 +27,18 @@
     margin: 0 0 8px 0;
 }
 
-.order_list .page-header h1 svg {
+.admin-app-container .order_list .page-header h1 svg {
     color: var(--admin-primary-dark);
 }
 
-.order_list .page-subtitle {
+.admin-app-container .order_list .page-subtitle {
     color: var(--admin-text-muted);
     font-size: 14px;
     margin: 0;
 }
 
 /* === Table Container === */
-.order_list .table-container {
+.admin-app-container .order_list .table-container {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
@@ -46,17 +46,17 @@
 }
 
 /* === Data Table === */
-.order_list .data-table {
+.admin-app-container .order_list .data-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.order_list .data-table thead {
+.admin-app-container .order_list .data-table thead {
     background: linear-gradient(135deg, var(--admin-accent-light) 0%, #fdfcfa 100%);
     border-bottom: 2px solid var(--admin-border);
 }
 
-.order_list .data-table th {
+.admin-app-container .order_list .data-table th {
     padding: 16px 20px;
     text-align: left;
     font-size: 13px;
@@ -66,40 +66,40 @@
     letter-spacing: 0.5px;
 }
 
-.order_list .data-table th.text-right {
+.admin-app-container .order_list .data-table th.text-right {
     text-align: right;
 }
 
-.order_list .data-table td {
+.admin-app-container .order_list .data-table td {
     padding: 18px 20px;
     border-bottom: 1px solid var(--admin-border-light);
     font-size: 14px;
     color: var(--admin-text);
 }
 
-.order_list .data-table td.text-right {
+.admin-app-container .order_list .data-table td.text-right {
     text-align: right;
 }
 
-.order_list .data-table tbody tr {
+.admin-app-container .order_list .data-table tbody tr {
     transition: background 0.2s;
 }
 
-.order_list .data-table tbody tr:hover {
+.admin-app-container .order_list .data-table tbody tr:hover {
     background: var(--admin-accent-light);
 }
 
-.order_list .data-table tbody tr:last-child td {
+.admin-app-container .order_list .data-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.order_list .data-table td strong {
+.admin-app-container .order_list .data-table td strong {
     color: var(--admin-primary-dark);
     font-weight: 600;
 }
 
 /* === Badges === */
-.order_list .badge {
+.admin-app-container .order_list .badge {
     display: inline-flex;
     align-items: center;
     padding: 6px 12px;
@@ -108,44 +108,44 @@
     font-weight: 500;
 }
 
-.order_list .badge-warning {
+.admin-app-container .order_list .badge-warning {
     background: rgba(251, 191, 36, 0.15);
     color: #b45309;
     border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
-.order_list .badge-info {
+.admin-app-container .order_list .badge-info {
     background: rgba(59, 130, 246, 0.1);
     color: #2563eb;
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.order_list .badge-success {
+.admin-app-container .order_list .badge-success {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
     border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-.order_list .badge-danger {
+.admin-app-container .order_list .badge-danger {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-.order_list .badge-secondary {
+.admin-app-container .order_list .badge-secondary {
     background: var(--admin-accent-light);
     color: var(--admin-text-secondary);
     border: 1px solid var(--admin-border);
 }
 
 /* === Action Buttons === */
-.order_list .action-buttons {
+.admin-app-container .order_list .action-buttons {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
 }
 
-.order_list .btn-icon {
+.admin-app-container .order_list .btn-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -159,16 +159,16 @@
     transition: all 0.2s;
 }
 
-.order_list .btn-icon:hover {
+.admin-app-container .order_list .btn-icon:hover {
     background: rgba(59, 130, 246, 0.1);
     border-color: #3b82f6;
     transform: translateY(-1px);
 }
 
 /* === States === */
-.order_list .loading-state,
-.order_list .error-state,
-.order_list .empty-state {
+.admin-app-container .order_list .loading-state,
+.admin-app-container .order_list .error-state,
+.admin-app-container .order_list .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -177,7 +177,7 @@
     text-align: center;
 }
 
-.order_list .spinner {
+.admin-app-container .order_list .spinner {
     width: 48px;
     height: 48px;
     border: 4px solid var(--admin-border-light);
@@ -193,26 +193,26 @@
     }
 }
 
-.order_list .loading-state p,
-.order_list .error-state p {
+.admin-app-container .order_list .loading-state p,
+.admin-app-container .order_list .error-state p {
     color: var(--admin-text-secondary);
     font-size: 14px;
     margin: 0 0 16px 0;
 }
 
-.order_list .empty-state svg {
+.admin-app-container .order_list .empty-state svg {
     color: var(--admin-text-muted);
     margin-bottom: 16px;
 }
 
-.order_list .empty-state p {
+.admin-app-container .order_list .empty-state p {
     color: var(--admin-text-muted);
     font-size: 16px;
     margin: 0;
 }
 
 /* === Buttons === */
-.order_list .btn {
+.admin-app-container .order_list .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -226,13 +226,13 @@
     transition: all 0.2s;
 }
 
-.order_list .btn-secondary {
+.admin-app-container .order_list .btn-secondary {
     background: white;
     color: var(--admin-text-secondary);
     border: 1px solid var(--admin-border);
 }
 
-.order_list .btn-secondary:hover {
+.admin-app-container .order_list .btn-secondary:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
     color: var(--admin-primary-dark);

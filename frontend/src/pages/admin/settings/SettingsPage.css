@@ -1,12 +1,12 @@
 /* Settings Page - Modern Gold Theme */
 
-.settings_page {
+.admin-app-container .settings_page {
     max-width: 1000px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.settings_page-header {
+.admin-app-container .settings_page-header {
     margin-bottom: 24px;
     padding: 24px 28px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
@@ -14,7 +14,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.settings_page-header h1 {
+.admin-app-container .settings_page-header h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -24,32 +24,32 @@
     margin: 0 0 8px 0;
 }
 
-.settings_page-header h1 svg {
+.admin-app-container .settings_page-header h1 svg {
     color: var(--admin-primary);
 }
 
-.settings_page-subtitle {
+.admin-app-container .settings_page-subtitle {
     color: var(--admin-text-muted);
     font-size: 14px;
     margin: 0;
 }
 
 /* === Settings Grid === */
-.settings_grid {
+.admin-app-container .settings_grid {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
 /* === Settings Card === */
-.settings_card {
+.admin-app-container .settings_card {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     overflow: hidden;
 }
 
-.settings_card-header {
+.admin-app-container .settings_card-header {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -58,31 +58,31 @@
     border-bottom: 1px solid var(--admin-border);
 }
 
-.settings_card-header svg {
+.admin-app-container .settings_card-header svg {
     color: var(--admin-primary);
 }
 
-.settings_card-header h3 {
+.admin-app-container .settings_card-header h3 {
     font-size: 16px;
     font-weight: 600;
     color: var(--admin-text);
     margin: 0;
 }
 
-.settings_card-body {
+.admin-app-container .settings_card-body {
     padding: 24px;
 }
 
 /* === Form Groups === */
-.settings_form-group {
+.admin-app-container .settings_form-group {
     margin-bottom: 20px;
 }
 
-.settings_form-group:last-child {
+.admin-app-container .settings_form-group:last-child {
     margin-bottom: 0;
 }
 
-.settings_form-group label {
+.admin-app-container .settings_form-group label {
     display: block;
     font-weight: 500;
     color: var(--admin-text);
@@ -90,9 +90,9 @@
     margin-bottom: 8px;
 }
 
-.settings_form-group input,
-.settings_form-group select,
-.settings_form-group textarea {
+.admin-app-container .settings_form-group input,
+.admin-app-container .settings_form-group select,
+.admin-app-container .settings_form-group textarea {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--admin-border);
@@ -101,22 +101,22 @@
     transition: all 0.2s;
 }
 
-.settings_form-group input:focus,
-.settings_form-group select:focus,
-.settings_form-group textarea:focus {
+.admin-app-container .settings_form-group input:focus,
+.admin-app-container .settings_form-group select:focus,
+.admin-app-container .settings_form-group textarea:focus {
     outline: none;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.settings_form-hint {
+.admin-app-container .settings_form-hint {
     font-size: 12px;
     color: var(--admin-text-muted);
     margin-top: 6px;
 }
 
 /* === Toggle Switch === */
-.settings_toggle-group {
+.admin-app-container .settings_toggle-group {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -124,28 +124,28 @@
     border-bottom: 1px solid var(--admin-border-light);
 }
 
-.settings_toggle-group:last-child {
+.admin-app-container .settings_toggle-group:last-child {
     border-bottom: none;
 }
 
-.settings_toggle-label {
+.admin-app-container .settings_toggle-label {
     flex: 1;
 }
 
-.settings_toggle-label h4 {
+.admin-app-container .settings_toggle-label h4 {
     font-size: 14px;
     font-weight: 500;
     color: var(--admin-text);
     margin: 0 0 4px 0;
 }
 
-.settings_toggle-label p {
+.admin-app-container .settings_toggle-label p {
     font-size: 13px;
     color: var(--admin-text-muted);
     margin: 0;
 }
 
-.settings_toggle-switch {
+.admin-app-container .settings_toggle-switch {
     width: 48px;
     height: 26px;
     background: var(--admin-border);
@@ -155,11 +155,11 @@
     transition: background 0.2s;
 }
 
-.settings_toggle-switch.active {
+.admin-app-container .settings_toggle-switch.active {
     background: var(--admin-primary);
 }
 
-.settings_toggle-switch::before {
+.admin-app-container .settings_toggle-switch::before {
     content: '';
     position: absolute;
     width: 22px;
@@ -172,18 +172,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.settings_toggle-switch.active::before {
+.admin-app-container .settings_toggle-switch.active::before {
     transform: translateX(22px);
 }
 
 /* === Save Button === */
-.settings_save-section {
+.admin-app-container .settings_save-section {
     display: flex;
     justify-content: flex-end;
     margin-top: 24px;
 }
 
-.settings_btn-save {
+.admin-app-container .settings_btn-save {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -199,19 +199,19 @@
     transition: all 0.2s;
 }
 
-.settings_btn-save:hover {
+.admin-app-container .settings_btn-save:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
 
-.settings_btn-save:disabled {
+.admin-app-container .settings_btn-save:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
 }
 
 /* === Alert === */
-.settings_alert {
+.admin-app-container .settings_alert {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -220,13 +220,13 @@
     margin-bottom: 20px;
 }
 
-.settings_alert-success {
+.admin-app-container .settings_alert-success {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
     border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-.settings_alert-error {
+.admin-app-container .settings_alert-error {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);

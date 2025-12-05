@@ -1,12 +1,12 @@
 /* Admin Profile - Modern Gold Theme */
 
-.admin-profile_page {
+.admin-app-container .admin-profile_page {
     max-width: 1200px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.profile_header {
+.admin-app-container .profile_header {
     margin-bottom: 24px;
     padding: 24px 28px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
@@ -14,7 +14,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.profile_header h1 {
+.admin-app-container .profile_header h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -24,18 +24,18 @@
     margin: 0 0 8px 0;
 }
 
-.profile_header h1 svg {
+.admin-app-container .profile_header h1 svg {
     color: var(--admin-primary);
 }
 
-.profile_header p {
+.admin-app-container .profile_header p {
     color: var(--admin-text-muted);
     font-size: 14px;
     margin: 0;
 }
 
 /* === Alerts === */
-.profile_alert {
+.admin-app-container .profile_alert {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -45,20 +45,20 @@
     font-size: 14px;
 }
 
-.profile_alert-success {
+.admin-app-container .profile_alert-success {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
     border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-.profile_alert-error {
+.admin-app-container .profile_alert-error {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* === Grid === */
-.profile-grid {
+.admin-app-container .profile-grid {
     display: grid;
     grid-template-columns: 300px 1fr 1fr;
     gap: 24px;
@@ -71,20 +71,20 @@
 }
 
 /* === Profile Card === */
-.profile_card {
+.admin-app-container .profile_card {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     overflow: hidden;
 }
 
-.profile_card-header {
+.admin-app-container .profile_card-header {
     padding: 18px 24px;
     background: linear-gradient(135deg, var(--admin-accent-light) 0%, #fdfaf5 100%);
     border-bottom: 1px solid var(--admin-border);
 }
 
-.profile_card-header h3 {
+.admin-app-container .profile_card-header h3 {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -95,18 +95,18 @@
 }
 
 /* === Profile Overview === */
-.profile-overview {
+.admin-app-container .profile-overview {
     text-align: center;
     padding: 32px 24px;
 }
 
-.avatar-section {
+.admin-app-container .avatar-section {
     position: relative;
     display: inline-block;
     margin-bottom: 20px;
 }
 
-.avatar-large {
+.admin-app-container .avatar-large {
     width: 100px;
     height: 100px;
     border-radius: 50%;
@@ -118,7 +118,7 @@
     box-shadow: 0 4px 16px rgba(203, 168, 144, 0.3);
 }
 
-.btn-change-avatar {
+.admin-app-container .btn-change-avatar {
     position: absolute;
     bottom: 0;
     right: 0;
@@ -135,25 +135,25 @@
     transition: all 0.2s;
 }
 
-.btn-change-avatar:hover {
+.admin-app-container .btn-change-avatar:hover {
     background: var(--admin-primary);
     color: white;
 }
 
-.profile-summary h2 {
+.admin-app-container .profile-summary h2 {
     font-size: 20px;
     font-weight: 700;
     color: var(--admin-text);
     margin: 0 0 6px 0;
 }
 
-.profile-summary .email {
+.admin-app-container .profile-summary .email {
     color: var(--admin-text-secondary);
     font-size: 14px;
     margin: 0 0 12px 0;
 }
 
-.role-badge {
+.admin-app-container .role-badge {
     display: inline-block;
     padding: 5px 14px;
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
@@ -164,13 +164,13 @@
     text-transform: uppercase;
 }
 
-.profile_stats {
+.admin-app-container .profile_stats {
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--admin-border-light);
 }
 
-.profile_stats .stat-item {
+.admin-app-container .profile_stats .stat-item {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -180,24 +180,24 @@
     margin-bottom: 10px;
 }
 
-.profile_stats .stat-item:last-child {
+.admin-app-container .profile_stats .stat-item:last-child {
     margin-bottom: 0;
 }
 
-.profile_stats .stat-item svg {
+.admin-app-container .profile_stats .stat-item svg {
     color: var(--admin-primary);
 }
 
 /* === Profile Form === */
-.profile_form {
+.admin-app-container .profile_form {
     padding: 24px;
 }
 
-.profile_form-group {
+.admin-app-container .profile_form-group {
     margin-bottom: 20px;
 }
 
-.profile_form-group label {
+.admin-app-container .profile_form-group label {
     display: block;
     font-weight: 500;
     color: var(--admin-text);
@@ -205,20 +205,20 @@
     margin-bottom: 8px;
 }
 
-.input-wrapper {
+.admin-app-container .input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.input-icon {
+.admin-app-container .input-icon {
     position: absolute;
     left: 16px;
     color: var(--admin-primary);
     z-index: 1;
 }
 
-.input-wrapper input {
+.admin-app-container .input-wrapper input {
     width: 100%;
     padding: 12px 16px 12px 48px;
     border: 1px solid var(--admin-border);
@@ -227,13 +227,13 @@
     transition: all 0.2s;
 }
 
-.input-wrapper input:focus {
+.admin-app-container .input-wrapper input:focus {
     outline: none;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.profile_toggle-password {
+.admin-app-container .profile_toggle-password {
     position: absolute;
     right: 12px;
     background: none;
@@ -248,13 +248,13 @@
     transition: all 0.2s;
 }
 
-.profile_toggle-password:hover {
+.admin-app-container .profile_toggle-password:hover {
     background: rgba(203, 168, 144, 0.1);
     color: var(--admin-primary);
 }
 
 /* === Button === */
-.profile_btn {
+.admin-app-container .profile_btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -269,18 +269,18 @@
     transition: all 0.2s;
 }
 
-.profile_btn-primary {
+.admin-app-container .profile_btn-primary {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
 
-.profile_btn-primary:hover {
+.admin-app-container .profile_btn-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
 
-.profile_btn-primary:disabled {
+.admin-app-container .profile_btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;

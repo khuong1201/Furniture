@@ -1,12 +1,12 @@
 /* Order Detail - Modern Gold Theme */
 
-.order_detail-page {
+.admin-app-container .order_detail-page {
     max-width: 1200px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.order_page-header {
+.admin-app-container .order_page-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -17,7 +17,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.order_header-content h1 {
+.admin-app-container .order_header-content h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -27,22 +27,22 @@
     margin: 0 0 8px 0;
 }
 
-.order_header-content h1 svg {
+.admin-app-container .order_header-content h1 svg {
     color: var(--admin-primary);
 }
 
-.order_order-id {
+.admin-app-container .order_order-id {
     font-size: 14px;
     color: var(--admin-text-muted);
     font-family: monospace;
 }
 
-.order_header-actions {
+.admin-app-container .order_header-actions {
     display: flex;
     gap: 12px;
 }
 
-.order_btn-back {
+.admin-app-container .order_btn-back {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -55,13 +55,13 @@
     transition: all 0.2s;
 }
 
-.order_btn-back:hover {
+.admin-app-container .order_btn-back:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
 /* === Order Grid === */
-.order_grid {
+.admin-app-container .order_grid {
     display: grid;
     grid-template-columns: 1fr 360px;
     gap: 24px;
@@ -74,14 +74,14 @@
 }
 
 /* === Info Card === */
-.order_info-card {
+.admin-app-container .order_info-card {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     overflow: hidden;
 }
 
-.order_card-header {
+.admin-app-container .order_card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -90,7 +90,7 @@
     border-bottom: 1px solid var(--admin-border);
 }
 
-.order_card-header h3 {
+.admin-app-container .order_card-header h3 {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -100,32 +100,32 @@
     margin: 0;
 }
 
-.order_card-header svg {
+.admin-app-container .order_card-header svg {
     color: var(--admin-primary);
 }
 
-.order_card-body {
+.admin-app-container .order_card-body {
     padding: 20px 24px;
 }
 
 /* === Order Items === */
-.order_items {
+.admin-app-container .order_items {
     display: flex;
     flex-direction: column;
 }
 
-.order_item {
+.admin-app-container .order_item {
     display: flex;
     gap: 16px;
     padding: 16px 0;
     border-bottom: 1px solid var(--admin-border-light);
 }
 
-.order_item:last-child {
+.admin-app-container .order_item:last-child {
     border-bottom: none;
 }
 
-.order_item-image {
+.admin-app-container .order_item-image {
     width: 80px;
     height: 80px;
     border-radius: var(--admin-radius);
@@ -134,97 +134,97 @@
     flex-shrink: 0;
 }
 
-.order_item-image img {
+.admin-app-container .order_item-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.order_item-details {
+.admin-app-container .order_item-details {
     flex: 1;
 }
 
-.order_item-name {
+.admin-app-container .order_item-name {
     font-size: 15px;
     font-weight: 500;
     color: var(--admin-text);
     margin: 0 0 4px 0;
 }
 
-.order_item-variant {
+.admin-app-container .order_item-variant {
     font-size: 13px;
     color: var(--admin-text-muted);
     margin: 0 0 8px 0;
 }
 
-.order_item-price {
+.admin-app-container .order_item-price {
     font-size: 14px;
     color: var(--admin-primary-dark);
     font-weight: 600;
 }
 
-.order_item-quantity {
+.admin-app-container .order_item-quantity {
     font-size: 14px;
     color: var(--admin-text-secondary);
 }
 
 /* === Customer Info === */
-.order_customer-info {
+.admin-app-container .order_customer-info {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.order_info-row {
+.admin-app-container .order_info-row {
     display: flex;
     align-items: flex-start;
     gap: 12px;
 }
 
-.order_info-row svg {
+.admin-app-container .order_info-row svg {
     color: var(--admin-primary);
     flex-shrink: 0;
     margin-top: 2px;
 }
 
-.order_info-row span {
+.admin-app-container .order_info-row span {
     font-size: 14px;
     color: var(--admin-text);
 }
 
 /* === Order Summary === */
-.order_summary-row {
+.admin-app-container .order_summary-row {
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
     border-bottom: 1px solid var(--admin-border-light);
 }
 
-.order_summary-row:last-child {
+.admin-app-container .order_summary-row:last-child {
     border-bottom: none;
     padding-top: 14px;
     margin-top: 4px;
     border-top: 2px solid var(--admin-border);
 }
 
-.order_summary-label {
+.admin-app-container .order_summary-label {
     font-size: 14px;
     color: var(--admin-text-secondary);
 }
 
-.order_summary-value {
+.admin-app-container .order_summary-value {
     font-size: 14px;
     color: var(--admin-text);
 }
 
-.order_summary-total {
+.admin-app-container .order_summary-total {
     font-size: 18px;
     font-weight: 700;
     color: var(--admin-primary-dark);
 }
 
 /* === Status Badge === */
-.order_status-badge {
+.admin-app-container .order_status-badge {
     display: inline-flex;
     align-items: center;
     padding: 6px 14px;
@@ -233,44 +233,44 @@
     font-weight: 500;
 }
 
-.order_status-pending {
+.admin-app-container .order_status-pending {
     background: rgba(245, 158, 11, 0.1);
     color: #d97706;
 }
 
-.order_status-processing {
+.admin-app-container .order_status-processing {
     background: rgba(59, 130, 246, 0.1);
     color: #2563eb;
 }
 
-.order_status-shipped {
+.admin-app-container .order_status-shipped {
     background: rgba(139, 92, 246, 0.1);
     color: #7c3aed;
 }
 
-.order_status-delivered {
+.admin-app-container .order_status-delivered {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
 }
 
-.order_status-cancelled {
+.admin-app-container .order_status-cancelled {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
 }
 
 /* === Timeline === */
-.order_timeline {
+.admin-app-container .order_timeline {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.order_timeline-item {
+.admin-app-container .order_timeline-item {
     display: flex;
     gap: 14px;
 }
 
-.order_timeline-icon {
+.admin-app-container .order_timeline-icon {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -282,39 +282,39 @@
     flex-shrink: 0;
 }
 
-.order_timeline-item.completed .order_timeline-icon {
+.admin-app-container .order_timeline-item.completed .order_timeline-icon {
     background: rgba(34, 197, 94, 0.1);
     border-color: #16a34a;
     color: #16a34a;
 }
 
-.order_timeline-item.current .order_timeline-icon {
+.admin-app-container .order_timeline-item.current .order_timeline-icon {
     background: var(--admin-primary);
     border-color: var(--admin-primary);
     color: white;
 }
 
-.order_timeline-content h4 {
+.admin-app-container .order_timeline-content h4 {
     font-size: 14px;
     font-weight: 500;
     color: var(--admin-text);
     margin: 0 0 4px 0;
 }
 
-.order_timeline-content p {
+.admin-app-container .order_timeline-content p {
     font-size: 12px;
     color: var(--admin-text-muted);
     margin: 0;
 }
 
 /* === Actions === */
-.order_action-buttons {
+.admin-app-container .order_action-buttons {
     display: flex;
     gap: 8px;
     margin-top: 20px;
 }
 
-.order_btn {
+.admin-app-container .order_btn {
     flex: 1;
     display: inline-flex;
     align-items: center;
@@ -329,25 +329,25 @@
     transition: all 0.2s;
 }
 
-.order_btn-primary {
+.admin-app-container .order_btn-primary {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
 }
 
-.order_btn-secondary {
+.admin-app-container .order_btn-secondary {
     background: white;
     color: var(--admin-text-secondary);
     border: 1px solid var(--admin-border);
 }
 
-.order_btn-danger {
+.admin-app-container .order_btn-danger {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* === States === */
-.order_loading-state {
+.admin-app-container .order_loading-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -355,7 +355,7 @@
     padding: 60px;
 }
 
-.order_spinner {
+.admin-app-container .order_spinner {
     width: 48px;
     height: 48px;
     border: 4px solid var(--admin-border-light);

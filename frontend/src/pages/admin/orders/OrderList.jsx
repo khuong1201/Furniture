@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Search, Filter, Package, ShoppingBag } from 'lucide-react';
-import OrderService from '@/services/OrderService';
-import './OrderList.css';
+import OrderService from '@/services/admin/OrderService';
+import '../products/ProductList.css';
 
 const OrderList = () => {
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ const OrderList = () => {
             setLoading(true);
             setError(null);
 
-            const response = await OrderService.getMyOrders();
+            const response = await OrderService.getOrders();
 
             if (response.success && response.data) {
                 setOrders(response.data);

@@ -11,7 +11,7 @@ import {
     XCircle,
     Clock
 } from 'lucide-react';
-import PaymentService from '@/services/PaymentService';
+import PaymentService from '@/services/admin/PaymentService';
 import Modal from '@/components/admin/shared/Modal';
 import './PaymentList.css';
 

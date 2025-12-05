@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Package, Tag, FolderTree, Image as ImageIcon } from 'lucide-react';
-import ProductService from '@/services/ProductService';
+import ProductService from '@/services/admin/ProductService';
 import './ProductDetail.css';
 
 const ProductDetail = () => {

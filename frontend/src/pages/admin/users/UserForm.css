@@ -1,12 +1,12 @@
 /* User Form - Modern Gold Theme */
 
-.user_form-page {
+.admin-app-container .user_form-page {
     max-width: 800px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.user_page-header {
+.admin-app-container .user_page-header {
     display: flex;
     align-items: center;
     gap: 20px;
@@ -17,7 +17,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.user_btn-back {
+.admin-app-container .user_btn-back {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -30,12 +30,12 @@
     transition: all 0.2s;
 }
 
-.user_btn-back:hover {
+.admin-app-container .user_btn-back:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
-.user_header-content h1 {
+.admin-app-container .user_header-content h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -45,28 +45,28 @@
     margin: 0;
 }
 
-.user_header-content h1 svg {
+.admin-app-container .user_header-content h1 svg {
     color: var(--admin-primary);
 }
 
 /* === Form Container === */
-.user_form-container {
+.admin-app-container .user_form-container {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     overflow: hidden;
 }
 
-.user_form-section {
+.admin-app-container .user_form-section {
     padding: 28px;
     border-bottom: 1px solid var(--admin-border-light);
 }
 
-.user_form-section:last-child {
+.admin-app-container .user_form-section:last-child {
     border-bottom: none;
 }
 
-.user_section-title {
+.admin-app-container .user_section-title {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -76,12 +76,12 @@
     margin: 0 0 20px 0;
 }
 
-.user_section-title svg {
+.admin-app-container .user_section-title svg {
     color: var(--admin-primary);
 }
 
 /* === Form Grid === */
-.user_form-grid {
+.admin-app-container .user_form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
@@ -94,15 +94,15 @@
 }
 
 /* === Form Group === */
-.user_form-group {
+.admin-app-container .user_form-group {
     margin-bottom: 0;
 }
 
-.user_form-group.full-width {
+.admin-app-container .user_form-group.full-width {
     grid-column: 1 / -1;
 }
 
-.user_form-group label {
+.admin-app-container .user_form-group label {
     display: block;
     font-weight: 500;
     color: var(--admin-text);
@@ -110,13 +110,13 @@
     margin-bottom: 8px;
 }
 
-.user_form-group label .required {
+.admin-app-container .user_form-group label .required {
     color: #ef4444;
 }
 
-.user_form-group input,
-.user_form-group select,
-.user_form-group textarea {
+.admin-app-container .user_form-group input,
+.admin-app-container .user_form-group select,
+.admin-app-container .user_form-group textarea {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--admin-border);
@@ -125,35 +125,35 @@
     transition: all 0.2s;
 }
 
-.user_form-group input:focus,
-.user_form-group select:focus,
-.user_form-group textarea:focus {
+.admin-app-container .user_form-group input:focus,
+.admin-app-container .user_form-group select:focus,
+.admin-app-container .user_form-group textarea:focus {
     outline: none;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.user_form-group input:disabled {
+.admin-app-container .user_form-group input:disabled {
     background: var(--admin-accent-light);
     cursor: not-allowed;
 }
 
-.user_form-hint {
+.admin-app-container .user_form-hint {
     font-size: 12px;
     color: var(--admin-text-muted);
     margin-top: 6px;
 }
 
 /* === Password Input === */
-.user_password-input {
+.admin-app-container .user_password-input {
     position: relative;
 }
 
-.user_password-input input {
+.admin-app-container .user_password-input input {
     padding-right: 48px;
 }
 
-.user_toggle-password {
+.admin-app-container .user_toggle-password {
     position: absolute;
     right: 12px;
     top: 50%;
@@ -167,18 +167,18 @@
     align-items: center;
 }
 
-.user_toggle-password:hover {
+.admin-app-container .user_toggle-password:hover {
     color: var(--admin-primary);
 }
 
 /* === Roles Checkbox === */
-.user_roles-grid {
+.admin-app-container .user_roles-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 12px;
 }
 
-.user_role-checkbox {
+.admin-app-container .user_role-checkbox {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -190,35 +190,35 @@
     transition: all 0.2s;
 }
 
-.user_role-checkbox:hover {
+.admin-app-container .user_role-checkbox:hover {
     border-color: var(--admin-primary);
 }
 
-.user_role-checkbox.selected {
+.admin-app-container .user_role-checkbox.selected {
     background: white;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.user_role-checkbox input {
+.admin-app-container .user_role-checkbox input {
     width: 18px;
     height: 18px;
     accent-color: var(--admin-primary);
 }
 
-.user_role-checkbox span {
+.admin-app-container .user_role-checkbox span {
     font-size: 14px;
     color: var(--admin-text);
 }
 
 /* === Switch === */
-.user_switch-group {
+.admin-app-container .user_switch-group {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.user_switch {
+.admin-app-container .user_switch {
     width: 48px;
     height: 26px;
     background: var(--admin-border);
@@ -228,11 +228,11 @@
     transition: background 0.2s;
 }
 
-.user_switch.active {
+.admin-app-container .user_switch.active {
     background: var(--admin-primary);
 }
 
-.user_switch::before {
+.admin-app-container .user_switch::before {
     content: '';
     position: absolute;
     width: 22px;
@@ -245,12 +245,12 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.user_switch.active::before {
+.admin-app-container .user_switch.active::before {
     transform: translateX(22px);
 }
 
 /* === Form Actions === */
-.user_form-actions {
+.admin-app-container .user_form-actions {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
@@ -259,7 +259,7 @@
     border-top: 1px solid var(--admin-border);
 }
 
-.user_btn {
+.admin-app-container .user_btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -272,35 +272,35 @@
     transition: all 0.2s;
 }
 
-.user_btn-primary {
+.admin-app-container .user_btn-primary {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
 
-.user_btn-primary:hover {
+.admin-app-container .user_btn-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
 
-.user_btn-primary:disabled {
+.admin-app-container .user_btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
 }
 
-.user_btn-secondary {
+.admin-app-container .user_btn-secondary {
     background: white;
     color: var(--admin-text-secondary);
     border: 1px solid var(--admin-border);
 }
 
-.user_btn-secondary:hover {
+.admin-app-container .user_btn-secondary:hover {
     background: var(--admin-accent-light);
 }
 
 /* === Alert === */
-.user_alert {
+.admin-app-container .user_alert {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -309,21 +309,21 @@
     margin-bottom: 20px;
 }
 
-.user_alert-error {
+.admin-app-container .user_alert-error {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* === Loading === */
-.user_loading-state {
+.admin-app-container .user_loading-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 60px;
 }
 
-.user_spinner {
+.admin-app-container .user_spinner {
     width: 48px;
     height: 48px;
     border: 4px solid var(--admin-border-light);

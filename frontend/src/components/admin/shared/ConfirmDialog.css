@@ -1,6 +1,6 @@
 /* Confirm Dialog - Modern Gold Theme */
 
-.confirm-dialog-overlay {
+.admin-app-container .confirm-dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -25,7 +25,7 @@
     }
 }
 
-.confirm-dialog {
+.admin-app-container .confirm-dialog {
     background: white;
     border-radius: var(--admin-radius-lg);
     max-width: 420px;
@@ -47,29 +47,29 @@
     }
 }
 
-.confirm-dialog-header {
+.admin-app-container .confirm-dialog-header {
     padding: 24px 24px 0;
 }
 
-.confirm-dialog-header h3 {
+.admin-app-container .confirm-dialog-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
     color: var(--admin-text);
 }
 
-.confirm-dialog-body {
+.admin-app-container .confirm-dialog-body {
     padding: 16px 24px 24px;
 }
 
-.confirm-dialog-body p {
+.admin-app-container .confirm-dialog-body p {
     margin: 0;
     font-size: 14px;
     color: var(--admin-text-secondary);
     line-height: 1.6;
 }
 
-.confirm-dialog-footer {
+.admin-app-container .confirm-dialog-footer {
     display: flex;
     gap: 12px;
     padding: 20px 24px;
@@ -78,7 +78,7 @@
     justify-content: flex-end;
 }
 
-.confirm-dialog-footer .btn {
+.admin-app-container .confirm-dialog-footer .btn {
     padding: 10px 20px;
     border-radius: var(--admin-radius);
     font-size: 14px;
@@ -88,27 +88,27 @@
     border: none;
 }
 
-.confirm-dialog-footer .btn-cancel {
+.admin-app-container .confirm-dialog-footer .btn-cancel {
     background: white;
     color: var(--admin-text-secondary);
     border: 1px solid var(--admin-border);
 }
 
-.confirm-dialog-footer .btn-cancel:hover {
+.admin-app-container .confirm-dialog-footer .btn-cancel:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
-.confirm-dialog-footer .btn-confirm {
+.admin-app-container .confirm-dialog-footer .btn-confirm {
     background: #ef4444;
     color: white;
 }
 
-.confirm-dialog-footer .btn-confirm:hover {
+.admin-app-container .confirm-dialog-footer .btn-confirm:hover {
     background: #dc2626;
 }
 
-.confirm-dialog-footer .btn-confirm:disabled {
+.admin-app-container .confirm-dialog-footer .btn-confirm:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }

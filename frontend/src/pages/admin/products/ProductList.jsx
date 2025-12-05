@@ -20,7 +20,7 @@ import {
     Download,
     Upload
 } from 'lucide-react';
-import ProductService from '@/services/ProductService';
+import ProductService from '@/services/admin/ProductService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './ProductList.css';
 

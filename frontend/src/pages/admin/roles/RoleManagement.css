@@ -1,12 +1,12 @@
 /* Role Management - Modern Gold Theme */
 
-.role_management {
+.admin-app-container .role_management {
     max-width: 1400px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.role_page-header {
+.admin-app-container .role_page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -17,7 +17,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.role_header-content h1 {
+.admin-app-container .role_header-content h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -27,18 +27,18 @@
     margin: 0;
 }
 
-.role_header-content h1 svg {
+.admin-app-container .role_header-content h1 svg {
     color: var(--admin-primary);
 }
 
-.role_header-content p {
+.admin-app-container .role_header-content p {
     color: var(--admin-text-muted);
     font-size: 14px;
     margin: 8px 0 0 0;
 }
 
 /* === Alert === */
-.role_alert {
+.admin-app-container .role_alert {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -48,13 +48,13 @@
     font-size: 14px;
 }
 
-.role_alert-error {
+.admin-app-container .role_alert-error {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-.role_alert-close {
+.admin-app-container .role_alert-close {
     margin-left: auto;
     background: none;
     border: none;
@@ -64,21 +64,21 @@
 }
 
 /* === Container === */
-.roles_container {
+.admin-app-container .roles_container {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     padding: 24px;
 }
 
-.roles_list {
+.admin-app-container .roles_list {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
 /* === Role Card === */
-.role_card {
+.admin-app-container .role_card {
     background: var(--admin-accent-light);
     border-radius: var(--admin-radius);
     border: 1px solid var(--admin-border-light);
@@ -86,15 +86,15 @@
     transition: all 0.2s;
 }
 
-.role_card:hover {
+.admin-app-container .role_card:hover {
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.1);
 }
 
-.role_card.expanded {
+.admin-app-container .role_card.expanded {
     border-color: var(--admin-primary);
 }
 
-.role_header {
+.admin-app-container .role_header {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -103,14 +103,14 @@
     background: white;
 }
 
-.role_info {
+.admin-app-container .role_info {
     display: flex;
     align-items: center;
     gap: 14px;
     flex: 1;
 }
 
-.role_icon {
+.admin-app-container .role_icon {
     width: 44px;
     height: 44px;
     border-radius: var(--admin-radius);
@@ -121,26 +121,26 @@
     color: white;
 }
 
-.role_details h3 {
+.admin-app-container .role_details h3 {
     font-size: 16px;
     font-weight: 600;
     color: var(--admin-text);
     margin: 0 0 4px 0;
 }
 
-.role_details p {
+.admin-app-container .role_details p {
     font-size: 13px;
     color: var(--admin-text-muted);
     margin: 0;
 }
 
-.role_meta {
+.admin-app-container .role_meta {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.role_meta-item {
+.admin-app-container .role_meta-item {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -148,28 +148,28 @@
     color: var(--admin-text-secondary);
 }
 
-.role_meta-item svg {
+.admin-app-container .role_meta-item svg {
     color: var(--admin-primary);
 }
 
-.role_badge {
+.admin-app-container .role_badge {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 11px;
     font-weight: 600;
 }
 
-.role_badge-system {
+.admin-app-container .role_badge-system {
     background: rgba(59, 130, 246, 0.1);
     color: #2563eb;
 }
 
-.role_actions {
+.admin-app-container .role_actions {
     display: flex;
     gap: 6px;
 }
 
-.role_btn-icon {
+.admin-app-container .role_btn-icon {
     width: 34px;
     height: 34px;
     border-radius: var(--admin-radius);
@@ -182,58 +182,58 @@
     transition: all 0.2s;
 }
 
-.role_btn-edit {
+.admin-app-container .role_btn-edit {
     border-color: rgba(203, 168, 144, 0.3);
     color: var(--admin-primary);
 }
 
-.role_btn-edit:hover {
+.admin-app-container .role_btn-edit:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
-.role_btn-delete {
+.admin-app-container .role_btn-delete {
     border-color: rgba(239, 68, 68, 0.2);
     color: #ef4444;
 }
 
-.role_btn-delete:hover {
+.admin-app-container .role_btn-delete:hover {
     background: rgba(239, 68, 68, 0.1);
     border-color: #ef4444;
 }
 
-.role_btn-expand {
+.admin-app-container .role_btn-expand {
     border-color: var(--admin-border);
     color: var(--admin-text-secondary);
 }
 
 /* === Permissions Section === */
-.role_permissions {
+.admin-app-container .role_permissions {
     padding: 24px;
     background: white;
     border-top: 1px solid var(--admin-border-light);
 }
 
-.role_permissions h4 {
+.admin-app-container .role_permissions h4 {
     font-size: 14px;
     font-weight: 600;
     color: var(--admin-primary-dark);
     margin: 0 0 16px 0;
 }
 
-.no-permissions {
+.admin-app-container .no-permissions {
     color: var(--admin-text-muted);
     font-size: 14px;
     font-style: italic;
 }
 
-.permissions-grid {
+.admin-app-container .permissions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
 }
 
-.role_permission-group h5 {
+.admin-app-container .role_permission-group h5 {
     font-size: 13px;
     font-weight: 600;
     color: var(--admin-text);
@@ -241,13 +241,13 @@
     text-transform: capitalize;
 }
 
-.role_permission-tags {
+.admin-app-container .role_permission-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
 
-.role_permission-tag {
+.admin-app-container .role_permission-tag {
     padding: 4px 10px;
     background: var(--admin-accent-light);
     border: 1px solid var(--admin-border);
@@ -257,7 +257,7 @@
 }
 
 /* === Buttons === */
-.btn {
+.admin-app-container .btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -270,20 +270,20 @@
     transition: all 0.2s;
 }
 
-.role_btn-primary {
+.admin-app-container .role_btn-primary {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
 
-.role_btn-primary:hover {
+.admin-app-container .role_btn-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
 
 /* === States === */
-.role_loading-state,
-.role_empty-state {
+.admin-app-container .role_loading-state,
+.admin-app-container .role_empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -292,7 +292,7 @@
     text-align: center;
 }
 
-.role_spinner {
+.admin-app-container .role_spinner {
     width: 48px;
     height: 48px;
     border: 4px solid var(--admin-border-light);
@@ -308,12 +308,12 @@
     }
 }
 
-.role_empty-state svg {
+.admin-app-container .role_empty-state svg {
     color: var(--admin-text-muted);
     margin-bottom: 16px;
 }
 
-.role_empty-state h3 {
+.admin-app-container .role_empty-state h3 {
     color: var(--admin-text);
     margin: 0 0 20px 0;
 }

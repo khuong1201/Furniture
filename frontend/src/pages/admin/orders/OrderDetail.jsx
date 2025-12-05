@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, User, MapPin, CreditCard, Truck } from 'lucide-react';
-import OrderService from '@/services/OrderService';
+import OrderService from '@/services/customer/OrderService';
 import './OrderDetail.css';
 
 const OrderDetail = () => {

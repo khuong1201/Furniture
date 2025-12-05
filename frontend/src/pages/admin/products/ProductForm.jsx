@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2, Image as ImageIcon } from 'lucide-react';
-import ProductService from '@/services/ProductService';
-import CategoryService from '@/services/CategoryService';
+import ProductService from '@/services/admin/ProductService';
+import CategoryService from '@/services/admin/CategoryService';
 import './ProductForm.css';
 
 const ProductForm = () => {

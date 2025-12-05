@@ -4,8 +4,8 @@ import {
     Shield, Plus, Edit, Trash2, Search, Users, Key,
     AlertCircle, RefreshCw, ChevronDown, ChevronUp
 } from 'lucide-react';
-import RoleService from '@/services/RoleService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import RoleService from '@/services/admin/RoleService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './RoleManagement.css';
 
 const RoleList = () => {

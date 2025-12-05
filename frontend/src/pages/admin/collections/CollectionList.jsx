@@ -4,8 +4,8 @@ import {
     Layers, Plus, Edit, Trash2, Search, Image, Package,
     AlertCircle, RefreshCw, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import CollectionService from '@/services/CollectionService';
-import ConfirmDialog from '@/pages/admin/categories/ConfirmDialog';
+import CollectionService from '@/services/admin/CollectionService';
+import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './CollectionManagement.css';
 
 const CollectionList = () => {

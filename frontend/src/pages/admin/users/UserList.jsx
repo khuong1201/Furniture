@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Edit, Trash2, Eye, UserCircle } from 'lucide-react';
-import UserService from '@/services/UserService';
+import UserService from '@/services/admin/UserService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './UserList.css';
 

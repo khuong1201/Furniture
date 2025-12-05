@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Package, Search, Warehouse } from 'lucide-react';
-import WarehouseService from '@/services/WarehouseService';
+import WarehouseService from '@/services/admin/WarehouseService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './WarehouseList.css';
 

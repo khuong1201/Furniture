@@ -1,12 +1,12 @@
 /* Payment List - Modern Gold Theme */
 
-.payment_list-page {
+.admin-app-container .payment_list-page {
     max-width: 1400px;
     margin: 0 auto;
 }
 
 /* === Header === */
-.payment_page-header {
+.admin-app-container .payment_page-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -17,7 +17,7 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.payment_header-content h1 {
+.admin-app-container .payment_header-content h1 {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -27,18 +27,18 @@
     margin: 0 0 8px 0;
 }
 
-.payment_header-content h1 svg {
+.admin-app-container .payment_header-content h1 svg {
     color: var(--admin-primary);
 }
 
-.payment_page-subtitle {
+.admin-app-container .payment_page-subtitle {
     color: var(--admin-text-muted);
     font-size: 14px;
     margin: 0;
 }
 
 /* === Filters === */
-.payment_filters-section {
+.admin-app-container .payment_filters-section {
     display: flex;
     gap: 16px;
     align-items: center;
@@ -49,13 +49,13 @@
     border: 1px solid var(--admin-border-light);
 }
 
-.payment_search-box {
+.admin-app-container .payment_search-box {
     position: relative;
     flex: 1;
     max-width: 400px;
 }
 
-.payment_search-box svg {
+.admin-app-container .payment_search-box svg {
     position: absolute;
     left: 14px;
     top: 50%;
@@ -63,7 +63,7 @@
     color: var(--admin-primary);
 }
 
-.payment_search-box input {
+.admin-app-container .payment_search-box input {
     width: 100%;
     padding: 10px 14px 10px 42px;
     border: 1px solid var(--admin-border);
@@ -71,13 +71,13 @@
     font-size: 14px;
 }
 
-.payment_search-box input:focus {
+.admin-app-container .payment_search-box input:focus {
     outline: none;
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
-.payment_filter-select {
+.admin-app-container .payment_filter-select {
     padding: 10px 14px;
     border: 1px solid var(--admin-border);
     border-radius: var(--admin-radius);
@@ -86,29 +86,29 @@
     cursor: pointer;
 }
 
-.payment_filter-select:focus {
+.admin-app-container .payment_filter-select:focus {
     outline: none;
     border-color: var(--admin-primary);
 }
 
 /* === Table === */
-.payment_table-container {
+.admin-app-container .payment_table-container {
     background: white;
     border-radius: var(--admin-radius-lg);
     border: 1px solid var(--admin-border-light);
     overflow: hidden;
 }
 
-.payment_table {
+.admin-app-container .payment_table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.payment_table thead {
+.admin-app-container .payment_table thead {
     background: var(--admin-accent-light);
 }
 
-.payment_table th {
+.admin-app-container .payment_table th {
     padding: 14px 16px;
     text-align: left;
     font-size: 13px;
@@ -119,23 +119,23 @@
     border-bottom: 1px solid var(--admin-border);
 }
 
-.payment_table td {
+.admin-app-container .payment_table td {
     padding: 14px 16px;
     font-size: 14px;
     color: var(--admin-text);
     border-bottom: 1px solid var(--admin-border-light);
 }
 
-.payment_table tr:last-child td {
+.admin-app-container .payment_table tr:last-child td {
     border-bottom: none;
 }
 
-.payment_table tbody tr:hover {
+.admin-app-container .payment_table tbody tr:hover {
     background: var(--admin-accent-light);
 }
 
 /* === Status Badges === */
-.payment_status-badge {
+.admin-app-container .payment_status-badge {
     display: inline-flex;
     align-items: center;
     padding: 4px 12px;
@@ -144,36 +144,36 @@
     font-weight: 500;
 }
 
-.payment_status-pending {
+.admin-app-container .payment_status-pending {
     background: rgba(245, 158, 11, 0.1);
     color: #d97706;
 }
 
-.payment_status-completed,
-.payment_status-paid {
+.admin-app-container .payment_status-completed,
+.admin-app-container .payment_status-paid {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
 }
 
-.payment_status-failed,
-.payment_status-cancelled {
+.admin-app-container .payment_status-failed,
+.admin-app-container .payment_status-cancelled {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
 }
 
-.payment_status-refunded {
+.admin-app-container .payment_status-refunded {
     background: rgba(59, 130, 246, 0.1);
     color: #2563eb;
 }
 
 /* === Amount === */
-.payment_amount {
+.admin-app-container .payment_amount {
     font-weight: 600;
     color: var(--admin-primary-dark);
 }
 
 /* === Actions === */
-.payment_action-btn {
+.admin-app-container .payment_action-btn {
     width: 32px;
     height: 32px;
     border-radius: var(--admin-radius);
@@ -187,13 +187,13 @@
     transition: all 0.2s;
 }
 
-.payment_action-btn:hover {
+.admin-app-container .payment_action-btn:hover {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
 /* === Pagination === */
-.payment_pagination {
+.admin-app-container .payment_pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -201,17 +201,17 @@
     border-top: 1px solid var(--admin-border-light);
 }
 
-.payment_page-info {
+.admin-app-container .payment_page-info {
     font-size: 14px;
     color: var(--admin-text-secondary);
 }
 
-.payment_page-controls {
+.admin-app-container .payment_page-controls {
     display: flex;
     gap: 6px;
 }
 
-.payment_page-btn {
+.admin-app-container .payment_page-btn {
     min-width: 36px;
     height: 36px;
     padding: 0 12px;
@@ -222,25 +222,25 @@
     transition: all 0.2s;
 }
 
-.payment_page-btn:hover:not(:disabled) {
+.admin-app-container .payment_page-btn:hover:not(:disabled) {
     background: var(--admin-accent-light);
     border-color: var(--admin-primary);
 }
 
-.payment_page-btn.active {
+.admin-app-container .payment_page-btn.active {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
     color: white;
     border-color: var(--admin-primary);
 }
 
-.payment_page-btn:disabled {
+.admin-app-container .payment_page-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
 /* === States === */
-.payment_loading-state,
-.payment_empty-state {
+.admin-app-container .payment_loading-state,
+.admin-app-container .payment_empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -249,7 +249,7 @@
     text-align: center;
 }
 
-.payment_spinner {
+.admin-app-container .payment_spinner {
     width: 48px;
     height: 48px;
     border: 4px solid var(--admin-border-light);
@@ -265,17 +265,17 @@
     }
 }
 
-.payment_empty-state svg {
+.admin-app-container .payment_empty-state svg {
     color: var(--admin-text-muted);
     margin-bottom: 16px;
 }
 
-.payment_empty-state h3 {
+.admin-app-container .payment_empty-state h3 {
     color: var(--admin-text);
     margin: 0 0 8px 0;
 }
 
-.payment_empty-state p {
+.admin-app-container .payment_empty-state p {
     color: var(--admin-text-muted);
     margin: 0;
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Package, AlertTriangle, CheckCircle, XCircle, Warehouse } from 'lucide-react';
-import InventoryService from '@/services/InventoryService';
+import InventoryService from '@/services/admin/InventoryService';
 import './InventoryList.css';
 
 const InventoryList = () => {

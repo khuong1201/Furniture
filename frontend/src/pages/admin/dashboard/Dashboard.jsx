@@ -26,9 +26,9 @@ import {
     Bar,
     Legend
 } from 'recharts';
-import DashboardService from '@/services/DashboardService';
-import OrderService from '@/services/OrderService';
-import ProductService from '@/services/ProductService';
+import DashboardService from '@/services/admin/DashboardService';
+import OrderService from '@/services/customer/OrderService';
+import ProductService from '@/services/customer/ProductService';
 import './Dashboard.css';
 
 const COLORS = ['#CBA890', '#a78b6e', '#8a7159', '#e5d5c5', '#d4a574'];

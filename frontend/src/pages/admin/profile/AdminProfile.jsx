@@ -13,7 +13,7 @@ import {
     Check
 } from 'lucide-react';
 import { useAuth } from '@/hooks/AuthContext';
-import AuthService from '@/services/AuthService';
+import AuthService from '@/services/customer/AuthService';
 import './AdminProfile.css';
 
 const AdminProfile = () => {

@@ -8,7 +8,7 @@ import HomePage from './pages/customer/homePage/HomePage';
 import Register from './pages/customer/register/RegisterForm';
 import LogIn from './pages/customer/login/LoginForm';
 import ProductDetail from './pages/customer/Product/ProductDetail';
-import SearchPage from './pages/customer/SearchPage';
+import SearchPage from './pages/customer/searchPage/SearchPage';
 import CartPage from './pages/customer/cart/CartPage';
 
 // Admin Pages

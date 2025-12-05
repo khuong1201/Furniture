@@ -1,6 +1,6 @@
 /* Admin Login - Modern Gold Theme */
 
-.admin-login-page {
+.admin-app-container .admin-login-page {
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -12,7 +12,7 @@
 }
 
 /* Animated Background */
-.admin-login-page::before {
+.admin-app-container .admin-login-page::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -34,7 +34,7 @@
 }
 
 /* Container */
-.login-container {
+.admin-app-container .login-container {
     position: relative;
     z-index: 1;
     width: 100%;
@@ -42,7 +42,7 @@
 }
 
 /* Card */
-.login-card {
+.admin-app-container .login-card {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(20px);
     border-radius: 24px;
@@ -55,12 +55,12 @@
 }
 
 /* Header */
-.login-header {
+.admin-app-container .login-header {
     text-align: center;
     margin-bottom: 40px;
 }
 
-.logo-icon {
+.admin-app-container .logo-icon {
     width: 72px;
     height: 72px;
     margin: 0 auto 24px;
@@ -88,7 +88,7 @@
     }
 }
 
-.login-header h1 {
+.admin-app-container .login-header h1 {
     font-size: 28px;
     font-weight: 700;
     color: #1e293b;
@@ -99,14 +99,14 @@
     background-clip: text;
 }
 
-.login-header p {
+.admin-app-container .login-header p {
     color: #64748b;
     font-size: 14px;
     margin: 0;
 }
 
 /* Error Alert */
-.error-alert {
+.admin-app-container .error-alert {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -137,39 +137,39 @@
 }
 
 /* Form */
-.login-form {
+.admin-app-container .login-form {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.form-group {
+.admin-app-container .form-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.form-group label {
+.admin-app-container .form-group label {
     font-size: 14px;
     font-weight: 600;
     color: #334155;
     margin-left: 4px;
 }
 
-.input-wrapper {
+.admin-app-container .input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.input-icon {
+.admin-app-container .input-icon {
     position: absolute;
     left: 16px;
     color: #CBA890;
     z-index: 1;
 }
 
-.input-wrapper input {
+.admin-app-container .input-wrapper input {
     width: 100%;
     padding: 14px 16px 14px 48px;
     border: 2px solid #e2e8f0;
@@ -180,17 +180,17 @@
     transition: all 0.3s ease;
 }
 
-.input-wrapper input:focus {
+.admin-app-container .input-wrapper input:focus {
     outline: none;
     border-color: #CBA890;
     box-shadow: 0 0 0 4px rgba(203, 168, 144, 0.1);
 }
 
-.input-wrapper input::placeholder {
+.admin-app-container .input-wrapper input::placeholder {
     color: #94a3b8;
 }
 
-.toggle-password {
+.admin-app-container .toggle-password {
     position: absolute;
     right: 16px;
     background: none;
@@ -205,13 +205,13 @@
     border-radius: 6px;
 }
 
-.toggle-password:hover {
+.admin-app-container .toggle-password:hover {
     color: #CBA890;
     background: rgba(203, 168, 144, 0.1);
 }
 
 /* Login Button */
-.btn-login {
+.admin-app-container .btn-login {
     width: 100%;
     padding: 16px 24px;
     background: linear-gradient(135deg, #CBA890 0%, #a78b6e 100%);
@@ -229,7 +229,7 @@
     overflow: hidden;
 }
 
-.btn-login::before {
+.admin-app-container .btn-login::before {
     content: '';
     position: absolute;
     top: 0;
@@ -240,36 +240,36 @@
     transition: left 0.5s;
 }
 
-.btn-login:hover::before {
+.admin-app-container .btn-login:hover::before {
     left: 100%;
 }
 
-.btn-login:hover {
+.admin-app-container .btn-login:hover {
     transform: translateY(-2px);
     box-shadow:
         0 12px 24px rgba(203, 168, 144, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.btn-login:active {
+.admin-app-container .btn-login:active {
     transform: translateY(0);
 }
 
-.btn-login:disabled {
+.admin-app-container .btn-login:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none !important;
 }
 
 /* Footer */
-.login-footer {
+.admin-app-container .login-footer {
     margin-top: 32px;
     padding-top: 24px;
     border-top: 1px solid #e2e8f0;
     text-align: center;
 }
 
-.login-footer p {
+.admin-app-container .login-footer p {
     color: #94a3b8;
     font-size: 13px;
     margin: 0;
@@ -292,7 +292,7 @@
 }
 
 /* Decorative Elements */
-.admin-login-page::after {
+.admin-app-container .admin-login-page::after {
     content: '';
     position: absolute;
     bottom: 0;

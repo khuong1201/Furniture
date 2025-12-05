@@ -10,7 +10,7 @@ import {
     AlertCircle,
     Key
 } from 'lucide-react';
-import PermissionService from '@/services/PermissionService';
+import PermissionService from '@/services/admin/PermissionService';
 import Modal from '@/components/admin/shared/Modal';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './PermissionList.css';
