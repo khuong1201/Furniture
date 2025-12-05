@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Permission\database\seeders;
+namespace Modules\Permission\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Role\Domain\Models\Role;
@@ -12,73 +12,123 @@ class PermissionDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Clear cache
         app()[\Illuminate\Cache\CacheManager::class]->forget('spatie.permission.cache');
         
         Schema::disableForeignKeyConstraints();
-        Permission::truncate();
-        Role::truncate();
-        DB::table('role_user')->truncate();
-        DB::table('permission_role')->truncate();
+        
+        // Truncate tables to ensure a clean slate
+        $tables = ['permission_role', 'permissions', 'roles'];
+        foreach ($tables as $table) {
+            if (Schema::hasTable($table)) DB::table($table)->truncate();
+        }
+
         Schema::enableForeignKeyConstraints();
 
         DB::transaction(function () {
-            $permissionsMap = [
-                'user' => ['index', 'store', 'show', 'update', 'destroy'],
-                'role' => ['index', 'store', 'show', 'update', 'destroy'],
-                'permission' => ['index', 'store'],
-                'product' => ['index', 'store', 'show', 'update', 'destroy'],
-                'category' => ['index', 'store', 'show', 'update', 'destroy'],
-                'order' => ['index', 'store', 'show', 'update', 'destroy', 'cancel'],
-                'inventory' => ['index', 'adjust'],
-                'report' => ['view'],
-                'log' => ['view'],
+            // Define Permissions by Module Group
+            $permissionsByModule = [
+                'System & Dashboard' => [
+                    'dashboard.view',  
+                    'log.view',        
+                    'setting.view', 'setting.edit',
+                ],
+                'User & Auth' => [
+                    'user.view', 'user.create', 'user.edit', 'user.delete',
+                    'role.view', 'role.create', 'role.edit', 'role.delete',
+                    'permission.view', 'permission.create',
+                ],
+                'Catalog (Products)' => [
+                    'product.view', 'product.create', 'product.edit', 'product.delete',
+                    'category.view', 'category.create', 'category.edit', 'category.delete',
+                    'attribute.view', 'attribute.create', 'attribute.edit', 'attribute.delete',
+                    'collection.view', 'collection.create', 'collection.edit', 'collection.delete',
+                    'media.create', 'media.delete',
+                ],
+                'Sales (Orders)' => [
+                    'order.view', 'order.view_all', 'order.create', 'order.edit', 'order.cancel',
+                    'payment.view', 'payment.view_all', 'payment.edit',
+                    'shipping.view', 'shipping.create', 'shipping.edit', 'shipping.delete',
+                ],
+                'Marketing' => [
+                    'promotion.view', 'promotion.create', 'promotion.edit', 'promotion.delete',
+                    'review.view_all', 'review.edit', 'review.delete',
+                ],
+                'Inventory' => [
+                    'warehouse.view', 'warehouse.create', 'warehouse.edit', 'warehouse.delete',
+                    'inventory.view', 'inventory.adjust', 'inventory.edit',
+                ],
+                'Customer Data' => [
+                    'address.view', 'address.edit', 'address.delete',
+                    'wishlist.view'
+                ]
             ];
 
             $allPermissionIds = [];
 
-            foreach ($permissionsMap as $module => $actions) {
-                foreach ($actions as $action) {
-                    $name = "{$module}.{$action}";
-                    $permission = Permission::create([
-                        'name' => $name,
-                        'module' => $module,
-                        'description' => ucfirst($action) . " {$module}"
-                    ]);
+            // 1. Create Permissions
+            foreach ($permissionsByModule as $group => $perms) {
+                foreach ($perms as $permName) {
+                    $moduleKey = explode('.', $permName)[0];
+                    
+                    $permission = Permission::firstOrCreate(
+                        ['name' => $permName],
+                        [
+                            'description' => "Access to $permName ($group)",
+                            'module' => $moduleKey
+                        ]
+                    );
                     $allPermissionIds[] = $permission->id;
                 }
             }
 
-            // Create Roles
-            $adminRole = Role::create([
-                'name' => 'admin', 
-                'slug' => 'admin',
-                'is_system' => true, 
-                'description' => 'Super Admin'
-            ]);
+            // 2. Create Roles
             
-            $managerRole = Role::create([
-                'name' => 'manager', 
-                'slug' => 'manager',
-                'is_system' => false, 
-                'description' => 'Store Manager'
-            ]);
+            // ADMIN: Super User
+            $adminRole = Role::firstOrCreate(
+                ['name' => 'admin'], 
+                ['slug' => 'admin', 'is_system' => true, 'description' => 'System Administrator with full access']
+            );
 
-            $customerRole = Role::create([
-                'name' => 'customer', 
-                'slug' => 'customer',
-                'is_system' => true, 
-                'description' => 'Customer'
-            ]);
+            // MANAGER: Store/Business Manager
+            $managerRole = Role::firstOrCreate(
+                ['name' => 'manager'], 
+                ['slug' => 'manager', 'is_system' => false, 'description' => 'Store Manager - Can manage operations but not system settings']
+            );
 
+            // STAFF: Sales/Support Staff
+            $staffRole = Role::firstOrCreate(
+                ['name' => 'staff'], 
+                ['slug' => 'staff', 'is_system' => false, 'description' => 'Operational Staff - Limited access (No Delete)']
+            );
+
+            // CUSTOMER: End User
+            $customerRole = Role::firstOrCreate(
+                ['name' => 'customer'], 
+                ['slug' => 'customer', 'is_system' => true, 'description' => 'Registered Customer']
+            );
+
+            // 3. Assign Permissions to Roles
+            
+            // ADMIN: Gets everything
             $adminRole->permissions()->sync($allPermissionIds);
 
-            $managerPermissions = Permission::whereNotIn('module', ['role', 'permission', 'log'])->pluck('id');
+            // MANAGER: Gets everything EXCEPT System/Logs/Roles/Permissions
+            $managerPermissions = Permission::whereNotIn('module', ['log', 'role', 'permission', 'setting'])->pluck('id');
             $managerRole->permissions()->sync($managerPermissions);
 
-            $customerPermissions = Permission::whereIn('name', [
-                'product.index', 'product.show', 'category.index', 'order.store', 'order.show'
-            ])->pluck('id');
-            $customerRole->permissions()->sync($customerPermissions);
+            // STAFF: Sales & Inventory Operations only. NO DELETE PERMISSIONS.
+            $staffPermissions = Permission::where(function($query) {
+                $allowModules = ['order', 'product', 'inventory', 'shipping', 'attribute', 'collection', 'category', 'promotion', 'media'];
+                $query->whereIn('module', $allowModules);
+                $query->where('name', 'not like', '%delete%'); // Block delete actions
+            })
+            ->orWhere('name', 'dashboard.view') // Allow dashboard viewing
+            ->pluck('id');
+            
+            $staffRole->permissions()->sync($staffPermissions);
+
+            // CUSTOMER: Permissions are handled via logic/policies, usually empty in DB.
         });
     }
 }

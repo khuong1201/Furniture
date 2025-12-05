@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Category\database\seeders;
+namespace Modules\Category\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Category\Domain\Models\Category;
@@ -10,34 +10,38 @@ class CategoryDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Xóa dữ liệu cũ để tránh trùng lặp khi seed lại
-        Category::query()->delete();
+        // Xóa dữ liệu cũ
+        Category::query()->forceDelete();
 
-        $rooms = [
-            'Phòng Khách' => ['Sofa & Ghế thư giãn', 'Bàn trà & Bàn bên', 'Kệ Tivi', 'Tủ giày & Tủ trang trí'],
-            'Phòng Ngủ' => ['Giường ngủ', 'Tủ quần áo', 'Bàn trang điểm', 'Tab đầu giường', 'Nệm'],
-            'Phòng Bếp & Ăn' => ['Bàn ăn', 'Ghế ăn', 'Tủ bếp', 'Quầy Bar'],
-            'Phòng Làm Việc' => ['Bàn làm việc', 'Ghế văn phòng', 'Kệ sách', 'Tủ hồ sơ'],
-            'Trang Trí & Đèn' => ['Đèn chùm', 'Đèn cây', 'Thảm trải sàn', 'Gương', 'Tranh treo tường'],
-            'Nội Thất Thông Minh' => ['Sofa giường', 'Bàn ăn gấp gọn', 'Giường ẩn tủ']
+        $categories = [
+            'Living Room' => ['Sofas & Armchairs', 'Coffee Tables', 'TV Stands', 'Cabinets & Storage'],
+            'Bedroom' => ['Beds', 'Wardrobes', 'Nightstands', 'Mattresses', 'Dressers'],
+            'Dining & Kitchen' => ['Dining Tables', 'Dining Chairs', 'Bar Stools', 'Kitchen Islands'],
+            'Office' => ['Office Desks', 'Office Chairs', 'Bookshelves'],
+            'Decor & Lighting' => ['Chandeliers', 'Floor Lamps', 'Rugs', 'Mirrors', 'Wall Art'],
+            'Smart Furniture' => ['Sofa Beds', 'Extendable Tables', 'Smart Beds']
         ];
 
-        foreach ($rooms as $roomName => $subCategories) {
-            // Tạo danh mục cha (Phòng)
+        foreach ($categories as $parentName => $children) {
+
+            // Tạo category cha
             $parent = Category::create([
-                'name' => $roomName,
-                'slug' => Str::slug($roomName),
-                'description' => "Nội thất cao cấp cho " . mb_strtolower($roomName),
+                'uuid' => (string) Str::uuid(),
+                'name' => $parentName,
+                'slug' => Str::slug($parentName),
+                'description' => "Premium furniture for " . strtolower($parentName),
+                'parent_id' => null,
                 'is_active' => true
             ]);
 
-            // Tạo danh mục con (Loại sản phẩm)
-            foreach ($subCategories as $subName) {
+            // Tạo category con
+            foreach ($children as $childName) {
                 Category::create([
-                    'name' => $subName,
-                    'slug' => Str::slug($subName),
+                    'uuid' => (string) Str::uuid(),
+                    'name' => $childName,
+                    'slug' => Str::slug($childName),
+                    'description' => "Modern and elegant $childName collection.",
                     'parent_id' => $parent->id,
-                    'description' => "Các mẫu $subName thiết kế hiện đại, sang trọng.",
                     'is_active' => true
                 ]);
             }

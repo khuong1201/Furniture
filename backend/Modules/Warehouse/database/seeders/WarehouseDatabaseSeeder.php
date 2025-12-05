@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Warehouse\database\seeders;
+namespace Modules\Warehouse\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Warehouse\Domain\Models\Warehouse;
@@ -11,21 +11,31 @@ class WarehouseDatabaseSeeder extends Seeder
     public function run(): void
     {
         $manager = User::where('email', 'manager@system.com')->first();
+        $managerId = $manager?->id;
 
         Warehouse::firstOrCreate(
-            ['name' => 'Kho Hà Nội'],
+            ['name' => 'North Distribution Center'],
             [
-                'location' => 'Khu CN Nam Thăng Long, Hà Nội',
-                'manager_id' => $manager?->id,
+                'location' => 'Industrial Zone A, Hanoi',
+                'manager_id' => $managerId,
                 'is_active' => true
             ]
         );
 
         Warehouse::firstOrCreate(
-            ['name' => 'Kho Hồ Chí Minh'],
+            ['name' => 'South Distribution Center'],
             [
-                'location' => 'Khu Chế Xuất Tân Thuận, Quận 7, TP.HCM',
-                'manager_id' => $manager?->id,
+                'location' => 'District 7, Ho Chi Minh City',
+                'manager_id' => $managerId,
+                'is_active' => true
+            ]
+        );
+
+        Warehouse::firstOrCreate(
+            ['name' => 'Central Showroom'],
+            [
+                'location' => 'Da Nang City Center',
+                'manager_id' => $managerId,
                 'is_active' => true
             ]
         );

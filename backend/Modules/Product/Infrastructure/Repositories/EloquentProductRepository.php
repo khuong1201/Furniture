@@ -25,9 +25,6 @@ class EloquentProductRepository extends EloquentBaseRepository implements Produc
                     $q->active(); 
                 }
             ]);
-            
-        // Nếu cần hiện biến thể ở list (thường list chỉ hiện min/max price, nhưng nếu cần load):
-        // $query->with('variants');
 
         if (!empty($filters['search'])) {
             $q = $filters['search'];

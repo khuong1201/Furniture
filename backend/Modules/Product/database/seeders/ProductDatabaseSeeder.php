@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Product\database\seeders;
+namespace Modules\Product\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Product\Domain\Models\Product;
@@ -8,169 +8,180 @@ use Modules\Product\Domain\Models\Attribute;
 use Modules\Product\Domain\Models\AttributeValue;
 use Modules\Product\Domain\Models\ProductVariant;
 use Modules\Category\Domain\Models\Category;
+use Modules\Product\Domain\Models\ProductImage;
 use Illuminate\Support\Str;
 
 class ProductDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Setup Attributes (Đặc thù nội thất)
-        $this->createAttributes();
+        // 1. Create Attributes
+        $this->createFurnitureAttributes();
 
-        // 2. Generate Products (Số lượng lớn)
-        $this->generateLivingRoomProducts();
-        $this->generateBedroomProducts();
-        $this->generateDiningProducts();
-        $this->generateDecorProducts();
+        // 2. Generate Massive Products
+        $this->generateMassiveProducts('sofas-armchairs', ['Sofa', 'Armchair', 'Couch', 'Recliner'], 50);
+        $this->generateMassiveProducts('coffee-tables', ['Coffee Table', 'Side Table', 'Tea Table'], 30);
+        $this->generateMassiveProducts('beds', ['Bed Frame', 'Luxury Bed', 'Platform Bed'], 40);
+        $this->generateMassiveProducts('dining-tables', ['Dining Table', 'Breakfast Table'], 30);
+        $this->generateMassiveProducts('floor-lamps', ['Floor Lamp', 'Standing Lamp', 'Reading Light'], 30);
     }
 
-    protected function createAttributes(): void
+    // ... (Phần createFurnitureAttributes giữ nguyên như cũ) ...
+    protected function createFurnitureAttributes(): void
     {
-        // Màu sắc (Color)
-        $color = Attribute::firstOrCreate(['slug' => 'color'], ['name' => 'Màu sắc', 'type' => 'color']);
+        // Color
+        $color = Attribute::firstOrCreate(['slug' => 'color'], ['name' => 'Color', 'type' => 'color', 'uuid' => Str::uuid()]);
         $colors = [
-            ['value' => 'Xám ghi', 'code' => '#808080'],
-            ['value' => 'Nâu da bò', 'code' => '#8B4513'],
-            ['value' => 'Xanh Navy', 'code' => '#000080'],
-            ['value' => 'Be (Beige)', 'code' => '#F5F5DC'],
-            ['value' => 'Gỗ sồi tự nhiên', 'code' => '#D2B48C'],
-            ['value' => 'Gỗ óc chó (Walnut)', 'code' => '#5D4037'],
-            ['value' => 'Đen mờ', 'code' => '#1C1C1C'],
-            ['value' => 'Trắng sứ', 'code' => '#FFFFFF'],
+            ['value' => 'Charcoal Grey', 'code' => '#36454F'],
+            ['value' => 'Cognac Leather', 'code' => '#9A463D'],
+            ['value' => 'Navy Blue', 'code' => '#000080'],
+            ['value' => 'Beige', 'code' => '#F5F5DC'],
+            ['value' => 'Natural Oak', 'code' => '#D2B48C'],
+            ['value' => 'Dark Walnut', 'code' => '#5D4037'],
+            ['value' => 'Matte Black', 'code' => '#1C1C1C'],
+            ['value' => 'Pure White', 'code' => '#FFFFFF'],
+            ['value' => 'Emerald Green', 'code' => '#50C878'],
+            ['value' => 'Mustard Yellow', 'code' => '#FFDB58'],
         ];
-        foreach ($colors as $c) {
-            AttributeValue::firstOrCreate(['attribute_id' => $color->id, 'value' => $c['value']], ['code' => $c['code']]);
-        }
+        foreach ($colors as $c) AttributeValue::firstOrCreate(['attribute_id' => $color->id, 'value' => $c['value']], ['uuid' => Str::uuid(), 'code' => $c['code']]);
 
-        // Chất liệu (Material)
-        $material = Attribute::firstOrCreate(['slug' => 'material'], ['name' => 'Chất liệu', 'type' => 'select']);
-        $materials = ['Da thật Italia', 'Da Microfiber', 'Vải nỉ cao cấp', 'Vải nhung', 'Gỗ Sồi Mỹ', 'Gỗ Óc Chó', 'Gỗ Công Nghiệp MDF', 'Kim loại sơn tĩnh điện', 'Đá Marble'];
-        foreach ($materials as $m) {
-            AttributeValue::firstOrCreate(['attribute_id' => $material->id, 'value' => $m]);
-        }
+        // Material
+        $material = Attribute::firstOrCreate(['slug' => 'material'], ['uuid' => Str::uuid(), 'name' => 'Material', 'type' => 'select']);
+        $materials = ['Italian Leather', 'Premium Velvet', 'Solid Oak', 'Walnut Wood', 'Marble', 'Powder Coated Metal', 'Linen Fabric', 'Rattan'];
+        foreach ($materials as $m) AttributeValue::firstOrCreate(['attribute_id' => $material->id, 'value' => $m], ['uuid' => Str::uuid()]);
 
-        // Kích thước (Dimensions - Rất quan trọng với nội thất)
-        $size = Attribute::firstOrCreate(['slug' => 'size'], ['name' => 'Kích thước', 'type' => 'select']);
-        $sizes = ['1m2 x 2m', '1m6 x 2m', '1m8 x 2m', 'Dài 2m2', 'Dài 2m8', 'Dài 1m6', 'Rộng 80cm', 'Size Tiêu Chuẩn'];
-        foreach ($sizes as $s) {
-            AttributeValue::firstOrCreate(['attribute_id' => $size->id, 'value' => $s]);
-        }
-    }
-
-    protected function generateLivingRoomProducts(): void
-    {
-        $sofaCat = Category::where('slug', 'sofa-ghe-thu-gian')->first();
-        if (!$sofaCat) return;
-
-        $products = [
-            ['name' => 'Sofa Văng Da Bò Ý Napoli', 'base_price' => 15000000],
-            ['name' => 'Sofa Góc L Nỉ Hàn Quốc', 'base_price' => 8500000],
-            ['name' => 'Sofa Thông Minh Giường Kéo', 'base_price' => 6500000],
-            ['name' => 'Ghế Thư Giãn Armchair Retro', 'base_price' => 3200000],
-            ['name' => 'Sofa Băng Gỗ Sồi Đệm Nỉ', 'base_price' => 9000000],
-        ];
-
-        foreach ($products as $p) {
-            $this->createProductWithVariants($p['name'], $sofaCat->id, $p['base_price'], ['color', 'material']);
-        }
-
-        $tableCat = Category::where('slug', 'ban-tra-ban-ben')->first();
-        if ($tableCat) {
-            $this->createProductWithVariants('Bàn Trà Đôi Mặt Đá Ceramic', $tableCat->id, 2500000, ['color']);
-            $this->createProductWithVariants('Bàn Trà Gỗ Óc Chó Nguyên Khối', $tableCat->id, 5500000, ['size']);
-        }
-    }
-
-    protected function generateBedroomProducts(): void
-    {
-        $bedCat = Category::where('slug', 'giuong-ngu')->first();
-        if (!$bedCat) return;
-
-        $products = [
-            ['name' => 'Giường Ngủ Gỗ Sồi Nhật Bản', 'base_price' => 7000000],
-            ['name' => 'Giường Bọc Nỉ Đầu Giường Cao', 'base_price' => 8500000],
-            ['name' => 'Giường Có Ngăn Kéo Thông Minh', 'base_price' => 5500000],
-        ];
-
-        foreach ($products as $p) {
-            $this->createProductWithVariants($p['name'], $bedCat->id, $p['base_price'], ['size', 'color']);
-        }
-    }
-
-    protected function generateDiningProducts(): void
-    {
-        $diningCat = Category::where('slug', 'ban-an')->first();
-        if (!$diningCat) return;
-
-        $this->createProductWithVariants('Bộ Bàn Ăn 6 Ghế Howard', $diningCat->id, 12000000, ['material', 'color']);
-        $this->createProductWithVariants('Bàn Ăn Thông Minh Kéo Dài', $diningCat->id, 8900000, ['color']);
-    }
-
-    protected function generateDecorProducts(): void
-    {
-        $decorCat = Category::where('slug', 'den-cay')->first();
-        if (!$decorCat) return;
-        
-        $this->createProductWithVariants('Đèn Cây Đọc Sách Bắc Âu', $decorCat->id, 1200000, ['color']);
+        // Size
+        $size = Attribute::firstOrCreate(['slug' => 'size'], ['uuid' => Str::uuid(), 'name' => 'Size', 'type' => 'select']);
+        $sizes = ['King Size', 'Queen Size', '3-Seater (2.2m)', 'L-Shape (2.8m x 1.8m)', 'Standard (1.6m)', 'Large (2.0m)', 'Compact', 'Single'];
+        foreach ($sizes as $s) AttributeValue::firstOrCreate(['attribute_id' => $size->id, 'value' => $s], ['uuid' => Str::uuid()]);
     }
 
     /**
-     * Helper function để tạo sản phẩm và tự động sinh variants ngẫu nhiên
+     * Hàm sinh sản phẩm số lượng lớn với tên ngẫu nhiên
      */
+    protected function generateMassiveProducts(string $categorySlug, array $productTypes, int $count): void
+    {
+        $category = Category::where('slug', $categorySlug)->first();
+        if (!$category) return;
+
+        $adjectives = ['Modern', 'Luxury', 'Vintage', 'Minimalist', 'Rustic', 'Industrial', 'Classic', 'Scandanavian', 'Boho', 'Elegant'];
+        $features = ['with Storage', 'Convertible', 'Low Profile', 'Tufted', 'Modular', 'Handcrafted', 'Eco-friendly'];
+
+        for ($i = 0; $i < $count; $i++) {
+            // Tạo tên ngẫu nhiên: "Modern Luxury Sofa with Storage"
+            $name = $adjectives[array_rand($adjectives)] . ' ' . 
+                    $productTypes[array_rand($productTypes)] . ' ' . 
+                    (rand(0, 1) ? $features[array_rand($features)] : ''); // 50% có thêm feature
+            
+            // Tránh trùng tên
+            $name .= ' ' . rand(100, 999); 
+
+            $basePrice = rand(100, 2000); // Giá từ $100 - $2000
+
+            // Chọn attribute ngẫu nhiên cho từng loại sản phẩm
+            $attributeSets = [
+                'sofas-armchairs' => ['color', 'material'],
+                'coffee-tables' => ['material', 'size'],
+                'beds' => ['size', 'material'],
+                'dining-tables' => ['material', 'size'],
+                'floor-lamps' => ['color']
+            ];
+            
+            $attrs = $attributeSets[$categorySlug] ?? ['color'];
+
+            $this->createProductWithVariants($name, $category->id, $basePrice, $attrs);
+        }
+    }
+
+    // ... (Hàm createProductWithVariants và generateProductImages giữ nguyên như bản trước) ...
+    // ... Bạn copy lại đoạn code createProductWithVariants từ câu trả lời trước vào đây ...
+    // ... (Tôi sẽ paste lại đầy đủ bên dưới để bạn tiện copy 1 lần) ...
+
     protected function createProductWithVariants(string $name, int $categoryId, float $basePrice, array $attributeSlugs): void
     {
         $product = Product::create([
+            'uuid' => Str::uuid(),
             'name' => $name,
             'category_id' => $categoryId,
-            'description' => "Mô tả chi tiết cho sản phẩm $name. Được chế tác từ nguyên vật liệu cao cấp, phù hợp với mọi không gian nội thất hiện đại.",
+            'description' => "Experience luxury with the $name. Premium materials. High durability. Designed for modern living.",
             'has_variants' => true,
             'is_active' => true,
-            'price' => null, 
-            'rating_avg' => rand(40, 50) / 10, // 4.0 - 5.0
+            'price' => $basePrice, 
+            'sku' => strtoupper(Str::slug($name)), 
+            'rating_avg' => rand(35, 50) / 10, // 3.5 - 5.0
             'rating_count' => rand(10, 500),
-            'sold_count' => rand(0, 1000)
+            'sold_count' => 0
         ]);
 
-        // Lấy các Attribute Values tương ứng
+        $this->generateProductImages($product);
+
         $attributes = [];
         foreach ($attributeSlugs as $slug) {
             $attr = Attribute::where('slug', $slug)->first();
             if ($attr) {
-                // Lấy random 2-3 giá trị cho mỗi thuộc tính để tạo variant
-                $attributes[$slug] = $attr->values()->inRandomOrder()->limit(rand(2, 3))->get();
+                // Random 2-4 options per attribute to create variants
+                $attributes[$slug] = $attr->values()->inRandomOrder()->limit(rand(2, 4))->get();
             }
         }
 
-        // Generate Variants (Cartesian Product đơn giản hóa)
-        // Để đơn giản, ta loop qua attribute đầu tiên và ghép ngẫu nhiên với attribute thứ 2 (nếu có)
-        
+        if (empty($attributes)) return;
+
         $primaryAttrSlug = $attributeSlugs[0];
         $primaryValues = $attributes[$primaryAttrSlug] ?? collect([]);
 
-        foreach ($primaryValues as $val1) {
-            $variantPrice = $basePrice + rand(100000, 2000000);
-            $skuCode = Str::slug($product->name) . '-' . $val1->id . '-' . Str::random(4);
+        $minPrice = null; 
+        $representativeSku = null; 
+
+        foreach ($primaryValues as $index => $val1) {
+            $variantPrice = $basePrice + (rand(0, 50) * 10); 
             
+            if (is_null($minPrice) || $variantPrice < $minPrice) {
+                $minPrice = $variantPrice;
+            }
+
+            $skuCode = strtoupper(Str::slug($product->name) . '-' . $val1->value . '-' . Str::random(3));
+            
+            if ($index === 0) {
+                $representativeSku = $skuCode;
+            }
+
             $variant = ProductVariant::create([
+                'uuid' => Str::uuid(),
                 'product_id' => $product->id,
-                'sku' => strtoupper($skuCode),
+                'sku' => $skuCode,
                 'price' => $variantPrice,
-                'weight' => rand(5000, 50000), // 5kg - 50kg
+                'weight' => rand(5000, 50000),
                 'sold_count' => rand(0, 100),
-                'image_url' => "https://placehold.co/600x400?text=" . urlencode($name . ' - ' . $val1->value)
+                'image_url' => "https://placehold.co/600x400?text=" . urlencode($name . ' - ' . $val1->value),
             ]);
 
-            // Attach Attributes
             $variant->attributeValues()->attach($val1->id);
 
-            // Nếu có attribute thứ 2, lấy 1 giá trị random attach vào
-            if (isset($attributeSlugs[1])) {
+            if (isset($attributeSlugs[1]) && isset($attributes[$attributeSlugs[1]])) {
                 $val2 = $attributes[$attributeSlugs[1]]->random();
                 $variant->attributeValues()->attach($val2->id);
             }
         }
-        
-        // Cập nhật lại tổng sold count
-        $product->update(['sold_count' => $product->variants()->sum('sold_count')]);
+
+        $product->update([
+            'sold_count' => $product->variants()->sum('sold_count'),
+            'price' => $minPrice ?? $basePrice, 
+            'sku' => $representativeSku ?? $product->sku 
+        ]);
+    }
+
+    protected function generateProductImages(Product $product): void
+    {
+        $imageCount = rand(2, 4);
+        for ($i = 0; $i < $imageCount; $i++) {
+            ProductImage::create([
+                'uuid' => Str::uuid(),
+                'product_id' => $product->id,
+                'image_url' => "https://placehold.co/800x600?text=" . urlencode($product->name . ' View ' . ($i + 1)),
+                'public_id' => null,
+                'is_primary' => $i === 0,
+                'sort_order' => $i
+            ]);
+        }
     }
 }
