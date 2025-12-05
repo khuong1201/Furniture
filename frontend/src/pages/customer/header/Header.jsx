@@ -1,82 +1,87 @@
-  import React, { useState } from 'react';
-  import {useAuth} from '@/hooks/AuthContext'
-  import { Link, useNavigate } from 'react-router-dom';
-  import bellIcon from '@/assets/icons/bell.svg';
-  import cartIcon from '@/assets/icons/cart.svg';
-  import accountIcon from '@/assets/icons/account.svg';
-  import searchIcon from '@/assets/icons/search.svg';
-  import './Header.css';
+import React, { useState } from 'react';
+import { useAuth } from '@/hooks/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import bellIcon from '@/assets/icons/bell.svg';
+import cartIcon from '@/assets/icons/cart.svg';
+import accountIcon from '@/assets/icons/account.svg';
+import searchIcon from '@/assets/icons/search.svg';
 
-  function Header() {
-    
-    const{user} = useAuth();
-    const navigate = useNavigate();
-    const [keyword, setKeyword] = useState('');
+// 1. Import styles từ module
+import styles from './Header.module.css';
 
-    const handleSearch = () => {
-      if (keyword.trim()) {
-        navigate(`/customer/product?search=${encodeURIComponent(keyword)}`);
-      }
-    };
+function Header() {
+  
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState('');
 
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter') {
-        handleSearch();
-      }
-    };
+  const handleSearch = () => {
+    if (keyword.trim()) {
+      navigate(`/customer/product?search=${encodeURIComponent(keyword)}`);
+    }
+  };
 
-    return (
-      <header className="header-wrapper">
-        <div className="header-top">
-          <div className="container top-container">
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
-            <div className="search-box">
-              <div className="search-icon-wrapper">
-                <img src={searchIcon} alt="Search" className="search-icon" />
-              </div>
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
+  return (
+    <header className={styles['header-wrapper']}>
+      <div className={styles['header-top']}>
+        {/* Lưu ý: Khi có 2 class trở lên, ta dùng Template Literals để nối chuỗi */}
+        <div className={`${styles['container']} ${styles['top-container']}`}>
+
+          <div className={styles['search-box']}>
+            <div className={styles['search-icon-wrapper']}>
+              <img src={searchIcon} alt="Search" className={styles['search-icon']} />
+            </div>
+            <input 
+              type="text" 
+              placeholder="Search products..." 
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={handleKeyDown}
+              // Input thường không có class riêng trong code cũ của bạn, 
+              // nếu trong CSS bạn style theo tag input nằm trong .search-box thì không cần thêm class ở đây
+            />
+          </div>
+
+          <div className={styles['header-actions']}>
+            
+            <div className={styles['action-item']}>
+              <img src={bellIcon} alt="Bell" className={styles['svg-icon']}/>
             </div>
 
-            <div className="header-actions">
-              
-              <div className="action-item">
-                <img src={bellIcon} alt="Bell" className="svg-icon"/>
-              </div>
+            <div className={styles['action-item']}>
+              <Link to="/customer/cart">
+                <img src={cartIcon} alt="Cart" className={styles['svg-icon']}/>
+              </Link>
+            </div>
 
-              <div className="action-item">
-                <Link to="/customer/cart">
-                  <img src={cartIcon} alt="Cart" className="svg-icon"/>
+            <div className={styles['action-item']}>
+              <img src={accountIcon} alt="User" className={styles['svg-icon']}/>
+              {user ? (
+                <span className={styles['auth-text']}>
+                  Xin chào, {user.name}
+                </span>
+              ) : (
+                <Link
+                  to="/customer/register"
+                  className={styles['auth-text']}
+                  
+                >
+                  Log In / Sign up
                 </Link>
-              </div>
-
-              <div className="action-item user-action">
-                <img src={accountIcon} alt="User" className="svg-icon"/>
-                {user ? (
-                  <span className="auth-text">
-                    Xin chào, {user.name}
-                  </span>
-                ) : (
-                  <Link
-                    to="/customer/register"
-                    className="auth-text"
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    Log In / Sign up
-                  </Link>
-                )}
-              </div>
-
+              )}
             </div>
+
           </div>
         </div>
-      </header>
-    );
-  }
+      </div>
+    </header>
+  );
+}
 
-  export default Header;
+export default Header;

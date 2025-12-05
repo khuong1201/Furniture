@@ -1,0 +1,82 @@
+/* components/product/ReviewItem.module.css */
+
+.reviewItem {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #f9f9f9;
+  padding-bottom: 20px;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reviewContent {
+  flex: 1;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.userName {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.userRating {
+  display: flex;
+  gap: 1px;
+}
+
+.reviewDate {
+  font-size: 12px;
+  color: #999;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.reviewText {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.reviewImages {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.reviewImages img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  cursor: pointer;
+}
+
+.btnLike {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.btnLike:hover {
+  color: #CBA890;
+}

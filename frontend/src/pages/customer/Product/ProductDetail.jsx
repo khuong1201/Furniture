@@ -4,7 +4,7 @@ import { useProduct } from '@/hooks/useProduct';
 import { useCart } from '@/hooks/useCart';
 import { useOrder } from '@/hooks/useOrder';
 import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin, ThumbsUp } from 'lucide-react';
-
+import ProductReviews from './ProductReviews';
 // 1. Import styles từ module
 import styles from './ProductDetail.module.css';
 
@@ -334,85 +334,7 @@ const ProductDetail = () => {
 
         {/* --- PHẦN 6: PRODUCT RATING --- */}
         <h3 className={styles['desc-title']} style={{ marginTop: '40px' }}>Product Rating</h3>
-        
-        <div className={styles['rating-container']}>
-          {/* 1. Tổng quan điểm số */}
-          <div className={styles['rating-overview']}>
-            <div className={styles['rating-score']}>
-              <span className={styles['score-num']}>4.9</span>
-              <div className={styles['score-stars']}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={20} fill="#ffc107" color="#ffc107" />
-                ))}
-              </div>
-              <span className={styles['score-count']}>156 Ratings</span>
-            </div>
-
-            <div className={styles['rating-bars']}>
-              {[
-                { star: 5, percent: '90%' },
-                { star: 4, percent: '80%' },
-                { star: 3, percent: '60%' },
-                { star: 2, percent: '15%' },
-                { star: 1, percent: '0%' },
-              ].map((item) => (
-                <div key={item.star} className={styles['bar-row']}>
-                  <span className={styles['star-label']}>{item.star} <Star size={12} fill="#ffc107" color="#ffc107"/></span>
-                  <div className={styles['progress-bg']}>
-                    <div className={styles['progress-fill']} style={{ width: item.percent }}></div>
-                  </div>
-                  <span className={styles['percent-label']}>{item.percent}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 2. Bộ lọc */}
-          <div className={styles['rating-filters']}>
-            {['All (156)', 'With Photos (89)', '5 star (133)', '4 star (19)', '3 star (3)'].map((filter, idx) => (
-              <button key={idx} className={`${styles['filter-btn']} ${idx === 0 ? styles['active'] : ''}`}>
-                {filter}
-              </button>
-            ))}
-          </div>
-
-          {/* 3. Danh sách đánh giá */}
-          <div className={styles['review-list']}>
-            {[1, 2, 3].map((item) => (
-              <div key={item} className={styles['review-item']}>
-                <img 
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100" 
-                  alt="User" 
-                  className={styles['user-avatar']} 
-                />
-                <div className={styles['review-content']}>
-                  <div className={styles['review-header']}>
-                      <span className={styles['user-name']}>Michael C.</span>
-                      <div className={styles['user-rating']}>
-                        {[1, 2, 3, 4, 5].map(s => <Star key={s} size={12} fill="#ffc107" color="#ffc107"/>)}
-                      </div>
-                  </div>
-                  <span className={styles['review-date']}>2024-12-15 04:30</span>
-                  
-                  <p className={styles['review-text']}>
-                    Absolutely stunning! The velvet is so soft and the construction is solid. Worth every penny.
-                  </p>
-                  
-                  <div className={styles['review-images']}>
-                    <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200" alt="Review 1" />
-                    <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=200" alt="Review 2" />
-                  </div>
-
-                  <div className={styles['review-actions']}>
-                    <button className={styles['btn-like']}><ThumbsUp size={14} /> 3</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <button className={styles['btn-view-all']}>View All Reviews</button>
-        </div>
+        <ProductReviews productId={productDetail.uuid} />
       </div>      
     </div>
   );

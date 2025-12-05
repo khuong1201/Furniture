@@ -4,13 +4,12 @@
 }
 
 .header-wrapper {
-  font-family: 'Arial', sans-serif;
   width: 100%;
-  position: sticky; /* 1. Giữ cố định vị trí */
-  top: 0;          /* 2. Dính chặt lên mép trên cùng */
-  left: 0;         /* 3. Căn trái */
-  width: 100%;     /* 4. Trải rộng hết chiều ngang màn hình */
-  z-index: 1000;   /* 5. Đảm bảo Header nổi lên trên các thành phần khác */
+  position: sticky;
+  top: 0;         
+  left: 0;        
+  width: 100%;    
+  z-index: 1000;  
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -84,10 +83,19 @@
   height: 24px;
   fill: #333;
   stroke: #333;
+  align-items: center;
+}
+
+.action-item a {
+  display: flex;        
+  align-items: center; 
+  justify-content: center;
+  text-decoration: none; 
+  height: 100%;     
 }
 
 .auth-text {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
 }
