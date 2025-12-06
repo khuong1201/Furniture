@@ -61,8 +61,18 @@ class DashboardService {
 
     // Get revenue data
     async getRevenue(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/dashboard/revenue${queryString ? `?${queryString}` : ''}`);
+        // Map 'year' param to 'period=year' for backend compatibility
+        const period = params.year ? 'year' : 'week';
+        const result = await this.getSummary();
+
+        if (result.success && result.data && result.data.revenue_chart) {
+            // Return just the chart data to match expected format
+            return {
+                success: true,
+                data: result.data.revenue_chart
+            };
+        }
+        return result;
     }
 
     // Get detailed stats

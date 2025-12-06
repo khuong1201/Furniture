@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import {useAuth} from '@/hooks/AuthContext'
-import {Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import '../register/RegisterForm';
 
-function LoginForm () {
+// Sử dụng chung file style với RegisterForm
+import styles from '../register/RegisterForm.module.css';
+
+function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -13,7 +15,7 @@ function LoginForm () {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    device_name:'web'
+    device_name: 'web'
   });
 
   const { login, loading, error } = useAuth();
@@ -37,45 +39,38 @@ function LoginForm () {
       return;
     }
 
-    const result = await login (formData.email, formData.password, formData.device_name);
+    const result = await login(formData.email, formData.password, formData.device_name);
 
-   if (result.success) {
+    if (result.success) {
         navigate('/customer'); 
     } else {
         setLocalError(result.message || 'Đăng nhập thất bại'); 
     }
   };
 
-  
   return (
-    <div className="signup-wrapper">
-      <div className="signup-card">
-        <h2 className="signup-title">LOG IN</h2>
+    <div className={styles['signup-wrapper']}>
+      <div className={styles['signup-card']}>
+        <h2 className={styles['signup-title']}>LOG IN</h2>
+        
         {localError && (
-          <div className="error-message" style={{ 
-              color: 'red', 
-              backgroundColor: '#ffe6e6', 
-              padding: '10px', 
-              borderRadius: '5px', 
-              marginBottom: '15px',
-              textAlign: 'center',
-              fontSize: '14px'
-          }}>
+          <div className={styles['error-message']}>
             {localError}
           </div>
         )}
+
         <form onSubmit={handleSubmit}>
 
           {/* Email Field */}
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <div className="input-wrapper">
-              <Mail className="input-icon" />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Email</label>
+            <div className={styles['input-wrapper']}>
+              <Mail className={styles['input-icon']} />
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your Email"
-                className="form-input"
+                className={styles['form-input']}
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -83,15 +78,15 @@ function LoginForm () {
           </div>
 
           {/* Password Field */}
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <div className="input-wrapper">
-              <Lock className="input-icon" />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Password</label>
+            <div className={styles['input-wrapper']}>
+              <Lock className={styles['input-icon']} />
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Create a password"
-                className="form-input"
+                className={styles['form-input']}
                 style={{ paddingRight: '40px' }}
                 value={formData.password}
                 onChange={handleChange}
@@ -99,18 +94,17 @@ function LoginForm () {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="toggle-password"
+                className={styles['toggle-password']}
               >
                 {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
           </div>
 
-
           {/* Submit Button */}
           <button 
             type="submit" 
-            className="btn-primary" 
+            className={styles['btn-primary']} 
             disabled={loading}
             style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
@@ -119,12 +113,12 @@ function LoginForm () {
         </form>
 
         {/* Divider OR */}
-        <div className="divider">
+        <div className={styles['divider']}>
           <span>OR</span>
         </div>
 
         {/* Google Button */}
-        <button className="btn-google">
+        <button className={styles['btn-google']}>
           <img 
             src="https://www.svgrepo.com/show/475656/google-color.svg" 
             alt="Google Logo" 
@@ -134,9 +128,9 @@ function LoginForm () {
         </button>
 
         {/* Footer Login Link */}
-        <p className="footer-text">
+        <p className={styles['footer-text']}>
           Don't have an account?{' '}
-          <Link to='/customer/register' className='link-highlight'>
+          <Link to='/customer/register' className={styles['link-highlight']}>
             Sign up
           </Link>
         </p>

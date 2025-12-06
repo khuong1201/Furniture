@@ -1,0 +1,39 @@
+/* Admin Shared Styles - Scoped with .admin-app-container */
+
+.admin-app-container {
+    /* CSS variables for admin theme */
+    --admin-primary: #3b82f6;
+    --admin-primary-dark: #2563eb;
+    --admin-accent-light: #f3f4f6;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-border: #d1d5db;
+    --admin-border-light: #e5e7eb;
+    --admin-radius: 6px;
+    --admin-radius-lg: 12px;
+}
+
+/* Reset elements within admin scope */
+.admin-app-container * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Basic typography */
+.admin-app-container body,
+.admin-app-container html {
+    font-family: 'Inter', sans-serif;
+    background: var(--admin-accent-light);
+    color: var(--admin-text);
+}
+
+/* Links */
+.admin-app-container a {
+    color: var(--admin-primary);
+    text-decoration: none;
+}
+
+.admin-app-container a:hover {
+    text-decoration: underline;
+}

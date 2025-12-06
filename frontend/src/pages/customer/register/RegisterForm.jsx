@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import {useAuth} from '../../../hooks/AuthContext'
-import {Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../hooks/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import './RegisterForm.css';
+
+import styles from './RegisterForm.module.css';
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +21,6 @@ const RegisterForm = () => {
     device_name: 'web',
     agreeTerms: false 
   });
-
 
   const { register, loading, error: apiError } = useAuth();
 
@@ -81,12 +81,13 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="signup-wrapper">
-      <div className="signup-card">
-        <h2 className="signup-title">SIGN UP</h2>
+    // Sử dụng styles['class-name'] cho tất cả các class
+    <div className={styles['signup-wrapper']}>
+      <div className={styles['signup-card']}>
+        <h2 className={styles['signup-title']}>SIGN UP</h2>
 
         {(localError || apiError) && (
-          <div className='error-message'>
+          <div className={styles['error-message']}>
               {localError || apiError}
           </div>
         )}
@@ -94,15 +95,15 @@ const RegisterForm = () => {
         <form onSubmit={handleSubmit}>
           
           {/* Name Field */}
-          <div className="form-group">
-            <label className="form-label">Name</label>
-            <div className="input-wrapper">
-              <User className="input-icon" />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Name</label>
+            <div className={styles['input-wrapper']}>
+              <User className={styles['input-icon']} />
               <input
                 type="text"
                 name="name"
                 placeholder="Enter your Name"
-                className="form-input"
+                className={styles['form-input']}
                 value={formData.name}
                 onChange={handleChange}
               />
@@ -110,15 +111,15 @@ const RegisterForm = () => {
           </div>
 
           {/* Email Field */}
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <div className="input-wrapper">
-              <Mail className="input-icon" />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Email</label>
+            <div className={styles['input-wrapper']}>
+              <Mail className={styles['input-icon']} />
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your Email"
-                className="form-input"
+                className={styles['form-input']}
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -126,23 +127,23 @@ const RegisterForm = () => {
           </div>
 
           {/* Password Field */}
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <div className="input-wrapper">
-              <Lock className="input-icon" />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Password</label>
+            <div className={styles['input-wrapper']}>
+              <Lock className={styles['input-icon']} />
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Create a password"
-                className="form-input"
-                style={{ paddingRight: '40px' }} // Thêm padding phải để tránh đè icon mắt
+                className={styles['form-input']}
+                style={{ paddingRight: '40px' }}
                 value={formData.password}
                 onChange={handleChange}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="toggle-password"
+                className={styles['toggle-password']}
               >
                 {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
@@ -150,15 +151,15 @@ const RegisterForm = () => {
           </div>
 
           {/* Confirm Password Field */}
-          <div className="form-group">
-            <label className="form-label">Confirm Password</label>
-            <div className="input-wrapper">
-              <Lock className="input-icon" />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Confirm Password</label>
+            <div className={styles['input-wrapper']}>
+              <Lock className={styles['input-icon']} />
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 name="password_confirmation"
                 placeholder="Confirm your password"
-                className="form-input"
+                className={styles['form-input']}
                 style={{ paddingRight: '40px' }}
                 value={formData.password_confirmation}
                 onChange={handleChange}
@@ -166,7 +167,7 @@ const RegisterForm = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="toggle-password"
+                className={styles['toggle-password']}
               >
                 {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
@@ -174,24 +175,24 @@ const RegisterForm = () => {
           </div>
 
           {/* Checkbox Terms */}
-          <div className="terms-wrapper">
+          <div className={styles['terms-wrapper']}>
             <input
               type="checkbox"
               name="agreeTerms"
               id="agreeTerms"
-              className="checkbox"
+              className={styles['checkbox']}
               checked={formData.agreeTerms}
               onChange={handleChange}
             />
-            <label htmlFor="agreeTerms" className="terms-text">
-              I agree to the <a href="#" className="link-highlight">Terms & Conditions</a> and <a href="#" className="link-highlight">Privacy Policy</a>
+            <label htmlFor="agreeTerms" className={styles['terms-text']}>
+              I agree to the <a href="#" className={styles['link-highlight']}>Terms & Conditions</a> and <a href="#" className={styles['link-highlight']}>Privacy Policy</a>
             </label>
           </div>
 
           {/* Submit Button */}
           <button 
             type="submit" 
-            className="btn-primary" 
+            className={styles['btn-primary']} 
             disabled={loading}
             style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
@@ -200,12 +201,12 @@ const RegisterForm = () => {
         </form>
 
         {/* Divider OR */}
-        <div className="divider">
+        <div className={styles['divider']}>
           <span>OR</span>
         </div>
 
         {/* Google Button */}
-        <button className="btn-google">
+        <button className={styles['btn-google']}>
           <img 
             src="https://www.svgrepo.com/show/475656/google-color.svg" 
             alt="Google Logo" 
@@ -215,9 +216,9 @@ const RegisterForm = () => {
         </button>
 
         {/* Footer Login Link */}
-        <p className="footer-text">
+        <p className={styles['footer-text']}>
           Already have an account?{' '}
-          <Link to='/customer/login' className='link-highlight'>
+          <Link to='/customer/login' className={styles['link-highlight']}>
             Login   
           </Link>
         </p>

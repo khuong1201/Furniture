@@ -138,7 +138,7 @@ const AdminLayout = () => {
           <div className="sidebar-header">
             <h2 className="sidebar-logo">
               <div className="logo-icon-sidebar">
-                <LayoutDashboard size={24} />
+                <img src={logo} alt="Logo" />
               </div>
               {sidebarOpen && <span className="logo-text">Admin Panel</span>}
             </h2>

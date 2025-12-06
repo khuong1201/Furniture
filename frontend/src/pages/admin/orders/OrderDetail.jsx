@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, User, MapPin, CreditCard, Truck } from 'lucide-react';
-import OrderService from '@/services/customer/OrderService';
+import OrderService from '@/services/admin/OrderService';
 import './OrderDetail.css';
 
 const OrderDetail = () => {
@@ -18,7 +18,7 @@ const OrderDetail = () => {
     const fetchOrderDetail = async () => {
         try {
             setLoading(true);
-            const response = await OrderService.getOrderDetail(uuid);
+            const response = await OrderService.getOrder(uuid);
 
             if (response.success && response.data) {
                 setOrder(response.data);
@@ -189,10 +189,10 @@ const OrderDetail = () => {
                                             <div className="variant-info">{item.variant_name}</div>
                                         )}
                                     </td>
-                                    <td>{item.price?.toLocaleString('vi-VN')} đ</td>
+                                    <td>{item.unit_price_formatted || (item.unit_price?.toLocaleString('vi-VN') + ' đ')}</td>
                                     <td>{item.quantity}</td>
                                     <td className="text-right">
-                                        <strong>{(item.price * item.quantity)?.toLocaleString('vi-VN')} đ</strong>
+                                        <strong>{item.subtotal_formatted || (item.subtotal?.toLocaleString('vi-VN') + ' đ')}</strong>
                                     </td>
                                 </tr>
                             ))}
@@ -203,21 +203,21 @@ const OrderDetail = () => {
                     <div className="order-summary">
                         <div className="summary-row">
                             <span>Tạm tính:</span>
-                            <span>{order.subtotal?.toLocaleString('vi-VN') || '0'} đ</span>
+                            <span>{order.total_formatted || (order.total_amount?.toLocaleString('vi-VN') + ' đ')}</span>
                         </div>
                         <div className="summary-row">
                             <span>Phí vận chuyển:</span>
                             <span>{order.shipping_fee?.toLocaleString('vi-VN') || '0'} đ</span>
                         </div>
-                        {order.discount > 0 && (
+                        {order.voucher_discount > 0 && (
                             <div className="summary-row discount">
                                 <span>Giảm giá:</span>
-                                <span>-{order.discount?.toLocaleString('vi-VN')} đ</span>
+                                <span>-{order.voucher_discount?.toLocaleString('vi-VN')} đ</span>
                             </div>
                         )}
                         <div className="summary-row total">
                             <span>Tổng cộng:</span>
-                            <span>{order.total_amount?.toLocaleString('vi-VN') || '0'} đ</span>
+                            <span>{order.total_formatted || (order.total_amount?.toLocaleString('vi-VN') + ' đ')}</span>
                         </div>
                     </div>
                 </div>

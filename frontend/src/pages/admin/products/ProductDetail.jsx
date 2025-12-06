@@ -174,7 +174,7 @@ const ProductDetail = () => {
                                         <tr key={index}>
                                             <td>{variant.sku}</td>
                                             <td>
-                                                {variant.attribute_values?.map(attr => attr.value).join(', ') || '-'}
+                                                {variant.attributes?.map(attr => attr.value).join(', ') || '-'}
                                             </td>
                                             <td>{variant.price?.toLocaleString('vi-VN')} đ</td>
                                             <td>
