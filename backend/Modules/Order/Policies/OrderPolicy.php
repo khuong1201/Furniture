@@ -14,7 +14,7 @@ class OrderPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('order.view');
+        return true; 
     }
 
     public function view(User $user, Order $order): bool
