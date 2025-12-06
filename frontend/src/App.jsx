@@ -21,9 +21,11 @@ import AdminProductDetail from './pages/admin/products/ProductDetail';
 import CategoryList from './pages/admin/categories/CategoryList';
 import CategoryForm from './pages/admin/categories/CategoryForm';
 import OrderList from './pages/admin/orders/OrderList';
+import OrderForm from './pages/admin/orders/OrderForm';
 import OrderDetail from './pages/admin/orders/OrderDetail';
 import UserList from './pages/admin/users/UserList';
 import UserForm from './pages/admin/users/UserForm';
+import UserDetail from './pages/admin/users/UserDetail';
 import InventoryList from './pages/admin/inventory/InventoryList';
 import WarehouseList from './pages/admin/warehouses/WarehouseList';
 import WarehouseForm from './pages/admin/warehouses/WarehouseForm';
@@ -43,6 +45,7 @@ import ShippingForm from './pages/admin/shippings/ShippingForm';
 import SettingsPage from './pages/admin/settings/SettingsPage';
 import AdminProfile from './pages/admin/profile/AdminProfile';
 import AdminLogin from './pages/admin/login/AdminLogin';
+import NotificationList from './pages/admin/notifications/NotificationList';
 
 function App() {
   return (
@@ -76,9 +79,11 @@ function App() {
         <Route path="categories/create" element={<CategoryForm />} />
         <Route path="categories/:uuid/edit" element={<CategoryForm />} />
         <Route path="orders" element={<OrderList />} />
+        <Route path="orders/create" element={<OrderForm />} />
         <Route path="orders/:uuid" element={<OrderDetail />} />
         <Route path="users" element={<UserList />} />
         <Route path="users/create" element={<UserForm />} />
+        <Route path="users/:uuid" element={<UserDetail />} />
         <Route path="users/:uuid/edit" element={<UserForm />} />
         <Route path="inventory" element={<InventoryList />} />
         <Route path="warehouses" element={<WarehouseList />} />
@@ -102,6 +107,8 @@ function App() {
         <Route path="shippings/create" element={<ShippingForm />} />
         <Route path="shippings/:uuid/edit" element={<ShippingForm />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="notifications" element={<NotificationList />} />
+        <Route path="notifications/:uuid" element={<NotificationList />} />
         <Route path="profile" element={<AdminProfile />} />
       </Route>
     </Routes>

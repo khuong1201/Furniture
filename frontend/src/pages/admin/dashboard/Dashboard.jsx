@@ -27,7 +27,7 @@ import {
     Legend
 } from 'recharts';
 import DashboardService from '@/services/admin/DashboardService';
-import OrderService from '@/services/customer/OrderService';
+import OrderService from '@/services/admin/OrderService';
 import ProductService from '@/services/customer/ProductService';
 import './Dashboard.css';
 

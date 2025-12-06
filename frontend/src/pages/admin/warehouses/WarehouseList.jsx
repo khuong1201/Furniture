@@ -64,7 +64,7 @@ const WarehouseList = () => {
                     <p className="page-subtitle">Danh sách tất cả kho hàng trong hệ thống</p>
                 </div>
                 <button
-                    className="btn btn-primary"
+                    className="btn-primary-warehouse"
                     onClick={() => navigate('/admin/warehouses/create')}
                 >
                     <Plus size={20} />

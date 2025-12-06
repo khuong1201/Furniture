@@ -199,19 +199,19 @@ const ProductForm = () => {
                                 </select>
                             </div>
 
-                            <div className="form-group checkbox-group" style={{ marginTop: '32px' }}>
+                            <div className="form-group checkbox-groupx" style={{ marginBottom: '20px' }}>
                                 <label className="checkbox-label">
-                                    <div>
-                                        <input
-                                            type="checkbox"
-                                            name="is_active"
-                                            checked={formData.is_active}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                    <div>
+
+                                    <input
+                                        type="checkbox"
+                                        style={{ marginRight: '5px' }}
+                                        name="is_active"
+                                        checked={formData.is_active}
+                                        onChange={handleChange}
+                                    />
+                                    <span>
                                         Đang kinh doanh
-                                    </div>
+                                    </span>
                                 </label>
                             </div>
                         </div>
@@ -263,10 +263,11 @@ const ProductForm = () => {
 
                     {/* Variants Section */}
                     <div className="form-section">
-                        <div className="form-group checkbox-group">
+                        <div className="form-group checkbox-groupx">
                             <label className="checkbox-label">
                                 <input
                                     type="checkbox"
+                                    style={{ marginRight: '5px' }}
                                     name="has_variants"
                                     checked={formData.has_variants}
                                     onChange={handleChange}

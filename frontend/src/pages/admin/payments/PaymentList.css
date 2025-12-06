@@ -1,4 +1,4 @@
-/* Payment List - Modern Gold Theme */
+/* Payment List - Modern Gold Theme với màu chủ đạo #CBA890 */
 
 .admin-app-container .payment_list-page {
     max-width: 1400px;
@@ -13,8 +13,8 @@
     margin-bottom: 24px;
     padding: 24px 28px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
 }
 
 .admin-app-container .payment_header-content h1 {
@@ -23,16 +23,16 @@
     gap: 12px;
     font-size: 26px;
     font-weight: 700;
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0 0 8px 0;
 }
 
 .admin-app-container .payment_header-content h1 svg {
-    color: var(--admin-primary);
+    color: #CBA890;
 }
 
 .admin-app-container .payment_page-subtitle {
-    color: var(--admin-text-muted);
+    color: #6b7280;
     font-size: 14px;
     margin: 0;
 }
@@ -45,8 +45,8 @@
     margin-bottom: 24px;
     padding: 16px 20px;
     background: white;
-    border-radius: var(--admin-radius);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
 }
 
 .admin-app-container .payment_search-box {
@@ -60,42 +60,46 @@
     left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--admin-primary);
+    color: #CBA890;
 }
 
 .admin-app-container .payment_search-box input {
     width: 100%;
     padding: 10px 14px 10px 42px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
+    transition: all 0.2s;
 }
 
 .admin-app-container .payment_search-box input:focus {
     outline: none;
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
 .admin-app-container .payment_filter-select {
     padding: 10px 14px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
     min-width: 150px;
     cursor: pointer;
+    transition: all 0.2s;
+    background: white;
 }
 
 .admin-app-container .payment_filter-select:focus {
     outline: none;
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
 /* === Table === */
 .admin-app-container .payment_table-container {
     background: white;
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
@@ -105,7 +109,7 @@
 }
 
 .admin-app-container .payment_table thead {
-    background: var(--admin-accent-light);
+    background: #fdf6e3;
 }
 
 .admin-app-container .payment_table th {
@@ -113,17 +117,17 @@
     text-align: left;
     font-size: 13px;
     font-weight: 600;
-    color: var(--admin-primary-dark);
+    color: #a88b75;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--admin-border);
+    border-bottom: 1px solid #d1d5db;
 }
 
 .admin-app-container .payment_table td {
     padding: 14px 16px;
     font-size: 14px;
-    color: var(--admin-text);
-    border-bottom: 1px solid var(--admin-border-light);
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .admin-app-container .payment_table tr:last-child td {
@@ -131,7 +135,7 @@
 }
 
 .admin-app-container .payment_table tbody tr:hover {
-    background: var(--admin-accent-light);
+    background: #fdf6e3;
 }
 
 /* === Status Badges === */
@@ -169,17 +173,17 @@
 /* === Amount === */
 .admin-app-container .payment_amount {
     font-weight: 600;
-    color: var(--admin-primary-dark);
+    color: #a88b75;
 }
 
 /* === Actions === */
 .admin-app-container .payment_action-btn {
     width: 32px;
     height: 32px;
-    border-radius: var(--admin-radius);
+    border-radius: 8px;
     border: 1px solid rgba(203, 168, 144, 0.3);
     background: white;
-    color: var(--admin-primary);
+    color: #CBA890;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -188,8 +192,9 @@
 }
 
 .admin-app-container .payment_action-btn:hover {
-    background: var(--admin-accent-light);
-    border-color: var(--admin-primary);
+    background: #fdf6e3;
+    border-color: #CBA890;
+    transform: translateY(-1px);
 }
 
 /* === Pagination === */
@@ -198,12 +203,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    border-top: 1px solid var(--admin-border-light);
+    border-top: 1px solid #f3f4f6;
 }
 
 .admin-app-container .payment_page-info {
     font-size: 14px;
-    color: var(--admin-text-secondary);
+    color: #6b7280;
 }
 
 .admin-app-container .payment_page-controls {
@@ -215,27 +220,37 @@
     min-width: 36px;
     height: 36px;
     padding: 0 12px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     background: white;
     cursor: pointer;
     transition: all 0.2s;
+    font-size: 14px;
+    color: #374151;
 }
 
 .admin-app-container .payment_page-btn:hover:not(:disabled) {
-    background: var(--admin-accent-light);
-    border-color: var(--admin-primary);
+    background: #fdf6e3;
+    border-color: #CBA890;
+    color: #a88b75;
 }
 
 .admin-app-container .payment_page-btn.active {
-    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
     color: white;
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
 }
 
 .admin-app-container .payment_page-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.payment_list-page .search-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-block: 15px;
 }
 
 /* === States === */
@@ -252,8 +267,8 @@
 .admin-app-container .payment_spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid var(--admin-border-light);
-    border-top-color: var(--admin-primary);
+    border: 4px solid #e5e7eb;
+    border-top-color: #CBA890;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
@@ -266,43 +281,48 @@
 }
 
 .admin-app-container .payment_empty-state svg {
-    color: var(--admin-text-muted);
+    color: #9ca3af;
     margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
 }
 
 .admin-app-container .payment_empty-state h3 {
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .admin-app-container .payment_empty-state p {
-    color: var(--admin-text-muted);
+    color: #6b7280;
     margin: 0;
+    font-size: 14px;
 }
 
 /* === Responsive === */
 @media (max-width: 1024px) {
-    .payment_filters-section {
+    .admin-app-container .payment_filters-section {
         flex-wrap: wrap;
     }
 
-    .payment_search-box {
+    .admin-app-container .payment_search-box {
         max-width: 100%;
     }
 }
 
 @media (max-width: 768px) {
-    .payment_page-header {
+    .admin-app-container .payment_page-header {
         flex-direction: column;
         gap: 16px;
     }
 
-    .payment_table th:nth-child(4),
-    .payment_table td:nth-child(4) {
+    .admin-app-container .payment_table th:nth-child(4),
+    .admin-app-container .payment_table td:nth-child(4) {
         display: none;
     }
 
-    .payment_pagination {
+    .admin-app-container .payment_pagination {
         flex-direction: column;
         gap: 12px;
     }

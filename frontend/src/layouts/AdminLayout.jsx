@@ -28,6 +28,7 @@ import {
 import { useAuth } from '@/hooks/AuthContext';
 import './AdminLayout.css';
 import logo from '@/assets/icons/assets_admin/logo_admin.png';
+import NotificationBell from '@/components/admin/NotificationBell.jsx';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -222,10 +223,7 @@ const AdminLayout = () => {
             </div>
 
             <div className="header-right">
-              <button className="icon-btn">
-                <Bell size={20} />
-                <span className="badge">3</span>
-              </button>
+              <NotificationBell />
 
               <div className="profile-dropdown">
                 <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>

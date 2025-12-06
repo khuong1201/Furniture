@@ -14,7 +14,7 @@ import {
     Settings
 } from 'lucide-react';
 import CategoryService from '@/services/admin/CategoryService';
-import './CategoryManagement.css';
+import './CategoryForm.css';
 
 const CategoryForm = () => {
     const navigate = useNavigate();
@@ -299,12 +299,12 @@ const CategoryForm = () => {
                                                 {formData.is_active ? (
                                                     <>
                                                         <Eye size={16} />
-                                                        Đang hiển thị
+                                                        __Đang hiển thị__
                                                     </>
                                                 ) : (
                                                     <>
                                                         <EyeOff size={16} />
-                                                        Đang ẩn
+                                                        __Đang ẩn__
                                                     </>
                                                 )}
                                             </span>
