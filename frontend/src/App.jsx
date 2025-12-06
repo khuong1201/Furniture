@@ -10,6 +10,8 @@ import LogIn from './pages/customer/login/LoginForm';
 import ProductDetail from './pages/customer/Product/ProductDetail';
 import SearchPage from './pages/customer/searchPage/SearchPage';
 import CartPage from './pages/customer/cart/CartPage';
+import AddressForm from './pages/customer/address/AddressForm';
+import Orders from './pages/customer/order/OrderDetail';
 
 // Admin Pages
 import Dashboard from './pages/admin/dashboard/Dashboard';
@@ -55,6 +57,8 @@ function App() {
         <Route path="product/:id" element={<ProductDetail />} />
         <Route path="product" element={<SearchPage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="address" element={<AddressForm />} />
+        <Route path="orders" element={<Orders />} />
 
       </Route>
 
