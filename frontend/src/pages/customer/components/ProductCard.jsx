@@ -8,7 +8,8 @@ import top from '@/assets/icons/top.svg';
 
 const ProductCard = ({ item, variant = "default" }) => {
 
-  const price = Number(item.price || 0).toLocaleString('vi-VN');
+  const price = item.price_formatted;
+  const original_price = item.original_price_formatted;
   const rating = Number(item.rating_avg || 0).toFixed(1);
   const sold = item.sold_count || 0;
 
@@ -23,9 +24,9 @@ const ProductCard = ({ item, variant = "default" }) => {
             <>
               <img src={fireSale} alt="Fire Sale" className="fire-icon" />
               <span className="discount-tag">
-                <span className="discount-text">-66%</span>
+                <span className="discount-text">-{item.flash_sale.discount_percent}%</span>
               </span>
-            </>
+            </> 
           )}
           <img 
              src={item.image ? `http://localhost:8000/storage/${item.image}` : 'https://placehold.co/300x250?text=No+Image'} 
@@ -47,9 +48,18 @@ const ProductCard = ({ item, variant = "default" }) => {
         </div>
         
         <div className="price-row">
-          <span className="price-info">
-            {price} VND
-          </span>
+          <div className='price-info'>
+            <span className="price-curent">
+              {price}
+            </span>
+
+            {variant === "flash" &&
+            <span className="price-original">
+              {original_price}
+            </span>
+            }
+          </div>
+
           <button className="btn-add-cart1">Add to cart</button>
         </div>
       </div>
