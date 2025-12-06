@@ -57,11 +57,11 @@ class CategoryService {
     // Get categories list (admin)
     async getCategories(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/categories${queryString ? `?${queryString}` : ''}`);
+        return this._request(`/public/categories${queryString ? `?${queryString}` : ''}`);
     }
 
     async getCategoryTree() {
-        return this._request('/admin/categories/tree');
+        return this._request('/public/categories');
     }
 
     // Get single category

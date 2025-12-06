@@ -35,7 +35,7 @@ class ReviewService {
 
     async getAll(params = {}) {
         const qs = new URLSearchParams(params).toString();
-        return this._request(`/reviews${qs ? '?' + qs : ''}`);
+        return this._request(`/admin/reviews${qs ? '?' + qs : ''}`);
     }
 
     async getById(uuid) { return this._request(`/reviews/${uuid}`); }
