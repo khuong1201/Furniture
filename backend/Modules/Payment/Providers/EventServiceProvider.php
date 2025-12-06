@@ -11,9 +11,12 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [
-        Modules\Payment\Listeners\SendPaymentReceiptEmail::class,
+        protected $listen = [
+        \Modules\Payment\Events\PaymentCompleted::class => [
+            \Modules\Payment\Listeners\SendPaymentReceiptEmail::class,
+        ],
     ];
+
 
     /**
      * Indicates if events should be discovered.
