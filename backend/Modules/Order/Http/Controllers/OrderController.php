@@ -10,7 +10,8 @@ use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Order\Services\OrderService;
 use Modules\Order\Http\Requests\CreateOrderRequest;
-use Modules\Order\Http\Requests\BuyNowRequest; // [NEW] Import Request mới
+use Modules\Order\Http\Requests\BuyNowRequest; 
+use Modules\Order\Http\Requests\CheckoutRequest;
 use Modules\Order\Domain\Models\Order;
 use Modules\Order\Http\Resources\OrderResource;
 use Illuminate\Validation\ValidationException;
@@ -61,8 +62,15 @@ class OrderController extends BaseController
             content: new OA\JsonContent(
                 required: ["address_id"],
                 properties: [
-                    new OA\Property(property: "address_id", type: "integer"),
-                    new OA\Property(property: "notes", type: "string"),
+                    new OA\Property(property: "address_id", type: "integer", description: "ID của địa chỉ nhận hàng"),
+                    new OA\Property(property: "notes", type: "string", description: "Ghi chú đơn hàng", nullable: true),
+                    // [ĐÃ SỬA]: Thêm trường cho các item được chọn
+                    new OA\Property(
+                        property: "selected_item_uuids", 
+                        type: "array", 
+                        items: new OA\Items(type: "string", format: "uuid"),
+                        description: "Danh sách UUID của các Cart Item được chọn để checkout (Checkbox). Nếu không có, mặc định mua hết."
+                    ),
                 ]
             )
         ),
@@ -71,15 +79,12 @@ class OrderController extends BaseController
             new OA\Response(response: 422, description: "Cart Empty / Out of Stock")
         ]
     )]
-    public function checkout(Request $request): JsonResponse
+    public function checkout(CheckoutRequest $request): JsonResponse
     {
         try {
             $this->authorize('create', Order::class);
-            
-            $validated = $request->validate([
-                'address_id' => 'required|integer|exists:addresses,id',
-                'notes' => 'nullable|string'
-            ]);
+
+            $validated = $request->validated();
 
             $order = $this->service->createFromCart($validated);
             

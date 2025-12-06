@@ -1339,9 +1339,18 @@ paths:
                 - address_id
               properties:
                 address_id:
+                  description: 'ID của địa chỉ nhận hàng'
                   type: integer
                 notes:
+                  description: 'Ghi chú đơn hàng'
                   type: string
+                  nullable: true
+                selected_item_uuids:
+                  description: 'Danh sách UUID của các Cart Item được chọn để checkout (Checkbox). Nếu không có, mặc định mua hết.'
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
               type: object
       responses:
         201:
