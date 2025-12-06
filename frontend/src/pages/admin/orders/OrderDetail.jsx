@@ -115,7 +115,19 @@ const OrderDetail = () => {
                         <h3>Địa chỉ giao hàng</h3>
                     </div>
                     <div className="card-body">
-                        <p>{order.shipping_address || 'Chưa có thông tin'}</p>
+                        {order.shipping_address ? (
+                            typeof order.shipping_address === 'string' ? (
+                                <p>{order.shipping_address}</p>
+                            ) : (
+                                <div className="address-info">
+                                    <p className="font-medium">{order.shipping_address.full_name} - {order.shipping_address.phone}</p>
+                                    <p>{order.shipping_address.street}</p>
+                                    <p>{order.shipping_address.ward}, {order.shipping_address.district}, {order.shipping_address.province}</p>
+                                </div>
+                            )
+                        ) : (
+                            <p>Chưa có thông tin</p>
+                        )}
                     </div>
                 </div>
 

@@ -1,4 +1,4 @@
-/* Log List - Modern Gold Theme */
+/* Log List - Modern Gold Theme với màu chủ đạo #CBA890 */
 
 .admin-app-container .log_list-page {
     max-width: 1400px;
@@ -13,270 +13,333 @@
     margin-bottom: 24px;
     padding: 24px 28px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
 }
 
-.admin-app-container .log_header-content h1 {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.admin-app-container .page-title h1 {
     font-size: 26px;
     font-weight: 700;
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0 0 8px 0;
 }
 
-.admin-app-container .log_header-content h1 svg {
-    color: var(--admin-primary);
-}
-
 .admin-app-container .log_page-subtitle {
-    color: var(--admin-text-muted);
+    color: #6b7280;
     font-size: 14px;
     margin: 0;
 }
 
-/* === Filters === */
-.admin-app-container .log_filters-section {
+/* === Error Alert === */
+.admin-app-container .error-alert {
     display: flex;
-    gap: 12px;
     align-items: center;
-    margin-bottom: 24px;
-    padding: 16px 20px;
-    background: white;
-    border-radius: var(--admin-radius);
-    border: 1px solid var(--admin-border-light);
-    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
+.admin-app-container .error-alert svg {
+    flex-shrink: 0;
+}
+
+.admin-app-container .error-alert span {
+    flex: 1;
+    font-size: 14px;
+}
+
+.admin-app-container .error-alert button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.admin-app-container .error-alert button:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* === Search Filters === */
+.admin-app-container .search-filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    align-items: center;
+}
+
+/* === Search Box === */
 .admin-app-container .log_search-box {
     position: relative;
     flex: 1;
-    min-width: 250px;
+    display: flex;
+    align-items: center;
 }
 
-.admin-app-container .log_search-box svg {
+.admin-app-container .search-icon {
     position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--admin-primary);
+    left: 16px;
+    color: #CBA890;
+    width: 20px;
+    height: 20px;
 }
 
 .admin-app-container .log_search-box input {
     width: 100%;
-    padding: 10px 14px 10px 42px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    padding: 12px 16px 12px 48px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
+    color: #374151;
+    background: white;
+    transition: all 0.2s;
 }
 
 .admin-app-container .log_search-box input:focus {
     outline: none;
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
+.admin-app-container .log_search-box input::placeholder {
+    color: #9ca3af;
+}
+
+/* === Filter Select === */
 .admin-app-container .log_filter-select {
-    padding: 10px 14px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
-    min-width: 140px;
+    color: #374151;
+    background: white;
     cursor: pointer;
+    min-width: 160px;
+    transition: all 0.2s;
 }
 
-/* === Logs Container === */
-.admin-app-container .logs_container {
+.admin-app-container .log_filter-select:focus {
+    outline: none;
+    border-color: #CBA890;
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+}
+
+/* === Log Table Wrapper === */
+.admin-app-container .log-table-wrapper {
     background: white;
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
-.admin-app-container .logs_list {
-    display: flex;
-    flex-direction: column;
+/* === Log Table === */
+.admin-app-container .log-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-/* === Log Item === */
-.admin-app-container .log_item {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
+.admin-app-container .log-table thead {
+    background: #fdf6e3;
+}
+
+.admin-app-container .log-table th {
     padding: 16px 20px;
-    border-bottom: 1px solid var(--admin-border-light);
-    transition: background 0.2s;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #d1d5db;
 }
 
-.admin-app-container .log_item:last-child {
+.admin-app-container .log-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: #374151;
+}
+
+.admin-app-container .log-table tbody tr:hover {
+    background: #fdf6e3;
+}
+
+.admin-app-container .log-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.admin-app-container .log_item:hover {
-    background: var(--admin-accent-light);
+/* === Table Cells === */
+.admin-app-container .time-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #6b7280;
 }
 
-.admin-app-container .log_icon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--admin-radius);
+.admin-app-container .time-cell svg {
+    width: 14px;
+    height: 14px;
+    color: #9ca3af;
+}
+
+.admin-app-container .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-app-container .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fdf6e3;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-}
-
-.admin-app-container .log_icon.create {
-    background: rgba(34, 197, 94, 0.1);
-    color: #16a34a;
-}
-
-.admin-app-container .log_icon.update {
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563eb;
-}
-
-.admin-app-container .log_icon.delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
-}
-
-.admin-app-container .log_icon.view {
-    background: var(--admin-accent-light);
-    color: var(--admin-primary);
-}
-
-.admin-app-container .log_content {
-    flex: 1;
-    min-width: 0;
-}
-
-.admin-app-container .log_title {
+    color: #CBA890;
     font-size: 14px;
-    font-weight: 500;
-    color: var(--admin-text);
-    margin: 0 0 4px 0;
-}
-
-.admin-app-container .log_description {
-    font-size: 13px;
-    color: var(--admin-text-secondary);
-    margin: 0 0 8px 0;
-}
-
-.admin-app-container .log_meta {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: var(--admin-text-muted);
-}
-
-.admin-app-container .log_meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.admin-app-container .log_details {
-    margin-top: 12px;
-    padding: 12px;
-    background: var(--admin-accent-light);
-    border-radius: var(--admin-radius);
-    font-size: 12px;
-    font-family: monospace;
-    overflow-x: auto;
-}
-
-/* === Action Type Badge === */
-.admin-app-container .log_action-badge {
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 11px;
     font-weight: 600;
-    text-transform: uppercase;
+    border: 2px solid #e5e7eb;
 }
 
-.admin-app-container .log_action-badge.create {
+.admin-app-container .desc-cell {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* === Action Badge === */
+.admin-app-container .log_action-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.admin-app-container .log_action-badge.success {
     background: rgba(34, 197, 94, 0.1);
     color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-.admin-app-container .log_action-badge.update {
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563eb;
+.admin-app-container .log_action-badge.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-.admin-app-container .log_action-badge.delete {
+.admin-app-container .log_action-badge.error {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-/* === Pagination === */
-.admin-app-container .log_pagination {
+.admin-app-container .log_action-badge.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.admin-app-container .log_action-badge.neutral {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+/* === Action Buttons === */
+.admin-app-container .action-btn {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    background: var(--admin-accent-light);
-    border-top: 1px solid var(--admin-border);
-}
-
-.admin-app-container .log_page-info {
-    font-size: 14px;
-    color: var(--admin-text-secondary);
-}
-
-.admin-app-container .log_page-controls {
-    display: flex;
-    gap: 6px;
-}
-
-.admin-app-container .log_page-btn {
-    min-width: 36px;
+    justify-content: center;
+    width: 36px;
     height: 36px;
-    padding: 0 12px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
     background: white;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.admin-app-container .log_page-btn:hover:not(:disabled) {
+.admin-app-container .btn-view {
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.admin-app-container .btn-view:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    transform: translateY(-1px);
+}
+
+/* === Pagination === */
+.admin-app-container .log_pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 16px;
+}
+
+.admin-app-container .log_pagination button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
     background: white;
-    border-color: var(--admin-primary);
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
 }
 
-.admin-app-container .log_page-btn.active {
-    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+.admin-app-container .log_pagination button:hover:not(:disabled):not(.active) {
+    background: #fdf6e3;
+    border-color: #CBA890;
+    color: #a88b75;
+}
+
+.admin-app-container .log_pagination button.active {
+    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
     color: white;
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
 }
 
-.admin-app-container .log_page-btn:disabled {
+.admin-app-container .log_pagination button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
-/* === States === */
-.admin-app-container .log_loading-state,
-.admin-app-container .log_empty-state {
+/* === Loading State === */
+.admin-app-container .log_loading-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 24px;
+    padding: 80px 24px;
     text-align: center;
 }
 
-.admin-app-container .log_spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--admin-border-light);
-    border-top-color: var(--admin-primary);
-    border-radius: 50%;
+.admin-app-container .log_loading-state .spinner {
     animation: spin 1s linear infinite;
+    color: #CBA890;
     margin-bottom: 16px;
 }
 
@@ -286,46 +349,139 @@
     }
 }
 
+.admin-app-container .log_loading-state p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* === Empty State === */
+.admin-app-container .log_empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+}
+
 .admin-app-container .log_empty-state svg {
-    color: var(--admin-text-muted);
+    color: #9ca3af;
     margin-bottom: 16px;
+    width: 64px;
+    height: 64px;
 }
 
 .admin-app-container .log_empty-state h3 {
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .admin-app-container .log_empty-state p {
-    color: var(--admin-text-muted);
+    color: #6b7280;
     margin: 0;
+    font-size: 14px;
+}
+
+/* === Log Detail Modal === */
+.admin-app-container .log-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.admin-app-container .detail-row {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.admin-app-container .detail-row:last-child {
+    border-bottom: none;
+}
+
+.admin-app-container .detail-row.full {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-app-container .detail-row label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.admin-app-container .detail-row span {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.admin-app-container .detail-row pre {
+    margin: 0;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    color: #374151;
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    max-height: 300px;
 }
 
 /* === Responsive === */
 @media (max-width: 768px) {
-    .log_page-header {
+    .admin-app-container .log_page-header {
         flex-direction: column;
         gap: 16px;
     }
 
-    .log_filters-section {
+    .admin-app-container .search-filters {
         flex-direction: column;
+        align-items: stretch;
     }
 
-    .log_search-box {
+    .admin-app-container .log_filter-select {
         width: 100%;
+        min-width: auto;
     }
 
-    .log_filter-select {
-        width: 100%;
+    .admin-app-container .log-table {
+        font-size: 13px;
     }
 
-    .log_meta {
+    .admin-app-container .log-table th,
+    .admin-app-container .log-table td {
+        padding: 12px 14px;
+    }
+
+    .admin-app-container .desc-cell {
+        max-width: 200px;
+    }
+
+    .admin-app-container .detail-row {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .admin-app-container .detail-row label {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-app-container .log_pagination {
         flex-wrap: wrap;
     }
 
-    .log_pagination {
-        flex-direction: column;
-        gap: 12px;
+    .admin-app-container .log-table th:nth-child(4),
+    .admin-app-container .log-table td:nth-child(4) {
+        display: none;
     }
 }

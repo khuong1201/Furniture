@@ -95,7 +95,7 @@ const PromotionList = () => {
                     </h1>
                     <p>{pagination.total} chương trình khuyến mãi</p>
                 </div>
-                <button onClick={() => navigate('/admin/promotions/create')} className="btn btn-primary">
+                <button onClick={() => navigate('/admin/promotions/create')} className="btn-primary-promotion">
                     <Plus size={20} />
                     Thêm khuyến mãi
                 </button>

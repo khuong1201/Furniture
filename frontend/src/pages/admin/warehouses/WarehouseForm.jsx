@@ -124,7 +124,7 @@ const WarehouseForm = () => {
                 <button
                     type="button"
                     onClick={() => navigate('/admin/warehouses')}
-                    className="btn btn-secondary"
+                    className="btn-primary-warehouse"
                 >
                     Quay lại
                 </button>

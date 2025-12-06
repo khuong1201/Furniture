@@ -1,4 +1,4 @@
-/* Warehouse Form - Modern Gold Theme with warehouse_form prefix */
+/* Warehouse Form - Modern Gold Theme với màu chủ đạo #CBA890 */
 
 .admin-app-container .warehouse_form {
     max-width: 800px;
@@ -14,8 +14,8 @@
     margin-bottom: 28px;
     padding: 24px 28px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
 }
 
@@ -25,19 +25,19 @@
     gap: 12px;
     font-size: 24px;
     font-weight: 700;
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0;
 }
 
 .admin-app-container .warehouse_form .form-header h1 svg {
-    color: var(--admin-primary-dark);
+    color: #a88b75;
 }
 
 /* === Form Container === */
 .admin-app-container .warehouse_form .admin-form {
     background: white;
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
@@ -49,10 +49,10 @@
 .admin-app-container .warehouse_form .form-section h2 {
     font-size: 16px;
     font-weight: 600;
-    color: var(--admin-primary-dark);
+    color: #a88b75;
     margin: 0 0 24px 0;
     padding-bottom: 12px;
-    border-bottom: 1px solid var(--admin-border-light);
+    border-bottom: 1px solid #f3f4f6;
 }
 
 /* === Form Group === */
@@ -67,13 +67,14 @@
 .admin-app-container .warehouse_form .form-group label {
     display: block;
     font-weight: 500;
-    color: var(--admin-text);
+    color: #374151;
     font-size: 14px;
     margin-bottom: 8px;
 }
 
 .admin-app-container .warehouse_form .required {
     color: #ef4444;
+    margin-left: 2px;
 }
 
 .admin-app-container .warehouse_form .form-group input,
@@ -81,25 +82,25 @@
 .admin-app-container .warehouse_form .form-group textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
     background: white;
     transition: all 0.2s;
-    color: var(--admin-text);
+    color: #374151;
 }
 
 .admin-app-container .warehouse_form .form-group input:focus,
 .admin-app-container .warehouse_form .form-group select:focus,
 .admin-app-container .warehouse_form .form-group textarea:focus {
     outline: none;
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
     box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
 }
 
 .admin-app-container .warehouse_form .form-group input::placeholder,
 .admin-app-container .warehouse_form .form-group textarea::placeholder {
-    color: var(--admin-text-muted);
+    color: #9ca3af;
 }
 
 .admin-app-container .warehouse_form .form-group input.error,
@@ -107,11 +108,18 @@
     border-color: #ef4444;
 }
 
+.admin-app-container .warehouse_form .form-group input.error:focus,
+.admin-app-container .warehouse_form .form-group select.error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
 .admin-app-container .warehouse_form .error-message {
     display: block;
     color: #ef4444;
     font-size: 12px;
     margin-top: 6px;
+    line-height: 1.4;
 }
 
 /* === Form Actions === */
@@ -119,9 +127,10 @@
     display: flex;
     gap: 14px;
     padding: 24px 28px;
-    background: var(--admin-accent-light);
-    border-top: 1px solid var(--admin-border);
+    background: #fdf6e3;
+    border-top: 1px solid #d1d5db;
     justify-content: flex-end;
+    border-radius: 0 0 12px 12px;
 }
 
 /* === Buttons === */
@@ -131,21 +140,22 @@
     justify-content: center;
     gap: 8px;
     padding: 12px 24px;
-    border-radius: var(--admin-radius);
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     border: none;
     cursor: pointer;
     transition: all 0.2s;
+    min-width: 100px;
 }
 
 .admin-app-container .warehouse_form .btn-primary {
-    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
 
-.admin-app-container .warehouse_form .btn-primary:hover {
+.admin-app-container .warehouse_form .btn-primary:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
 }
@@ -154,47 +164,53 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .admin-app-container .warehouse_form .btn-secondary {
     background: white;
-    color: var(--admin-text-secondary);
-    border: 1px solid var(--admin-border);
+    color: #6b7280;
+    border: 1px solid #d1d5db;
 }
 
 .admin-app-container .warehouse_form .btn-secondary:hover {
-    background: var(--admin-accent-light);
-    border-color: var(--admin-primary);
-    color: var(--admin-primary-dark);
+    background: #fdf6e3;
+    border-color: #CBA890;
+    color: #a88b75;
 }
 
 /* === Responsive === */
 @media (max-width: 768px) {
-    .warehouse_form {
+    .admin-app-container .warehouse_form {
         padding: 16px;
     }
 
-    .warehouse_form .form-header {
+    .admin-app-container .warehouse_form .form-header {
         flex-direction: column;
         gap: 16px;
         align-items: stretch;
     }
 
-    .warehouse_form .form-header .btn {
+    .admin-app-container .warehouse_form .form-header h1 {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .admin-app-container .warehouse_form .form-header .btn {
         width: 100%;
         justify-content: center;
     }
 
-    .warehouse_form .form-section {
+    .admin-app-container .warehouse_form .form-section {
         padding: 20px;
     }
 
-    .warehouse_form .form-actions {
+    .admin-app-container .warehouse_form .form-actions {
         flex-direction: column;
         padding: 20px;
     }
 
-    .warehouse_form .btn {
+    .admin-app-container .warehouse_form .btn {
         width: 100%;
         justify-content: center;
     }
