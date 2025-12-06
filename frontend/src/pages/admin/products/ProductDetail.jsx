@@ -130,86 +130,87 @@ const ProductDetail = () => {
                     </div>
                 </div>
 
-                {/* Images */}
-                {product.images && product.images.length > 0 && (
-                    <div className="detail-card full-width">
-                        <div className="card-header">
-                            <ImageIcon size={20} />
-                            <h3>Hình ảnh ({product.images.length})</h3>
-                        </div>
-                        <div className="card-body">
-                            <div className="image-grid">
-                                {product.images.map((image, index) => (
-                                    <div key={index} className="image-item">
-                                        <img src={image.image_url} alt={`${product.name} ${index + 1}`} />
-                                        {image.is_primary && (
-                                            <span className="badge badge-primary">Chính</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
 
-                {/* Variants */}
-                {product.has_variants && product.variants && product.variants.length > 0 && (
-                    <div className="detail-card full-width">
-                        <div className="card-header">
-                            <Package size={20} />
-                            <h3>Biến thể ({product.variants.length})</h3>
-                        </div>
-                        <div className="card-body">
-                            <table className="variants-table">
-                                <thead>
-                                    <tr>
-                                        <th>SKU</th>
-                                        <th>Thuộc tính</th>
-                                        <th>Giá</th>
-                                        <th>Tồn kho</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {product.variants.map((variant, index) => (
-                                        <tr key={index}>
-                                            <td>{variant.sku}</td>
-                                            <td>
-                                                {variant.attributes?.map(attr => attr.value).join(', ') || '-'}
-                                            </td>
-                                            <td>{variant.price?.toLocaleString('vi-VN')} đ</td>
-                                            <td>
-                                                {variant.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
 
-                {/* Promotions */}
-                {product.promotions && product.promotions.length > 0 && (
-                    <div className="detail-card full-width">
-                        <div className="card-header">
-                            <Tag size={20} />
-                            <h3>Khuyến mãi đang áp dụng</h3>
-                        </div>
-                        <div className="card-body">
-                            <div className="promotions-list">
-                                {product.promotions.map((promo, index) => (
-                                    <div key={index} className="promo-item">
-                                        <strong>{promo.name}</strong>
-                                        <span className="badge badge-success">
-                                            -{promo.discount_value}{promo.discount_type === 'percentage' ? '%' : 'đ'}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
+            {/* Images */}
+            {product.images && product.images.length > 0 && (
+                <div className="detail-card full-width">
+                    <div className="card-header">
+                        <ImageIcon size={20} />
+                        <h3>Hình ảnh ({product.images.length})</h3>
+                    </div>
+                    <div className="card-body">
+                        <div className="image-grid">
+                            {product.images.map((image, index) => (
+                                <div key={index} className="image-item">
+                                    <img src={image.image_url} alt={`${product.name} ${index + 1}`} />
+                                    {image.is_primary && (
+                                        <span className="badge badge-primary">Chính</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Variants */}
+            {product.has_variants && product.variants && product.variants.length > 0 && (
+                <div className="detail-card full-width">
+                    <div className="card-header">
+                        <Package size={20} />
+                        <h3>Biến thể ({product.variants.length})</h3>
+                    </div>
+                    <div className="card-body">
+                        <table className="variants-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Thuộc tính</th>
+                                    <th>Giá</th>
+                                    <th>Tồn kho</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {product.variants.map((variant, index) => (
+                                    <tr key={index}>
+                                        <td>{variant.sku}</td>
+                                        <td>
+                                            {variant.attributes?.map(attr => attr.value).join(', ') || '-'}
+                                        </td>
+                                        <td>{variant.price?.toLocaleString('vi-VN')} đ</td>
+                                        <td>
+                                            {variant.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Promotions */}
+            {product.promotions && product.promotions.length > 0 && (
+                <div className="detail-card full-width">
+                    <div className="card-header">
+                        <Tag size={20} />
+                        <h3>Khuyến mãi đang áp dụng</h3>
+                    </div>
+                    <div className="card-body">
+                        <div className="promotions-list">
+                            {product.promotions.map((promo, index) => (
+                                <div key={index} className="promo-item">
+                                    <strong>{promo.name}</strong>
+                                    <span className="badge badge-success">
+                                        -{promo.discount_value}{promo.discount_type === 'percentage' ? '%' : 'đ'}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

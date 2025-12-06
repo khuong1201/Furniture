@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Modules\User\Domain\Models\User;
-use Modules\Shared\Traits\Loggable;
+use Modules\Shared\Traits\Loggable; 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class Notification extends Model
 {
-    use SoftDeletes, Loggable;
+    use SoftDeletes, Loggable; 
 
     protected $fillable = [
         'uuid', 'user_id', 'title', 'content', 'type', 'data', 'read_at',
@@ -38,5 +39,10 @@ class Notification extends Model
     public function isRead(): bool
     {
         return !is_null($this->read_at);
+    }
+
+    public function scopeUnread(Builder $query): Builder
+    {
+        return $query->whereNull('read_at');
     }
 }

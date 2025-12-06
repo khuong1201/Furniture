@@ -6,15 +6,13 @@ namespace Modules\Notification\Listeners;
 
 use Modules\Order\Events\OrderCreated;
 use Modules\Notification\Services\NotificationService;
-use Modules\User\Domain\Models\User;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Modules\Shared\Services\MailService;
 use Modules\Order\Mails\OrderConfirmationMail;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class SendOrderCreatedNotification implements ShouldQueue
 {
-    public $queue = 'default';
+    public $queue = 'notifications';
 
     public function __construct(
         protected NotificationService $notificationService,
@@ -24,40 +22,33 @@ class SendOrderCreatedNotification implements ShouldQueue
     public function handle(OrderCreated $event): void
     {
         $order = $event->order;
-        // Fix logic: Eager load user để tránh query lặp và lỗi null
         $order->load('user');
-        
         $user = $order->user;
 
-        // 1. Gửi thông báo in-app cho Khách hàng
+        // 1. Gửi Notification In-App (Code cũ)
         if ($user) {
             $this->notificationService->send(
                 $user->id,
                 'Đặt hàng thành công',
-                "Đơn hàng #{$order->uuid} của bạn đã được khởi tạo. Tổng tiền: " . number_format($order->total_amount) . "đ",
+                "Đơn hàng #{$order->uuid} đã được tạo.",
                 'success',
-                ['order_uuid' => $order->uuid, 'type' => 'order_detail']
+                ['order_uuid' => $order->uuid]
             );
 
-            // 2. Gửi Email xác nhận (Sử dụng MailService của Shared Module)
+            // 2. Gửi Email & Ghi Log Nghiệp vụ
             if ($user->email) {
-                $this->mailService->send($user, new OrderConfirmationMail($order));
-            }
-        }
+                // Gọi Service gửi mail (Kỹ thuật)
+                $isQueued = $this->mailService->send($user, new OrderConfirmationMail($order));
 
-        // 3. Gửi thông báo cho Admin/Manager
-        // Logic: Tìm user có role admin. 
-        // Lưu ý: Nếu hệ thống lớn, nên cache danh sách admin ID để tránh query DB liên tục.
-        $admins = User::whereHas('roles', fn($q) => $q->where('name', 'admin'))->get();
-        
-        foreach ($admins as $admin) {
-            $this->notificationService->send(
-                $admin->id,
-                'Đơn hàng mới',
-                "Khách hàng " . ($user->name ?? 'Guest') . " vừa đặt đơn hàng mới #{$order->uuid}.",
-                'info',
-                ['order_uuid' => $order->uuid, 'type' => 'admin_order_detail']
-            );
+                // Nếu queue thành công -> Ghi log nghiệp vụ vào DB (Audit Log)
+                if ($isQueued && method_exists($order, 'logActivity')) {
+                    $order->logActivity(
+                        event: 'system_notification',
+                        description: "Đã gửi email xác nhận đơn hàng tới {$user->email}",
+                        properties: ['type' => 'email', 'template' => 'order_confirmation']
+                    );
+                }
+            }
         }
     }
 }

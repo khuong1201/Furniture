@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            // Index composite quan trọng cho việc đếm số lượng chưa đọc theo user
             $table->index(['user_id', 'read_at']); 
             $table->index('created_at');
         });

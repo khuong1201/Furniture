@@ -115,7 +115,6 @@ class ReviewService extends BaseService
         
         if ($result) {
              $this->clearStatsCache($productId);
-             event(new ReviewApproved($review)); 
         }
         
         return $result;

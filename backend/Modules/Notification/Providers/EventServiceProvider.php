@@ -3,12 +3,6 @@
 namespace Modules\Notification\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Modules\Order\Events\OrderCreated;
-use Modules\Order\Events\OrderStatusUpdated;
-use Modules\Inventory\Events\LowStockDetected;
-use Modules\Notification\Listeners\SendOrderCreatedNotification;
-use Modules\Notification\Listeners\SendOrderStatusNotification;
-use Modules\Notification\Listeners\SendLowStockNotification;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,16 +12,20 @@ class EventServiceProvider extends ServiceProvider
      * @var array<string, array<int, string>>
      */
     protected $listen = [
-        OrderCreated::class => [
-            SendOrderCreatedNotification::class,
+        \Modules\Inventory\Events\LowStockDetected::class => [
+            \Modules\Notification\Listeners\SendLowStockNotification::class,
         ],
-
-        OrderStatusUpdated::class => [
-            SendOrderStatusNotification::class,
+        \Modules\Order\Events\OrderCreated::class => [
+            \Modules\Notification\Listeners\SendOrderCreatedNotification::class,
         ],
-
-        LowStockDetected::class => [
-            SendLowStockNotification::class,
+        \Modules\Order\Events\OrderStatusUpdated::class => [
+            \Modules\Notification\Listeners\SendOrderStatusNotification::class,
+        ],
+        \Modules\Review\Events\ReviewPosted::class => [
+            \Modules\Notification\Listeners\SendReviewNotification::class,
+        ],
+        \Modules\Payment\Events\PaymentCompleted::class => [
+            \Modules\Notification\Listeners\SendPaymentSuccessNotification::class,
         ],
     ];
 

@@ -26,6 +26,7 @@ class EloquentNotificationRepository extends EloquentBaseRepository implements N
 
     public function getUnreadCount(int $userId): int
     {
+        // Tận dụng index [user_id, read_at]
         return $this->model
             ->where('user_id', $userId)
             ->whereNull('read_at')

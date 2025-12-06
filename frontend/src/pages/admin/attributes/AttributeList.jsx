@@ -134,7 +134,7 @@ const AttributeList = () => {
                     <h1>Quản lý Thuộc tính</h1>
                     <p className="page-subtitle">Quản lý các thuộc tính sản phẩm (màu sắc, kích thước, ...)</p>
                 </div>
-                <button className="btn-add" onClick={handleOpenCreate}>
+                <button className="btn btn-add" onClick={handleOpenCreate}>
                     <Plus size={20} />
                     Thêm thuộc tính
                 </button>

@@ -6,6 +6,7 @@ namespace Modules\Notification\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Notification\Domain\Repositories\NotificationRepositoryInterface;
+use Modules\Notification\Events\NotificationCreated;
 use Illuminate\Database\Eloquent\Model;
 
 class NotificationService extends BaseService
@@ -26,9 +27,12 @@ class NotificationService extends BaseService
         ];
     }
 
+    /**
+     * Tạo thông báo và bắn Real-time Event
+     */
     public function send(int $userId, string $title, string $content, string $type = 'info', array $data = []): Model
     {
-        // Lưu vào Database (In-app Notification)
+        // 1. Lưu vào Database (Persistent storage)
         $notification = $this->repository->create([
             'user_id' => $userId,
             'title' => $title,
@@ -38,8 +42,9 @@ class NotificationService extends BaseService
             'read_at' => null
         ]);
 
-        // TODO: Tích hợp Pusher/Firebase để bắn realtime tại đây nếu cần
-        // broadcast(new NotificationSent($notification));
+        // 2. Bắn Event Real-time (Pusher/Reverb sẽ bắt event này)
+        // Frontend lắng nghe channel: App.Models.User.{id} -> event: notification.created
+        broadcast(new NotificationCreated($notification));
 
         return $notification;
     }
@@ -49,7 +54,7 @@ class NotificationService extends BaseService
         $notification = $this->findByUuidOrFail($uuid);
         
         if (is_null($notification->read_at)) {
-            $notification->update(['read_at' => now()]);
+            $this->repository->update($notification, ['read_at' => now()]);
         }
     }
 

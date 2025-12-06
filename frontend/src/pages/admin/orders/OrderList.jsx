@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Search, Filter, Package, ShoppingBag } from 'lucide-react';
+import { Eye, Search, Filter, Package, ShoppingBag, Plus } from 'lucide-react';
 import OrderService from '@/services/admin/OrderService';
 import './OrderList.css';
 
@@ -52,6 +52,9 @@ const OrderList = () => {
                     <h1><ShoppingBag size={24} /> Quản lý Đơn hàng</h1>
                     <p className="page-subtitle">Danh sách tất cả đơn hàng trong hệ thống</p>
                 </div>
+                <button onClick={() => navigate('/admin/orders/create')} className="btn-primary-order">
+                    <Plus size={20} /> Thêm đơn hàng
+                </button>
             </div>
 
             <div className="table-container">

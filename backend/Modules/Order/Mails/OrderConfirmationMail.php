@@ -15,12 +15,12 @@ class OrderConfirmationMail extends Mailable
 
     public function __construct(public Order $order)
     {
-        $this->order->load('user', 'items');
+        $this->order->load(['user', 'items']); 
     }
 
     public function build()
     {
         return $this->subject('Xác nhận đơn hàng #' . $this->order->uuid)
-                    ->view('order::emails.order_confirmation'); // Đảm bảo view path đúng
+                    ->view('order::emails.order_confirmation'); // Namespace 'order'
     }
 }

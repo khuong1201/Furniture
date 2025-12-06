@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Inventory\Events;
 
-use Modules\Product\Domain\Models\ProductVariant;
-use Modules\Warehouse\Domain\Models\Warehouse;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Modules\Product\Domain\Models\ProductVariant;
+use Modules\Inventory\Domain\Models\Warehouse;  
 
 class LowStockDetected
 {

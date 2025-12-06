@@ -39,10 +39,10 @@ class PermissionDatabaseSeeder extends Seeder
                     'category.create', 'category.edit', 'category.delete', 
                     'attribute.view', 'attribute.create', 'attribute.edit', 'attribute.delete',
                     'collection.create', 'collection.edit', 'collection.delete',
-                    'media.create', 'media.delete' // Thêm quyền Media
+                    'media.create', 'media.delete' 
                 ],
                 'Sales' => [
-                    'order.view', 'order.view_all', 'order.edit', 'order.cancel',
+                    'order.view', 'order.view_all', 'order.edit', 'order.cancel', "order.buynow",
                     'payment.view', 'payment.edit', 'payment.view_all',
                     'shipping.view', 'shipping.create', 'shipping.edit',
                 ],
@@ -55,7 +55,7 @@ class PermissionDatabaseSeeder extends Seeder
                     'inventory.view', 'inventory.adjust', 'inventory.edit',
                 ],
                 'Customer' => [
-                    'address.view', 'address.edit', 'address.delete', // Admin quản lý địa chỉ user
+                    'address.view', 'address.edit', 'address.delete', 
                     'wishlist.view'
                 ]
             ];
