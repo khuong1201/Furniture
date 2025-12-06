@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-// use Illuminate\Database\Eloquent\Relations\BelongsToMany; // Đã chuyển vào Trait
+// use Illuminate\Database\Eloquent\Relations\BelongsToMany; 
 use Illuminate\Support\Str;
-use Modules\Shared\Traits\Loggable; // Giả sử có trait này
+use Modules\Shared\Traits\Loggable; 
 use Modules\Category\Domain\Models\Category;
 use Modules\Review\Domain\Models\Review;
-use Modules\Promotion\Domain\Traits\HasPromotions; // IMPORT TRAIT
+use Modules\Promotion\Domain\Traits\HasPromotions; 
 
 class Product extends Model 
 {
     use SoftDeletes, Loggable;
-    use HasPromotions; // SỬ DỤNG TRAIT
+    use HasPromotions; 
 
     protected $fillable = [
         'uuid', 'name', 'description', 'category_id', 'has_variants', 

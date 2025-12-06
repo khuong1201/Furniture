@@ -10,25 +10,50 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait HasPromotions
 {
-    // ... (Các hàm relation và accessor cũ giữ nguyên)
-
-    /**
-     * Scope: Lọc các sản phẩm ĐANG có Flash Sale hợp lệ.
-     * Dùng để query SQL trực tiếp: Product::hasActiveFlashSale()->get()
-     */
-    public function scopeHasActiveFlashSale(Builder $query): Builder
+    public function promotions(): BelongsToMany
     {
-        return $query->whereHas('promotions', function ($q) {
-            $now = now();
-            // Query vào bảng promotions thông qua pivot
-            $q->where('is_active', true)
-              ->where('start_date', '<=', $now)
-              ->where('end_date', '>=', $now)
-              // Kiểm tra thêm quantity nếu cần thiết (optional)
-              ->where(function($subQ) {
-                  $subQ->where('quantity', '=', 0) // Không giới hạn
-                       ->orWhereColumn('used_count', '<', 'quantity'); // Hoặc chưa hết mã
-              });
-        });
+        return $this->belongsToMany(Promotion::class, 'product_promotion', 'product_id', 'promotion_id')
+                    ->withTimestamps();
+    }
+
+    public function getFlashSaleInfoAttribute(): ?array
+    {
+        $promotions = $this->relationLoaded('promotions') 
+            ? $this->promotions->filter(fn($p) => $p->isValid()) 
+            : $this->promotions()->active()->get();
+
+        if ($promotions->isEmpty()) return null;
+
+        $originalPrice = (int) $this->price;
+        $bestPrice = $originalPrice;
+        $bestPromotion = null;
+
+        foreach ($promotions as $promotion) {
+            $discount = 0;
+            if ($promotion->type === 'percentage') {
+                $discount = (int) round(($originalPrice * $promotion->value) / 100);
+                if ($promotion->max_discount_amount > 0) {
+                    $discount = min($discount, $promotion->max_discount_amount);
+                }
+            } else {
+                $discount = min($originalPrice, $promotion->value);
+            }
+
+            $currentSale = $originalPrice - $discount;
+            if ($currentSale < $bestPrice) {
+                $bestPrice = $currentSale;
+                $bestPromotion = $promotion;
+            }
+        }
+
+        if (!$bestPromotion) return null;
+
+        return [
+            'campaign_name'    => $bestPromotion->name,
+            'original_price'   => $originalPrice,
+            'sale_price'       => $bestPrice,
+            'discount_amount'  => $originalPrice - $bestPrice,
+            'discount_rate'    => ($originalPrice > 0) ? round((($originalPrice - $bestPrice) / $originalPrice) * 100) : 0,
+        ];
     }
 }

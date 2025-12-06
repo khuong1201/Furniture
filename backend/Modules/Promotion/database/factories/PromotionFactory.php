@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Promotion\Database\Factories;
+namespace Modules\Promotion\database\factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Promotion\Domain\Models\Promotion;

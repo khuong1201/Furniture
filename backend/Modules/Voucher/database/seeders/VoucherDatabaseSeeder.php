@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Voucher\Database\Seeders;
+namespace Modules\Voucher\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Voucher\Domain\Models\Voucher;
@@ -16,8 +16,8 @@ class VoucherDatabaseSeeder extends Seeder
             'description' => 'Giảm ngay 200k cho đơn hàng đầu tiên',
             'type' => 'fixed',
             'value' => 200000, // 200k
-            'min_order_value' => 1000000, // Đơn từ 1 triệu
-            'max_discount_amount' => null, // Không giới hạn (vì là fixed)
+            'min_order_value' => 1000000,
+            'max_discount_amount' => null,
             'quantity' => 1000,
             'start_date' => now(),
             'end_date' => now()->addYear(),

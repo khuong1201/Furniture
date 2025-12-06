@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Review\Database\Seeders;
+namespace Modules\Review\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Review\Domain\Models\Review;
