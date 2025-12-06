@@ -54,6 +54,7 @@ trait HasPromotions
             'sale_price'       => $bestPrice,
             'discount_amount'  => $originalPrice - $bestPrice,
             'discount_rate'    => ($originalPrice > 0) ? round((($originalPrice - $bestPrice) / $originalPrice) * 100) : 0,
+            'end_date'         => $bestPromotion->end_date,
         ];
     }
 }

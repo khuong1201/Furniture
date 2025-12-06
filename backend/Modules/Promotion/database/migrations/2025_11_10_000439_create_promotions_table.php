@@ -46,6 +46,8 @@ return new class extends Migration
             $table->primary(['promotion_id', 'product_id']);
             // Index ngược để tìm promotion từ product nhanh hơn
             $table->index('product_id'); 
+            $table->timestamps();
+            
         });
     }
 

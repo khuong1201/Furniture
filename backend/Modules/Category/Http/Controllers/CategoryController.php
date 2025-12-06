@@ -12,6 +12,7 @@ use Modules\Category\Services\CategoryService;
 use Modules\Category\Http\Requests\StoreCategoryRequest;
 use Modules\Category\Http\Requests\UpdateCategoryRequest;
 use Modules\Category\Domain\Models\Category;
+use Modules\Category\Http\Resources\CategoryResource; // Import Resource
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -30,20 +31,47 @@ class CategoryController extends BaseController
         summary: "Xem danh sách danh mục (Public)",
         tags: ["Categories"],
         parameters: [
-            new OA\Parameter(name: "tree", in: "query", schema: new OA\Schema(type: "boolean"), description: "Trả về dạng cây phân cấp"),
+            new OA\Parameter(name: "tree", in: "query", schema: new OA\Schema(type: "boolean"), description: "True: Trả về cây phân cấp. False: Phân trang phẳng"),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "search", in: "query", schema: new OA\Schema(type: "string")),
         ],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
+        responses: [ 
+            new OA\Response(
+                response: 200, 
+                description: "Success",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(
+                        property: "data", 
+                        type: "array", 
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: "name", type: "string"),
+                                new OA\Property(property: "children", type: "array", items: new OA\Items(type: "object"))
+                            ]
+                        )
+                    )
+                ])
+            ) 
+        ]
     )]
     public function index(Request $request): JsonResponse
     {
+        // 1. Trường hợp lấy cây thư mục (Recursive Tree)
         if ($request->boolean('tree')) {
             $data = $this->service->getTree();
-            return response()->json(ApiResponse::success($data));
+            // Wrap collection bằng Resource
+            return response()->json(ApiResponse::success(CategoryResource::collection($data)));
         }
 
-        return parent::index($request);
+        // 2. Trường hợp lấy danh sách phẳng (Pagination)
+        // Lưu ý: BaseService paginate thường trả về Paginator
+        $paginator = $this->service->paginate($request->integer('per_page', 15), $request->all());
+        
+        // Transform từng item trong paginator
+        $paginator->through(fn($category) => new CategoryResource($category));
+
+        return response()->json(ApiResponse::paginated($paginator));
     }
 
     #[OA\Post(
@@ -70,9 +98,9 @@ class CategoryController extends BaseController
     {
         $this->authorize('create', Category::class);
         
-        $data = $this->service->create($request->validated());
+        $category = $this->service->create($request->validated());
         
-        return response()->json(ApiResponse::success($data, 'Category created', 201), 201);
+        return response()->json(ApiResponse::success(new CategoryResource($category), 'Category created', 201), 201);
     }
 
     #[OA\Put(
@@ -100,9 +128,9 @@ class CategoryController extends BaseController
         $category = $this->service->findByUuidOrFail($uuid);
         $this->authorize('update', $category);
         
-        $data = $this->service->update($uuid, $request->validated());
+        $updatedCategory = $this->service->update($uuid, $request->validated());
 
-        return response()->json(ApiResponse::success($data, 'Category updated'));
+        return response()->json(ApiResponse::success(new CategoryResource($updatedCategory), 'Category updated'));
     }
     
     #[OA\Get(
@@ -117,7 +145,11 @@ class CategoryController extends BaseController
     public function show(string $uuid): JsonResponse
     {
         $category = $this->service->findByUuidOrFail($uuid);
-        return response()->json(ApiResponse::success($category));
+        
+        // Eager load children nếu cần hiển thị ngay
+        $category->load('children');
+
+        return response()->json(ApiResponse::success(new CategoryResource($category)));
     }
 
     #[OA\Delete(

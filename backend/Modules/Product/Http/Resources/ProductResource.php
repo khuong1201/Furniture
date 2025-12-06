@@ -7,7 +7,8 @@ namespace Modules\Product\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Currency\Services\CurrencyService;
-use Modules\Product\Http\Resources\CategoryResource; // Giả sử namespace này
+use Modules\Category\Http\Resources\CategoryResource;
+use Carbon\Carbon; // [FIX] Import Carbon để xử lý ngày giờ
 
 class ProductResource extends JsonResource
 {
@@ -16,36 +17,50 @@ class ProductResource extends JsonResource
         /** @var CurrencyService $currencyService */
         $currencyService = app(CurrencyService::class);
         
-        // 1. Lấy thông tin Flash Sale (Được tính toán tự động từ Trait HasPromotions)
-        // Vì Repository đã eager load 'promotions' => active(), logic này không tốn query DB.
+        // 1. Lấy thông tin Flash Sale
         $flashSaleInfo = $this->flash_sale_info; 
-
-        // 2. Xác định giá cơ bản (Base Price - BigInt)
-        $originalPrice = (int) $this->price;
         
-        // 3. Xác định giá bán thực tế (Selling Price)
-        // Nếu có Flash Sale -> dùng sale_price, ngược lại dùng giá gốc
+        $originalPrice = (int) $this->price;
         $sellingPrice = $flashSaleInfo ? (int) $flashSaleInfo['sale_price'] : $originalPrice;
 
-        // 4. Xử lý Variants (Logic giá Min-Max cho Price Range)
+        // 2. Logic Range Giá
         $minPrice = $sellingPrice;
         $maxPrice = $sellingPrice;
         
         if ($this->has_variants && $this->relationLoaded('variants')) {
             $variants = $this->variants;
             if ($variants->isNotEmpty()) {
-                // Lưu ý: Logic này lấy range giá của variants hiện tại
-                // Nếu muốn chính xác tuyệt đối với Flash Sale trên từng variant, cần logic phức tạp hơn.
-                // Ở đây ta lấy min/max của variants để hiển thị khoảng giá.
                 $minPrice = (int) $variants->min('price');
                 $maxPrice = (int) $variants->max('price');
             }
         }
 
-        // Format Range (Chỉ hiển thị nếu min != max)
         $priceRange = ($minPrice < $maxPrice) 
             ? $currencyService->format($minPrice) . ' - ' . $currencyService->format($maxPrice)
             : null;
+
+        // 3. [FIX] LOGIC TÍNH THỜI GIAN ĐẾM NGƯỢC (ENDS IN)
+        $endsIn = null;
+        $endsAt = null;
+        $secondsRemaining = 0;
+
+        if ($flashSaleInfo && isset($flashSaleInfo['end_date'])) {
+            $endDate = $flashSaleInfo['end_date']; // Carbon object từ Trait
+            $now = now();
+            
+            // a. Timestamp chuẩn ISO (Cho Frontend/JS parse)
+            $endsAt = $endDate->toIso8601String();
+            
+            // b. Số giây còn lại (Cho đồng hồ đếm ngược, dùng max 0 để không bị số âm)
+            $secondsRemaining = max(0, $endDate->diffInSeconds($now)); 
+
+            // c. Text hiển thị nhanh (VD: "2 days left" hoặc "05:30:00")
+            if ($endDate->diffInHours($now) > 24) {
+                $endsIn = $endDate->diffInDays($now) . ' days left';
+            } else {
+                $endsIn = $endDate->diff($now)->format('%H:%I:%S');
+            }
+        }
 
         return [
             'uuid' => $this->uuid,
@@ -53,30 +68,26 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'sku' => $this->sku,
             
-            // --- CURRENCY & PRICING LOGIC ---
+            // --- PRICING ---
             'currency_code' => $currencyService->getCurrentCurrency()->code,
-            
-            // 1. GIÁ BÁN (Giá khách phải trả - Số to, màu đỏ)
             'price' => $currencyService->convert($sellingPrice), 
             'price_formatted' => $currencyService->format($sellingPrice),
-            
-            // 2. GIÁ GỐC (Giá niêm yết - Số nhỏ, gạch ngang)
-            // FIX: Luôn trả về giá trị để Frontend so sánh. Nếu price < original_price thì gạch ngang.
             'original_price' => $currencyService->convert($originalPrice),
             'original_price_formatted' => $currencyService->format($originalPrice),
-
-            // 3. KHOẢNG GIÁ (Cho sản phẩm có biến thể)
             'price_range' => $priceRange,
             
-            // 4. INFO FLASH SALE (Tem giảm giá, đếm ngược...)
+            // --- FLASH SALE OBJECT ---
             'flash_sale' => $flashSaleInfo ? [
                 'is_active'        => true,
-                'campaign_name'    => $flashSaleInfo['campaign_name'], // Đã sửa key khớp với Trait
+                'campaign_name'    => $flashSaleInfo['campaign_name'],
                 'discount_percent' => $flashSaleInfo['discount_rate'],
                 'saved_amount'     => $currencyService->format($flashSaleInfo['discount_amount']),
-                'ends_in'          => null 
+                
+                // [FIX] Trả về đầy đủ thông tin thời gian
+                'ends_at'          => $endsAt, 
+                'seconds_remaining'=> $secondsRemaining,
+                'ends_in'          => $endsIn 
             ] : null,
-            // --------------------------------
 
             'has_variants' => $this->has_variants,
             'is_active' => $this->is_active,
@@ -84,13 +95,7 @@ class ProductResource extends JsonResource
             'rating_avg' => (float)$this->rating_avg,
             'rating_count' => (int)$this->rating_count,
             
-            'category' => $this->whenLoaded('category', function() {
-                return [
-                    'uuid' => $this->category->uuid,
-                    'name' => $this->category->name,
-                    'slug' => $this->category->slug,
-                ];
-            }),
+            'category' => new CategoryResource($this->whenLoaded('category')),
 
             'images' => $this->whenLoaded('images', function() {
                 return $this->images->map(fn($img) => [
@@ -112,14 +117,14 @@ class ProductResource extends JsonResource
                         'price_formatted' => $currencyService->format($vPrice),
                         'image' => $variant->image_url,
                         'stock_quantity' => (int)$stockQty,
-                        'attributes' => $this->whenLoaded('attributeValues', function() use ($variant) {
-                            if (!$variant->relationLoaded('attributeValues')) return [];
-                            return $variant->attributeValues->map(fn($val) => [
-                                'attribute_name' => $val->attribute->name ?? 'Unknown',
+
+                        'attributes' => $variant->relationLoaded('attributeValues') 
+                            ? $variant->attributeValues->map(fn($val) => [
+                                'attribute_name' => $val->attribute->name ?? 'Unknown', 
                                 'value' => $val->value,
                                 'code' => $val->code
-                            ]);
-                        }, [])
+                            ])
+                            : []
                     ];
                 });
             }),

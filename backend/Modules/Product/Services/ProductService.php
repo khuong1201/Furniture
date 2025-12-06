@@ -16,6 +16,7 @@ use Modules\Shared\Contracts\MediaServiceInterface;
 use Modules\Shared\Contracts\InventoryServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ProductService extends BaseService
 {
@@ -193,7 +194,13 @@ class ProductService extends BaseService
                 // Create New
                 $this->createVariant($product, $vData);
             }
-        }
-        
+        }  
+    }
+
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    {
+        $filters['per_page'] = $perPage;
+
+        return $this->repository->filter($filters);
     }
 }
