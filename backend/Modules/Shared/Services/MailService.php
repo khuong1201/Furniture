@@ -16,18 +16,18 @@ class MailService
         $emailAddress = is_object($to) ? ($to->email ?? 'unknown') : $to;
 
         try {
-            Mail::to($to)->send($mailable);
+            Mail::to($to)->queue($mailable);
             
-            Log::info("Email sent successfully", [
+            Log::info("Email queued successfully", [
                 'to' => $emailAddress,
                 'class' => get_class($mailable)
             ]);
             
             return true;
         } catch (Exception $e) {
-            Log::error("Failed to send email", [
+            Log::error("Failed to queue email", [
                 'to' => $emailAddress,
-                'mailable' => get_class($mailable),
+                'class' => get_class($mailable),
                 'error' => $e->getMessage()
             ]);
             

@@ -6,24 +6,27 @@ namespace Modules\Order\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Order\Domain\Repositories\OrderRepositoryInterface;
-use Modules\Shared\Contracts\InventoryServiceInterface; // Thay thế StockService
-use Modules\Shared\Contracts\CartServiceInterface; // Thay thế CartService
+use Modules\Shared\Contracts\InventoryServiceInterface;
+use Modules\Shared\Contracts\CartServiceInterface;
 use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
 use Modules\Product\Domain\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Modules\Order\Enums\OrderStatus;
+use Illuminate\Support\Facades\Log;
+
+// Events
 use Modules\Order\Events\OrderCreated;
 use Modules\Order\Events\OrderCancelled;
 use Modules\Order\Events\OrderStatusUpdated;
-use Modules\Order\Enums\OrderStatus;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class OrderService extends BaseService
 {
     public function __construct(
         OrderRepositoryInterface $repository,
-        protected InventoryServiceInterface $inventoryService, // Dependency Injection
+        protected InventoryServiceInterface $inventoryService,
         protected AddressRepositoryInterface $addressRepo,
         protected CartServiceInterface $cartService
     ) {
@@ -34,24 +37,45 @@ class OrderService extends BaseService
     {
         return DB::transaction(function () use ($data) {
             $userId = auth()->id();
-            $cartData = $this->cartService->getMyCart($userId); // Lấy data giỏ hàng
+            
+            $cartData = $this->cartService->getMyCart($userId); 
             
             if (empty($cartData['items'])) {
                 throw ValidationException::withMessages(['cart' => 'Giỏ hàng trống.']);
             }
 
-            // Chuyển đổi cart items thành order items format
+            $selectedIds = $data['selected_item_uuids'] ?? [];
+            $hasSelection = !empty($selectedIds);
+
             $orderItems = [];
+            $purchasedItemUuids = [];
+
             foreach ($cartData['items'] as $item) {
+                if ($hasSelection && !in_array($item['uuid'], $selectedIds)) {
+                    continue;
+                }
+
+                $variantUuid = $item['variant_uuid'] ?? $item['variant']['uuid'] ?? null;
+                
+                if (!$variantUuid) {
+                    Log::warning("OrderService: Bỏ qua item lỗi", ['item' => $item]);
+                    continue; 
+                }
+
                 $orderItems[] = [
-                    'variant_uuid' => $item['variant']['uuid'],
-                    'quantity' => $item['quantity']
+                    'variant_uuid' => $variantUuid,
+                    'quantity' => (int) $item['quantity']
                 ];
+                
+                $purchasedItemUuids[] = $item['uuid'];
+            }
+
+            if (empty($orderItems)) {
+                throw ValidationException::withMessages(['cart' => 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.']);
             }
 
             $orderData = array_merge($data, ['items' => $orderItems]);
-            
-            // Apply voucher nếu có trong cart (giả định logic)
+
             if (!empty($cartData['voucher_code'])) {
                 $orderData['voucher_code'] = $cartData['voucher_code'];
                 $orderData['voucher_discount'] = $cartData['discount_amount'] ?? 0;
@@ -59,22 +83,41 @@ class OrderService extends BaseService
             
             $order = $this->create($orderData);
 
-            // Xóa giỏ hàng
-            $this->cartService->clearCart($userId);
+            $this->cartService->removeItemsList($userId, $purchasedItemUuids);
 
             return $order;
         });
     }
 
+    public function createBuyNow(array $data): Model
+    {
+        $orderItems = [
+            [
+                'variant_uuid' => $data['variant_uuid'],
+                'quantity' => (int) $data['quantity']
+            ]
+        ];
+
+        $orderData = array_merge($data, ['items' => $orderItems]);
+
+        if (!empty($data['voucher_code'])) {
+            $orderData['voucher_code'] = $data['voucher_code'];
+            $orderData['voucher_discount'] = 0; // TODO: Calculate via PromotionService
+        }
+
+        return $this->create($orderData);
+    }
+
     public function create(array $data): Model
     {
+        // 1. Transaction
         $order = DB::transaction(function () use ($data) {
             $address = $this->addressRepo->findById($data['address_id']);
             if (!$address) {
                 throw ValidationException::withMessages(['address_id' => 'Địa chỉ không tồn tại.']);
             }
 
-            // 1. Tạo Order Header
+            // Tạo Order Header (Lúc này total = 0)
             $order = $this->repository->create([
                 'uuid' => (string) Str::uuid(),
                 'user_id' => $data['user_id'] ?? auth()->id(),
@@ -83,21 +126,25 @@ class OrderService extends BaseService
                 'notes' => $data['notes'] ?? null,
                 'voucher_code' => $data['voucher_code'] ?? null,
                 'voucher_discount' => $data['voucher_discount'] ?? 0,
-                'total_amount' => 0 // Tính sau
+                'total_amount' => 0
             ]);
 
-            // 2. Xử lý Items & Tồn kho
+            // Insert Items vào DB & Trừ kho
             $itemsTotal = $this->processOrderItems($order, $data['items']);
 
-            // 3. Tính tổng tiền cuối cùng
+            // Tính tổng tiền cuối cùng
             $discount = $order->voucher_discount;
             $finalTotal = max(0, $itemsTotal - $discount);
 
+            // Update Total vào DB
             $order->update(['total_amount' => $finalTotal]);
-
-            return $order->load('items.variant.product');
+            
+            // [FIX QUAN TRỌNG NHẤT]: Refresh model để lấy lại items vừa insert và total vừa update
+            // Nếu thiếu ->refresh(), object $order cũ vẫn giữ items=[] và total=0
+            return $order->refresh()->load(['items.variant.product', 'user']);
         });
 
+        // 2. Bắn Event (Ngoài Transaction)
         event(new OrderCreated($order));
 
         return $order;
@@ -107,28 +154,36 @@ class OrderService extends BaseService
     {
         $totalAmount = 0;
         
-        // Pre-load variants để tránh N+1 Query
         $variantUuids = array_column($itemsData, 'variant_uuid');
-        $variants = ProductVariant::whereIn('uuid', $variantUuids)->with('product')->get()->keyBy('uuid');
+        $variants = ProductVariant::whereIn('uuid', $variantUuids)
+            ->with('product.images')
+            ->get()
+            ->keyBy('uuid');
 
         foreach ($itemsData as $item) {
             $variant = $variants[$item['variant_uuid']] ?? null;
-            if (!$variant) continue;
+            
+            if (!$variant) {
+                // Log cảnh báo hoặc throw exception tùy nhu cầu
+                Log::error("Order Item SKU not found", ['uuid' => $item['variant_uuid']]);
+                continue;
+            }
 
             $quantity = (int) $item['quantity'];
 
-            // Gọi Inventory Service để trừ kho và lấy ID kho
+            // Trừ kho
             try {
                 $warehouseId = $this->inventoryService->allocate($variant->id, $quantity);
             } catch (\Exception $e) {
                 throw ValidationException::withMessages(['items' => "Sản phẩm {$variant->sku} không đủ hàng tồn kho."]);
             }
 
-            // Tính giá (Logic khuyến mãi nên tách ra PromotionService, ở đây tạm thời đơn giản hóa)
+            // Tính giá
             $unitPrice = $variant->price; 
             $subtotal = $unitPrice * $quantity;
             $totalAmount += $subtotal;
 
+            // Insert vào bảng order_items
             $order->items()->create([
                 'product_variant_id' => $variant->id,
                 'warehouse_id' => $warehouseId,
@@ -137,7 +192,7 @@ class OrderService extends BaseService
                 'unit_price' => $unitPrice,
                 'subtotal' => $subtotal,
                 'product_snapshot' => [
-                    'name' => $variant->product->name,
+                    'name' => $variant->product->name ?? 'Product',
                     'sku' => $variant->sku,
                     'image' => $variant->image_url ?? $variant->product->images->first()?->image_url
                 ]
@@ -158,7 +213,6 @@ class OrderService extends BaseService
                 throw ValidationException::withMessages(['status' => 'Không thể hủy đơn hàng đã giao/đang giao.']);
             }
 
-            // Hoàn kho
             foreach ($order->items as $item) {
                 $this->inventoryService->restore(
                     $item->product_variant_id, 
@@ -179,17 +233,17 @@ class OrderService extends BaseService
     public function updateStatus(string $uuid, string $status): Model
     {
         $order = $this->findByUuidOrFail($uuid);
-        $oldStatus = $order->status;
+        
+        $oldStatus = $order->status instanceof OrderStatus ? $order->status->value : $order->status;
 
-        // Nếu chuyển sang Cancelled thì gọi hàm cancel để hoàn kho
         if ($status === OrderStatus::CANCELLED->value) {
             return $this->cancel($uuid);
         }
 
         $order->update(['status' => $status]);
         
-        if ($oldStatus->value !== $status) {
-            event(new OrderStatusUpdated($order, $oldStatus->value, $status));
+        if ($oldStatus !== $status) {
+            event(new OrderStatusUpdated($order, (string)$oldStatus, $status));
         }
         
         return $order;

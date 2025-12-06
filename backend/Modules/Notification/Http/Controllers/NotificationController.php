@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Notification\Services\NotificationService;
-use Modules\Notification\Domain\Models\Notification;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Notifications", description: "API quản lý thông báo cá nhân")]
@@ -34,9 +33,9 @@ class NotificationController extends BaseController
     public function index(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
-        
         $result = $this->service->getMyNotifications($userId, $request->integer('per_page', 15));
 
+        // Trả về structure chuẩn JSON
         return response()->json([
             'success' => true,
             'message' => 'Success',
@@ -46,7 +45,7 @@ class NotificationController extends BaseController
                 'last_page' => $result['items']->lastPage(),
                 'total' => $result['items']->total(),
                 'per_page' => $result['items']->perPage(),
-                'unread_count' => $result['unread_count'] 
+                'unread_count' => $result['unread_count'] // Frontend dùng số này để hiện chấm đỏ
             ]
         ]);
     }
@@ -62,7 +61,6 @@ class NotificationController extends BaseController
     public function read(string $uuid): JsonResponse
     {
         $notification = $this->service->findByUuidOrFail($uuid);
-
         $this->authorize('update', $notification);
 
         $this->service->markAsRead($uuid);
@@ -95,7 +93,6 @@ class NotificationController extends BaseController
     public function destroy(string $uuid): JsonResponse
     {
         $notification = $this->service->findByUuidOrFail($uuid);
-        
         $this->authorize('delete', $notification);
         
         $this->service->delete($uuid);

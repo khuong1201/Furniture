@@ -156,12 +156,24 @@ class CartService extends BaseService implements CartServiceInterface
         return $this->repository;
     }
 
-    // --- HELPER METHODS (Private) ---
+    public function removeItemsList(int $userId, array $itemUuids): void
+    {
+        $cart = $this->repository->findByUser($userId);
+        
+        if ($cart) {
+            $cart->items()->whereIn('uuid', $itemUuids)->delete();
+
+            if ($cart->items()->count() === 0) {
+                $cart->update(['voucher_code' => null, 'voucher_discount' => 0]);
+            }
+        }
+    }
 
     private function formatCartItem($item, $product, $variant, $originalPrice, $finalPrice, $subtotal, $stock): array
     {
         return [
             'uuid' => $item->uuid,
+            'variant_uuid' => $variant->uuid,
             'product' => [
                 'name' => $product->name,
                 'sku' => $variant->sku,

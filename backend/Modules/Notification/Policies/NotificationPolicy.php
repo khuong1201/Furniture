@@ -19,7 +19,6 @@ class NotificationPolicy
 
     public function update(User $user, Notification $notification): bool
     {
-        // Update ở đây chủ yếu là mark as read
         return $user->id === $notification->user_id;
     }
 

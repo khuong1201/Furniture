@@ -22,6 +22,11 @@ class OrderPolicy
         return $user->id === $order->user_id || $user->hasPermissionTo('order.view_all');
     }
 
+    public function create(User $user): bool
+    {
+        return $user->is_active ?? true; 
+    }
+
     public function cancel(User $user, Order $order): bool
     {
         return $user->id === $order->user_id || $user->hasPermissionTo('order.edit');

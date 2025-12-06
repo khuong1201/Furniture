@@ -95,7 +95,7 @@ class CartController extends BaseController
 
     #[OA\Delete(
         path: "/carts/{uuid}",
-        summary: "Xóa item",
+        summary: "Xóa 1 item",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         parameters: [
@@ -112,10 +112,58 @@ class CartController extends BaseController
         
         return response()->json(ApiResponse::success($data, 'Item removed'));
     }
+
+    #[OA\Post(
+        path: "/carts/bulk-delete",
+        summary: "Xóa nhiều sản phẩm đã chọn (Checkbox)",
+        security: [['bearerAuth' => []]],
+        tags: ["Cart"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["uuids"],
+                properties: [
+                    new OA\Property(
+                        property: "uuids", 
+                        type: "array", 
+                        items: new OA\Items(type: "string", format: "uuid"),
+                        description: "Danh sách UUID của các item trong giỏ hàng cần xóa"
+                    )
+                ]
+            )
+        ),
+        responses: [ 
+            new OA\Response(
+                response: 200, 
+                description: "Selected items deleted",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "object")
+                ])
+            ) 
+        ]
+    )]
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        // Validate đầu vào
+        $request->validate([
+            'uuids' => 'required|array',
+            'uuids.*' => 'required|uuid'
+        ]);
+
+        // Gọi service để xóa list item
+        // Lưu ý: Đảm bảo bạn đã thêm hàm removeItemsList vào CartService như hướng dẫn trước
+        $this->service->removeItemsList($request->user()->id, $request->input('uuids'));
+
+        // Trả về data giỏ hàng mới nhất để Frontend cập nhật UI
+        $data = $this->service->getMyCart($request->user()->id);
+        
+        return response()->json(ApiResponse::success($data, 'Selected items removed'));
+    }
     
     #[OA\Delete(
         path: "/carts",
-        summary: "Làm trống giỏ hàng",
+        summary: "Làm trống giỏ hàng (Xóa tất cả)",
         security: [['bearerAuth' => []]],
         tags: ["Cart"],
         responses: [ new OA\Response(response: 200, description: "Cleared") ]

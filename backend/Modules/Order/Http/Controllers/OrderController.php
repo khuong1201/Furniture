@@ -10,8 +10,11 @@ use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Order\Services\OrderService;
 use Modules\Order\Http\Requests\CreateOrderRequest;
+use Modules\Order\Http\Requests\BuyNowRequest; // [NEW] Import Request mới
 use Modules\Order\Domain\Models\Order;
 use Modules\Order\Http\Resources\OrderResource;
+use Illuminate\Validation\ValidationException;
+use Exception;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Orders", description: "API quản lý Đơn hàng")]
@@ -21,7 +24,7 @@ class OrderController extends BaseController
     {
         parent::__construct($service);
     }
-    
+
     #[OA\Get(
         path: "/orders",
         summary: "Xem danh sách đơn hàng",
@@ -41,13 +44,94 @@ class OrderController extends BaseController
         $filters = $request->all();
         $user = $request->user();
 
-        // User thường chỉ xem được đơn của mình
         if (!$user->hasPermissionTo('order.view_all')) { 
             $filters['user_id'] = $user->id;
         }
 
         $data = $this->service->paginate($request->integer('per_page', 15), $filters);
         return response()->json(ApiResponse::paginated($data));
+    }
+
+    #[OA\Post(
+        path: "/orders/checkout",
+        summary: "Đặt hàng từ giỏ hàng (Checkout)",
+        security: [['bearerAuth' => []]],
+        tags: ["Orders"],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ["address_id"],
+                properties: [
+                    new OA\Property(property: "address_id", type: "integer"),
+                    new OA\Property(property: "notes", type: "string"),
+                ]
+            )
+        ),
+        responses: [ 
+            new OA\Response(response: 201, description: "Order placed"),
+            new OA\Response(response: 422, description: "Cart Empty / Out of Stock")
+        ]
+    )]
+    public function checkout(Request $request): JsonResponse
+    {
+        try {
+            $this->authorize('create', Order::class);
+            
+            $validated = $request->validate([
+                'address_id' => 'required|integer|exists:addresses,id',
+                'notes' => 'nullable|string'
+            ]);
+
+            $order = $this->service->createFromCart($validated);
+            
+            return response()->json(ApiResponse::success($order, 'Order placed successfully', 201), 201);
+
+        } catch (ValidationException $e) {
+            return response()->json(ApiResponse::error($e->getMessage(), 422, $e->errors()), 422);
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::error('Checkout failed: ' . $e->getMessage(), 500), 500);
+        }
+    }
+
+    #[OA\Post(
+        path: "/orders/buy-now",
+        summary: "Mua ngay (Bỏ qua giỏ hàng)",
+        security: [['bearerAuth' => []]],
+        tags: ["Orders"],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ["variant_uuid", "quantity", "address_id"],
+                properties: [
+                    new OA\Property(property: "variant_uuid", type: "string", format: "uuid"),
+                    new OA\Property(property: "quantity", type: "integer", example: 1),
+                    new OA\Property(property: "address_id", type: "integer"),
+                    new OA\Property(property: "voucher_code", type: "string"),
+                    new OA\Property(property: "notes", type: "string"),
+                ]
+            )
+        ),
+        responses: [ 
+            new OA\Response(response: 201, description: "Order placed"),
+            new OA\Response(response: 422, description: "Validation Error / Out of Stock")
+        ]
+    )]
+    public function buyNow(BuyNowRequest $request): JsonResponse
+    {
+        try {
+
+            $this->authorize('create', Order::class);
+            $data = $request->validated();
+
+            $data['user_id'] = $request->user()->id;
+
+            $order = $this->service->createBuyNow($data);
+            
+            return response()->json(ApiResponse::success($order, 'Order placed successfully', 201), 201);
+
+        } catch (ValidationException $e) {
+            return response()->json(ApiResponse::error($e->getMessage(), 422, $e->errors()), 422);
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::error('Buy Now failed: ' . $e->getMessage(), 500), 500);
+        }
     }
 
     #[OA\Post(
@@ -70,45 +154,27 @@ class OrderController extends BaseController
                 ]
             )
         ),
-        responses: [ new OA\Response(response: 201, description: "Created") ]
+        responses: [ 
+            new OA\Response(response: 201, description: "Created"),
+            new OA\Response(response: 422, description: "Validation Error / Out of stock")
+        ]
     )]
     public function store(CreateOrderRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        if (!isset($data['user_id'])) {
-            $data['user_id'] = $request->user()->id;
-        }
-        
-        $order = $this->service->create($data);
-        return response()->json(ApiResponse::success($order, 'Order created successfully', 201), 201);
-    }
-    
-    #[OA\Post(
-        path: "/orders/checkout",
-        summary: "Đặt hàng từ giỏ hàng (Checkout)",
-        security: [['bearerAuth' => []]],
-        tags: ["Orders"],
-        requestBody: new OA\RequestBody(
-            content: new OA\JsonContent(
-                required: ["address_id"],
-                properties: [
-                    new OA\Property(property: "address_id", type: "integer"),
-                    new OA\Property(property: "notes", type: "string"),
-                ]
-            )
-        ),
-        responses: [ new OA\Response(response: 201, description: "Order placed") ]
-    )]
-    public function checkout(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'address_id' => 'required|integer|exists:addresses,id',
-            'notes' => 'nullable|string'
-        ]);
+        try {
+            $data = $request->validated();
+            if (!isset($data['user_id'])) {
+                $data['user_id'] = $request->user()->id;
+            }
+            
+            $order = $this->service->create($data);
+            return response()->json(ApiResponse::success($order, 'Order created successfully', 201), 201);
 
-        $order = $this->service->createFromCart($validated);
-        
-        return response()->json(ApiResponse::success($order, 'Order placed successfully', 201), 201);
+        } catch (ValidationException $e) {
+            return response()->json(ApiResponse::error($e->getMessage(), 422, $e->errors()), 422);
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::error('Failed to create order: ' . $e->getMessage(), 500), 500);
+        }
     }
 
     #[OA\Get(
@@ -144,15 +210,20 @@ class OrderController extends BaseController
     )]
     public function updateStatus(Request $request, string $uuid): JsonResponse
     {
-        $this->authorize('update', Order::class);
+        try {
+            $this->authorize('update', Order::class);
 
-        $request->validate([
-            'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled'
-        ]);
+            $request->validate([
+                'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled'
+            ]);
 
-        $order = $this->service->updateStatus($uuid, $request->input('status'));
-        
-        return response()->json(ApiResponse::success($order, 'Order status updated'));
+            $order = $this->service->updateStatus($uuid, $request->input('status'));
+            
+            return response()->json(ApiResponse::success($order, 'Order status updated'));
+
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::error('Update status failed: ' . $e->getMessage(), 500), 500);
+        }
     }
 
     #[OA\Post(
@@ -165,11 +236,18 @@ class OrderController extends BaseController
     )]
     public function cancel(string $uuid): JsonResponse
     {
-        $order = $this->service->findByUuidOrFail($uuid);
-        $this->authorize('cancel', $order);
+        try {
+            $order = $this->service->findByUuidOrFail($uuid);
+            $this->authorize('cancel', $order);
 
-        $cancelledOrder = $this->service->cancel($uuid);
-        
-        return response()->json(ApiResponse::success($cancelledOrder, 'Order cancelled successfully'));
+            $cancelledOrder = $this->service->cancel($uuid);
+            
+            return response()->json(ApiResponse::success($cancelledOrder, 'Order cancelled successfully'));
+
+        } catch (ValidationException $e) {
+            return response()->json(ApiResponse::error($e->getMessage(), 422), 422);
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::error('Cancel failed: ' . $e->getMessage(), 500), 500);
+        }
     }
 }

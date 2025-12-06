@@ -8,34 +8,48 @@ use Modules\Inventory\Events\LowStockDetected;
 use Modules\Notification\Services\NotificationService;
 use Modules\User\Domain\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
 class SendLowStockNotification implements ShouldQueue
 {
-    public $queue = 'default';
+    use InteractsWithQueue;
+
+    public $queue = 'notifications';
 
     public function __construct(protected NotificationService $notificationService) {}
 
     public function handle(LowStockDetected $event): void
     {
-        $variant = $event->variant;
-        $variant->load('product'); 
-        
-        $productName = $variant->product->name;
-        $sku = $variant->sku;
-        $warehouseName = $event->warehouse->name;
+        try {
+            $variant = $event->variant;
+            $warehouse = $event->warehouse;
+            
+            // Eager load product nếu chưa có
+            if (!$variant->relationLoaded('product')) {
+                $variant->load('product');
+            }
+            
+            $productName = $variant->product->name ?? 'Unknown Product';
+            $sku = $variant->sku;
+            $warehouseName = $warehouse->name;
+            $recipients = User::role(['admin', 'inventory_manager'])->get();
 
-        // Logic: Gửi cho Admin và Staff
-        // Cẩn thận N+1 nếu nhiều user, nhưng thông báo admin thường ít user
-        $recipients = User::whereHas('roles', fn($q) => $q->whereIn('name', ['admin', 'manager']))->get();
-
-        foreach ($recipients as $user) {
-            $this->notificationService->send(
-                $user->id,
-                'Cảnh báo tồn kho thấp',
-                "Sản phẩm {$productName} (SKU: {$sku}) tại {$warehouseName} chỉ còn {$event->currentQuantity} sản phẩm.",
-                'warning',
-                ['variant_uuid' => $variant->uuid, 'type' => 'inventory_alert']
-            );
+            foreach ($recipients as $user) {
+                $this->notificationService->send(
+                    userId: $user->id,
+                    title: 'Cảnh báo tồn kho',
+                    content: "SP: {$productName} ({$sku}) tại kho {$warehouseName} chỉ còn {$event->currentQuantity}.",
+                    type: 'warning',
+                    data: [
+                        'variant_uuid' => $variant->uuid,
+                        'warehouse_uuid' => $warehouse->uuid,
+                        'action' => 'restock'
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error("LowStockNotification Error: " . $e->getMessage());
         }
     }
 }

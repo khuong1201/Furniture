@@ -8,7 +8,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Modules\Review\Domain\Models\Review;
 
-class ReviewApproved
+class ReviewPosted
 {
     use Dispatchable, SerializesModels;
 

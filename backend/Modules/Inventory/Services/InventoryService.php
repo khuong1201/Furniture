@@ -41,6 +41,8 @@ class InventoryService extends BaseService implements InventoryServiceInterface
 
         // Check low stock sau khi trừ
         if ($newQty <= ($stock->min_threshold ?? 5)) {
+
+            $stock->load(['variant.product', 'warehouse']);
             event(new LowStockDetected($stock->variant, $stock->warehouse, $newQty));
         }
 
@@ -75,16 +77,33 @@ class InventoryService extends BaseService implements InventoryServiceInterface
             if (!$warehouse) continue;
 
             $stock = $this->repository->findByVariantAndWarehouse($variantId, $warehouse->id);
+            $quantity = (int) $data['quantity'];
+            $threshold = 5; // Hoặc lấy từ config/data
 
             if ($stock) {
-                $this->repository->update($stock, ['quantity' => $data['quantity']]);
+                // Update
+                $threshold = $stock->min_threshold ?? 5;
+                $this->repository->update($stock, ['quantity' => $quantity]);
+                
+                // [THÊM MỚI] Check Low Stock
+                if ($quantity <= $threshold) {
+                    $stock->load(['variant.product', 'warehouse']);
+                    event(new LowStockDetected($stock->variant, $stock->warehouse, $quantity));
+                }
             } else {
-                $this->repository->create([
+                // Create
+                $newStock = $this->repository->create([
                     'product_variant_id' => $variantId,
                     'warehouse_id' => $warehouse->id,
-                    'quantity' => $data['quantity'],
+                    'quantity' => $quantity,
                     'min_threshold' => 0
                 ]);
+                
+                // [THÊM MỚI] Check Low Stock (Dù mới tạo nhưng nếu quantity thấp cũng báo)
+                if ($quantity <= 5) {
+                    $newStock->load(['variant.product', 'warehouse']);
+                    event(new LowStockDetected($newStock->variant, $newStock->warehouse, $quantity));
+                }
             }
         }
     }
@@ -129,6 +148,7 @@ class InventoryService extends BaseService implements InventoryServiceInterface
             $updatedStock = $this->repository->update($stock, ['quantity' => $newQty]);
 
             if ($newQty <= ($updatedStock->min_threshold ?? 5)) { 
+                $updatedStock->load(['variant.product', 'warehouse']);
                 event(new LowStockDetected($updatedStock->variant, $updatedStock->warehouse, $newQty));
             }
 

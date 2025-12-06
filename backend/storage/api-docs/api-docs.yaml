@@ -186,30 +186,10 @@ paths:
       responses:
         200:
           description: 'Login Successful'
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    properties:
-                      access_token:
-                        type: string
-                      refresh_token:
-                        type: string
-                      token_type:
-                        type: string
-                        example: Bearer
-                      user:
-                        type: object
-                    type: object
-                type: object
+        422:
+          description: 'Validation Error'
         401:
           description: 'Invalid credentials'
-        403:
-          description: 'Account inactive'
   /auth/register:
     post:
       tags:
@@ -270,6 +250,47 @@ paths:
           description: 'Token Refreshed'
         401:
           description: 'Invalid Refresh Token'
+  /auth/verify-email:
+    post:
+      tags:
+        - Auth
+      summary: 'Xác thực tài khoản bằng OTP'
+      operationId: 55d1c66c65a5999c383bbf9cec79c8f2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - otp
+              properties:
+                otp:
+                  description: 'Mã 6 số nhận được qua email'
+                  type: string
+                  example: '123456'
+              type: object
+      responses:
+        200:
+          description: 'Email verified successfully'
+        400:
+          description: 'Invalid OTP'
+      security:
+        -
+          bearerAuth: []
+  /auth/resend-verification:
+    post:
+      tags:
+        - Auth
+      summary: 'Gửi lại mã OTP'
+      operationId: 2e88740c51b30645f0ccfd4c2f7574d1
+      responses:
+        200:
+          description: 'OTP resent'
+        400:
+          description: 'Email already verified'
+      security:
+        -
+          bearerAuth: []
   /auth/logout:
     post:
       tags:
@@ -346,7 +367,7 @@ paths:
     delete:
       tags:
         - Cart
-      summary: 'Làm trống giỏ hàng'
+      summary: 'Làm trống giỏ hàng (Xóa tất cả)'
       operationId: b7f118663b800d671b1d4923c73dfb3f
       responses:
         200:
@@ -387,7 +408,7 @@ paths:
     delete:
       tags:
         - Cart
-      summary: 'Xóa item'
+      summary: 'Xóa 1 item'
       operationId: 919339c6a2f66c87e8da185e0e12843c
       parameters:
         -
@@ -400,6 +421,43 @@ paths:
       responses:
         200:
           description: Deleted
+      security:
+        -
+          bearerAuth: []
+  /carts/bulk-delete:
+    post:
+      tags:
+        - Cart
+      summary: 'Xóa nhiều sản phẩm đã chọn (Checkbox)'
+      operationId: 64956d2c12e37ac53d06de991afd148f
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - uuids
+              properties:
+                uuids:
+                  description: 'Danh sách UUID của các item trong giỏ hàng cần xóa'
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+              type: object
+      responses:
+        200:
+          description: 'Selected items deleted'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                type: object
       security:
         -
           bearerAuth: []
@@ -1262,6 +1320,8 @@ paths:
       responses:
         201:
           description: Created
+        422:
+          description: 'Validation Error / Out of stock'
       security:
         -
           bearerAuth: []
@@ -1286,6 +1346,44 @@ paths:
       responses:
         201:
           description: 'Order placed'
+        422:
+          description: 'Cart Empty / Out of Stock'
+      security:
+        -
+          bearerAuth: []
+  /orders/buy-now:
+    post:
+      tags:
+        - Orders
+      summary: 'Mua ngay (Bỏ qua giỏ hàng)'
+      operationId: 7e7bdb894d2fc43e1f232acadfc6f226
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - variant_uuid
+                - quantity
+                - address_id
+              properties:
+                variant_uuid:
+                  type: string
+                  format: uuid
+                quantity:
+                  type: integer
+                  example: 1
+                address_id:
+                  type: integer
+                voucher_code:
+                  type: string
+                notes:
+                  type: string
+              type: object
+      responses:
+        201:
+          description: 'Order placed'
+        422:
+          description: 'Validation Error / Out of Stock'
       security:
         -
           bearerAuth: []
