@@ -22,10 +22,7 @@ class Category extends Model
         'slug',
         'description',
         'parent_id',
-        'is_active',
-        'meta_title',
-        'meta_description',
-        'meta_keywords'
+        'is_active'
     ];
 
     protected $casts = [

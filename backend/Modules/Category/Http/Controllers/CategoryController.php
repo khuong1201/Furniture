@@ -34,7 +34,7 @@ class CategoryController extends BaseController
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "search", in: "query", schema: new OA\Schema(type: "string")),
         ],
-        responses: [new OA\Response(response: 200, description: "Success")]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
     public function index(Request $request): JsonResponse
     {
@@ -44,40 +44,6 @@ class CategoryController extends BaseController
         }
 
         return parent::index($request);
-    }
-
-    #[OA\Get(
-        path: "/admin/categories",
-        summary: "Danh sách danh mục (Admin)",
-        security: [['bearerAuth' => []]],
-        tags: ["Categories"],
-        parameters: [
-            new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "search", in: "query", schema: new OA\Schema(type: "string")),
-            new OA\Parameter(name: "is_active", in: "query", schema: new OA\Schema(type: "boolean")),
-        ],
-        responses: [new OA\Response(response: 200, description: "Success")]
-    )]
-    public function adminIndex(Request $request): JsonResponse
-    {
-        $this->authorize('viewAny', Category::class);
-        $filters = $request->all();
-        $data = $this->service->paginate($request->integer('per_page', 15), $filters);
-        return response()->json(ApiResponse::paginated($data));
-    }
-
-    #[OA\Get(
-        path: "/admin/categories/tree",
-        summary: "Cây danh mục (Admin)",
-        security: [['bearerAuth' => []]],
-        tags: ["Categories"],
-        responses: [new OA\Response(response: 200, description: "Success")]
-    )]
-    public function adminGetTree(): JsonResponse
-    {
-        $this->authorize('viewAny', Category::class);
-        $data = $this->service->getTree(true); // Include inactive
-        return response()->json(ApiResponse::success($data));
     }
 
     #[OA\Post(
@@ -98,14 +64,14 @@ class CategoryController extends BaseController
                 ]
             )
         ),
-        responses: [new OA\Response(response: 201, description: "Created")]
+        responses: [ new OA\Response(response: 201, description: "Created") ]
     )]
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $this->authorize('create', Category::class);
-
+        
         $data = $this->service->create($request->validated());
-
+        
         return response()->json(ApiResponse::success($data, 'Category created', 201), 201);
     }
 
@@ -127,18 +93,18 @@ class CategoryController extends BaseController
                 ]
             )
         ),
-        responses: [new OA\Response(response: 200, description: "Updated")]
+        responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
     public function update(UpdateCategoryRequest $request, string $uuid): JsonResponse
     {
         $category = $this->service->findByUuidOrFail($uuid);
         $this->authorize('update', $category);
-
+        
         $data = $this->service->update($uuid, $request->validated());
 
         return response()->json(ApiResponse::success($data, 'Category updated'));
     }
-
+    
     #[OA\Get(
         path: "/public/categories/{uuid}",
         summary: "Xem chi tiết danh mục",
@@ -146,7 +112,7 @@ class CategoryController extends BaseController
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [new OA\Response(response: 200, description: "Success")]
+        responses: [ new OA\Response(response: 200, description: "Success") ]
     )]
     public function show(string $uuid): JsonResponse
     {
@@ -162,7 +128,7 @@ class CategoryController extends BaseController
         parameters: [
             new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))
         ],
-        responses: [new OA\Response(response: 200, description: "Deleted")]
+        responses: [ new OA\Response(response: 200, description: "Deleted") ]
     )]
     public function destroy(string $uuid): JsonResponse
     {

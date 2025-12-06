@@ -8,10 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCategoryRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
+    public function authorize(): bool { return true; }
 
     public function rules(): array
     {
@@ -20,10 +17,7 @@ class StoreCategoryRequest extends FormRequest
             'slug' => 'nullable|string|max:150|unique:categories,slug',
             'description' => 'nullable|string',
             'parent_id' => 'nullable|integer|exists:categories,id',
-            'is_active' => 'boolean',
-            'meta_title' => 'nullable|string|max:60',
-            'meta_description' => 'nullable|string|max:160',
-            'meta_keywords' => 'nullable|string|max:255'
+            'is_active' => 'boolean' // Thêm is_active cho đồng bộ migration
         ];
     }
 }

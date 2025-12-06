@@ -14,7 +14,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::post('products', [ProductController::class, 'store']);
     Route::put('products/{uuid}', [ProductController::class, 'update']);
     Route::delete('products/{uuid}', [ProductController::class, 'destroy']);
-
+    
     Route::post('products/{uuid}/images', [ProductImageController::class, 'store']);
     Route::delete('product-images/{uuid}', [ProductImageController::class, 'destroy']);
 

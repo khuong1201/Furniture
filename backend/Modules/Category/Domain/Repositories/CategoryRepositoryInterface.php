@@ -10,6 +10,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface CategoryRepositoryInterface extends BaseRepositoryInterface
 {
-    public function getTree(bool $includeInactive = false): Collection;
+    public function getTree(): Collection;
     public function filter(array $filters): LengthAwarePaginator;
 }

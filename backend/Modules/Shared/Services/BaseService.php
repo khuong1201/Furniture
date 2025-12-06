@@ -30,9 +30,9 @@ abstract class BaseService
         return $this->repository->all($withTrashed);
     }
 
-    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->repository->paginate($perPage, $filters);
+        return $this->repository->paginate($perPage);
     }
 
     public function findByUuid(string $uuid): ?Model
@@ -55,9 +55,9 @@ abstract class BaseService
     {
         return DB::transaction(function () use ($data) {
             $this->beforeCreate($data);
-
+            
             $model = $this->repository->create($data);
-
+            
             $this->afterCreate($model);
 
             return $model;
@@ -70,11 +70,11 @@ abstract class BaseService
 
         return DB::transaction(function () use ($model, $data) {
             $this->beforeUpdate($model, $data);
-
+            
             $updatedModel = $this->repository->update($model, $data);
-
+            
             $this->afterUpdate($updatedModel);
-
+            
             return $updatedModel;
         });
     }
@@ -85,9 +85,9 @@ abstract class BaseService
 
         return DB::transaction(function () use ($model) {
             $this->beforeDelete($model);
-
+            
             $result = $this->repository->delete($model);
-
+            
             $this->afterDelete($model);
 
             return $result;
