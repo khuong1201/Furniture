@@ -17,11 +17,11 @@ class CategoryService extends BaseService
         parent::__construct($repository);
     }
 
-    public function getTree(): Collection
+    public function getTree(bool $includeInactive = false): Collection
     {
-        return $this->repository->getTree();
+        return $this->repository->getTree($includeInactive);
     }
-    
+
     public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $filters['per_page'] = $perPage;
@@ -35,7 +35,7 @@ class CategoryService extends BaseService
                 throw ValidationException::withMessages(['parent_id' => 'Danh mục không thể là cha của chính nó.']);
             }
 
-            if ($this->isDescendant($model->id, (int)$data['parent_id'])) {
+            if ($this->isDescendant($model->id, (int) $data['parent_id'])) {
                 throw ValidationException::withMessages(['parent_id' => 'Không thể gán danh mục con làm danh mục cha (Vòng lặp vô hạn).']);
             }
         }
@@ -44,19 +44,22 @@ class CategoryService extends BaseService
     protected function isDescendant(int|string $categoryId, int|string $targetId): bool
     {
         $category = $this->repository->findById($categoryId);
-        if (!$category) return false;
-        
-        $category->load('allChildren'); 
-        
+        if (!$category)
+            return false;
+
+        $category->load('allChildren');
+
         return $this->checkIdInTree($category->allChildren, $targetId);
     }
-    
-    private function checkIdInTree(Collection $nodes, int|string $targetId): bool 
+
+    private function checkIdInTree(Collection $nodes, int|string $targetId): bool
     {
         foreach ($nodes as $node) {
-            if ($node->id == $targetId) return true;
+            if ($node->id == $targetId)
+                return true;
             if ($node->allChildren->isNotEmpty()) {
-                if ($this->checkIdInTree($node->allChildren, $targetId)) return true;
+                if ($this->checkIdInTree($node->allChildren, $targetId))
+                    return true;
             }
         }
         return false;

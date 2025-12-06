@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait HasPromotions
 {
-    // ... (Các hàm relation và accessor cũ giữ nguyên)
+    public function promotions(): BelongsToMany
+    {
+        return $this->belongsToMany(Promotion::class, 'product_promotion');
+    }
 
     /**
      * Scope: Lọc các sản phẩm ĐANG có Flash Sale hợp lệ.
@@ -22,13 +25,13 @@ trait HasPromotions
             $now = now();
             // Query vào bảng promotions thông qua pivot
             $q->where('is_active', true)
-              ->where('start_date', '<=', $now)
-              ->where('end_date', '>=', $now)
-              // Kiểm tra thêm quantity nếu cần thiết (optional)
-              ->where(function($subQ) {
-                  $subQ->where('quantity', '=', 0) // Không giới hạn
-                       ->orWhereColumn('used_count', '<', 'quantity'); // Hoặc chưa hết mã
-              });
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                // Kiểm tra thêm quantity nếu cần thiết (optional)
+                ->where(function ($subQ) {
+                    $subQ->where('quantity', '=', 0) // Không giới hạn
+                        ->orWhereColumn('used_count', '<', 'quantity'); // Hoặc chưa hết mã
+                });
         });
     }
 }

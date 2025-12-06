@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Search, Filter, Package, ShoppingBag } from 'lucide-react';
 import OrderService from '@/services/admin/OrderService';
-import '../products/ProductList.css';
+import './OrderList.css';
 
 const OrderList = () => {
     const navigate = useNavigate();

@@ -67,7 +67,7 @@ class UserService {
 
     // Get current user profile
     async getProfile() {
-        return this._request('/users/profile');
+        return this._request('/profile');
     }
 
     // Create user (admin)

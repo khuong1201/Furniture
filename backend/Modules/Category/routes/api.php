@@ -9,6 +9,8 @@ Route::prefix('public/categories')->group(function () {
 });
 
 Route::middleware(['auth:sanctum'])->prefix('admin/categories')->group(function () {
+    Route::get('/tree', [CategoryController::class, 'adminGetTree']);
+    Route::get('/', [CategoryController::class, 'adminIndex']);
     Route::post('/', [CategoryController::class, 'store']);
     Route::put('/{uuid}', [CategoryController::class, 'update']);
     Route::delete('/{uuid}', [CategoryController::class, 'destroy']);

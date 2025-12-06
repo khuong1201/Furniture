@@ -26,17 +26,28 @@ abstract class EloquentBaseRepository implements BaseRepositoryInterface
     public function all(bool $withTrashed = false): Collection
     {
         $query = $this->query();
-        
+
         if ($withTrashed && method_exists($this->model, 'withTrashed')) {
             $query->withTrashed();
         }
-        
+
         return $query->latest()->get();
     }
 
-    public function paginate(int $perPage = 15): LengthAwarePaginator
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
-        return $this->query()->latest()->paginate($perPage);
+        $query = $this->query();
+
+        foreach ($filters as $key => $value) {
+            if ($value !== null && $value !== '') {
+                // Xử lý các trường hợp đặc biệt nếu cần, hoặc check fillable
+                if (in_array($key, $this->model->getFillable()) || $key === 'user_id' || $key === 'status') {
+                    $query->where($key, $value);
+                }
+            }
+        }
+
+        return $query->latest()->paginate($perPage);
     }
 
     public function findById(int|string $id): ?Model
@@ -65,7 +76,7 @@ abstract class EloquentBaseRepository implements BaseRepositoryInterface
     public function update(Model $model, array $data): Model
     {
         $model->update($data);
-        return $model; 
+        return $model;
     }
 
     public function delete(Model $model): bool

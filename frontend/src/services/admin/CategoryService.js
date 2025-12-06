@@ -60,9 +60,8 @@ class CategoryService {
         return this._request(`/admin/categories${queryString ? `?${queryString}` : ''}`);
     }
 
-    // Get category tree (public/admin)
     async getCategoryTree() {
-        return this._request('/public/categories?tree=true');
+        return this._request('/admin/categories/tree');
     }
 
     // Get single category

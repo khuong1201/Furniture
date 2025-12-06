@@ -41,6 +41,10 @@
   width: 80px;
 }
 
+.logo-icon-sidebar {
+  width: 70px;
+}
+
 .admin-app-container .sidebar-header {
   padding: 24px 20px;
   border-bottom: 1px solid rgba(250, 204, 21, 0.1);
@@ -289,7 +293,7 @@
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #fffcf8 0%, #ffeee2 100%);
+  background: linear-gradient(135deg, #eeeeee 0%, #f7f7f7 100%);
   min-height: 100vh;
   position: relative;
   overflow: hidden;
@@ -359,10 +363,10 @@
   padding: 12px 20px;
   border-radius: 12px;
   min-width: 350px;
-  border: 1px solid rgba(254, 240, 138, 0.5);
+  border: 1px solid rgba(66, 66, 66, 0.151);
   transition: all 0.3s;
   backdrop-filter: blur(5px);
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.05);
+  box-shadow: 0 2px 8px rgba(184, 184, 184, 0.05);
 }
 
 .admin-app-container .search-box:focus-within {

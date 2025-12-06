@@ -66,7 +66,6 @@
     color: var(--admin-primary);
 }
 
-/* === Search & Filters === */
 .admin-app-container .product_list-container .search-filters {
     display: flex;
     gap: 16px;
@@ -74,7 +73,11 @@
     padding: 20px 24px;
     background: white;
     border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+    border: 1.5px solid var(--admin-primary);
+
+
 }
 
 .admin-app-container .product_list-container .search-form {
@@ -90,7 +93,7 @@
 
 .admin-app-container .product_list-container .search-box svg {
     position: absolute;
-    left: 16px;
+    left: 28px;
     color: var(--admin-text-muted);
     pointer-events: none;
     z-index: 1;
@@ -98,7 +101,7 @@
 
 .admin-app-container .product_list-container .search-box input {
     width: 100%;
-    padding: 12px 44px 12px 48px;
+    padding: 6px 22px 6px 35px;
     border: 1px solid var(--admin-border);
     border-radius: var(--admin-radius);
     font-size: 14px;
@@ -134,23 +137,45 @@
     color: #ef4444;
 }
 
-/* Filter Actions */
 .admin-app-container .product_list-container .filter-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
+
+    padding: 10px 14px;
+    border: 2px solid var(--admin-primary);
+    border-radius: var(--admin-radius-md);
+    background: #fff;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.06);
 }
 
+
+
 .admin-app-container .product_list-container .filter-select {
-    padding: 12px 16px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
+    padding: 10px 14px;
     font-size: 14px;
-    background: white;
+    min-width: 150px;
+
+    border-radius: var(--admin-radius);
+    border: 1.5px solid var(--admin-border);
+    background: #fff;
+    color: #333;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 140px;
+
+    /* Xóa style mặc định */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* Icon mũi tên custom */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 38px;
 }
+
 
 .admin-app-container .product_list-container .filter-select:focus {
     outline: none;
@@ -180,9 +205,15 @@
 
 .admin-app-container .product_list-container .btn-primary {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
-    color: white;
+    color: rgb(0, 0, 0);
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+
+    /* Thêm border */
+    border: 2px solid var(--admin-primary-dark);
+    border-radius: 6px;
+    /* Nếu bạn muốn bo góc */
 }
+
 
 .admin-app-container .product_list-container .btn-primary:hover {
     transform: translateY(-1px);
@@ -378,6 +409,68 @@
     color: #16a34a;
 }
 
+/* ==== Dialog Header ==== */
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--admin-border-light);
+    background: #fff;
+    border-radius: var(--admin-radius-lg) var(--admin-radius-lg) 0 0;
+
+    /* Shadow nhẹ cho cảm giác nổi */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Title + Icon container */
+.dialog-header .dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Icon cảnh báo */
+.dialog-header .dialog-title .dialog-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Nếu icon danger dùng màu đỏ */
+.dialog-header .dialog-title .dialog-icon.danger {
+    color: #d9372c;
+}
+
+/* Tiêu đề */
+.dialog-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* ==== Close Button ==== */
+.dialog-header .close-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+}
+
+.dialog-header .close-btn:hover {
+    background: rgba(0, 0, 0, 0.07);
+}
+
+.dialog-header .close-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #444;
+}
+
+
 .admin-app-container .product_list-container .status-toggle.inactive {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
@@ -563,22 +656,23 @@
 }
 
 /* === Responsive === */
+/* === Responsive === */
 @media (max-width: 1024px) {
-    .product_list-container .header-content {
+    .admin-app-container .product_list-container .header-content {
         flex-direction: column;
         gap: 16px;
     }
 
-    .product_list-container .quick-stats {
+    .admin-app-container .product_list-container .quick-stats {
         border-right: none;
         padding: 0;
     }
 
-    .product_list-container .search-filters {
+    .admin-app-container .product_list-container .search-filters {
         flex-direction: column;
     }
 
-    .product_list-container .filter-actions {
+    .admin-app-container .product_list-container .filter-actions {
         width: 100%;
         justify-content: space-between;
     }
@@ -586,14 +680,14 @@
 
 @media (max-width: 768px) {
 
-    .product_list-container .product-table th:nth-child(3),
-    .product_list-container .product-table td:nth-child(3),
-    .product_list-container .product-table th:nth-child(6),
-    .product_list-container .product-table td:nth-child(6) {
+    .admin-app-container .product_list-container .product-table th:nth-child(3),
+    .admin-app-container .product_list-container .product-table td:nth-child(3),
+    .admin-app-container .product_list-container .product-table th:nth-child(6),
+    .admin-app-container .product_list-container .product-table td:nth-child(6) {
         display: none;
     }
 
-    .product_list-container .pagination {
+    .admin-app-container .product_list-container .pagination {
         flex-direction: column;
         gap: 16px;
     }

@@ -3,6 +3,7 @@
 .admin-app-container .dashboard {
     max-width: 100%;
     margin: 0 auto;
+    padding: 20px;
 }
 
 /* === Header === */
@@ -20,6 +21,7 @@
 .admin-app-container .dashboard-subtitle {
     color: var(--admin-text-muted);
     font-size: 14px;
+    margin: 0;
 }
 
 /* === Stat Cards === */
@@ -117,7 +119,18 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: auto;
+    /* Allow content to dictate height */
+    min-height: 450px;
+    /* Ensure minimum height for charts */
+    overflow: hidden;
+    /* Prevent overlap */
+    position: relative;
+    z-index: 1;
+}
+
+.admin-app-container .revenue-chart {
+    grid-column: 1;
 }
 
 .admin-app-container .chart-header {
@@ -136,6 +149,12 @@
     margin: 0;
 }
 
+.admin-app-container .chart-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .admin-app-container .chart-select {
     padding: 6px 12px;
     border: 1px solid var(--admin-border);
@@ -145,6 +164,7 @@
     background: white;
     cursor: pointer;
     outline: none;
+    min-width: 100px;
 }
 
 .admin-app-container .chart-select:focus {
@@ -153,12 +173,17 @@
 
 .admin-app-container .chart-content {
     flex: 1;
-    min-height: 300px;
+    height: 350px;
+    /* Explicit height for Recharts */
+    min-height: 350px;
+    position: relative;
+    width: 100%;
 }
 
 /* === Recent Orders Table === */
 .admin-app-container .recent-orders-card {
     overflow: hidden;
+    grid-column: 1;
 }
 
 .admin-app-container .recent-orders {
@@ -168,6 +193,7 @@
 .admin-app-container .recent-orders-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
 }
 
 .admin-app-container .recent-orders-table th {
@@ -178,6 +204,7 @@
     color: var(--admin-text-muted);
     border-bottom: 1px solid var(--admin-border);
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .admin-app-container .recent-orders-table td {
@@ -185,6 +212,7 @@
     font-size: 14px;
     color: var(--admin-text);
     border-bottom: 1px solid var(--admin-border-light);
+    vertical-align: middle;
 }
 
 .admin-app-container .recent-orders-table tr:last-child td {
@@ -201,6 +229,7 @@
 .admin-app-container .customer-info {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .admin-app-container .customer-name {
@@ -216,9 +245,46 @@
 .admin-app-container .amount {
     font-weight: 600;
     color: var(--admin-text);
+    white-space: nowrap;
 }
 
-/* === Top Products === */
+/* === Status Badges === */
+.admin-app-container .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.admin-app-container .badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.admin-app-container .badge-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.admin-app-container .badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.admin-app-container .badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.admin-app-container .badge-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+/* === Top Products & Customers === */
 .admin-app-container .top-products-list {
     display: flex;
     flex-direction: column;
@@ -249,6 +315,7 @@
     justify-content: center;
     font-size: 12px;
     font-weight: 600;
+    flex-shrink: 0;
 }
 
 .admin-app-container .product-image {
@@ -258,10 +325,12 @@
     object-fit: cover;
     background: var(--admin-bg);
     border: 1px solid var(--admin-border-light);
+    flex-shrink: 0;
 }
 
 .admin-app-container .product-details {
     flex: 1;
+    min-width: 0;
 }
 
 .admin-app-container .product-name {
@@ -270,7 +339,6 @@
     color: var(--admin-text);
     margin: 0 0 2px 0;
     display: -webkit-box;
-    line-clamp: 1;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -285,6 +353,11 @@
     font-weight: 600;
     color: var(--admin-text);
     font-size: 13px;
+    white-space: nowrap;
+}
+
+.admin-app-container .text-right {
+    text-align: right;
 }
 
 /* === Loading State === */
@@ -315,21 +388,72 @@
 
 /* === Responsive === */
 @media (max-width: 1200px) {
-    .dashboard-grid {
+    .admin-app-container .dashboard-grid {
         grid-template-columns: 1fr;
+    }
+
+    .admin-app-container .revenue-chart,
+    .admin-app-container .recent-orders-card {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 1024px) {
+    .admin-app-container .dashboard {
+        padding: 16px;
+    }
+
+    .admin-app-container .stat-cards {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 768px) {
-    .stat-cards {
+    .admin-app-container .stat-cards {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
 
-    .dashboard-header {
+    .admin-app-container .dashboard-header {
         text-align: left;
+    }
+
+    .admin-app-container .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .admin-app-container .chart-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .admin-app-container .chart-content {
+        min-height: 250px;
     }
 }
 
-.admin-app-container .text-right {
-    text-align: right;
+@media (max-width: 640px) {
+    .admin-app-container .dashboard {
+        padding: 12px;
+    }
+
+    .admin-app-container .stat-card {
+        padding: 16px;
+    }
+
+    .admin-app-container .chart-card {
+        padding: 16px;
+    }
+
+    .admin-app-container .stat-card-body .stat-value {
+        font-size: 20px;
+    }
+
+    .admin-app-container .recent-orders-table td,
+    .admin-app-container .recent-orders-table th {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
 }

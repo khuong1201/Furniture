@@ -17,14 +17,21 @@ class EloquentCategoryRepository extends EloquentBaseRepository implements Categ
         parent::__construct($model);
     }
 
-    public function getTree(): Collection
+    public function getTree(bool $includeInactive = false): Collection
     {
-        return $this->model
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->with(['allChildren' => function($query) {
-                $query->where('is_active', true);
-            }])
+        $query = $this->model->whereNull('parent_id');
+
+        if (!$includeInactive) {
+            $query->where('is_active', true);
+        }
+
+        return $query->with([
+            'allChildren' => function ($q) use ($includeInactive) {
+                if (!$includeInactive) {
+                    $q->where('is_active', true);
+                }
+            }
+        ])
             ->get();
     }
 
@@ -35,9 +42,9 @@ class EloquentCategoryRepository extends EloquentBaseRepository implements Categ
         if (!empty($filters['search'])) {
             $query->where('name', 'like', "%{$filters['search']}%");
         }
-        
+
         if (isset($filters['is_active'])) {
-            $query->where('is_active', (bool)$filters['is_active']);
+            $query->where('is_active', (bool) $filters['is_active']);
         }
 
         return $query->latest()->paginate($filters['per_page'] ?? 15);

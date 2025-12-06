@@ -18,23 +18,32 @@ class Promotion extends Model
     use HasFactory, SoftDeletes; // Giả sử Loggable nằm ở Shared, nếu không có file Shared thì bỏ qua
 
     protected $fillable = [
-        'uuid', 'name', 'description', 'type', 'value', 
-        'min_order_value', 'max_discount_amount',
-        'quantity', 'used_count', 'limit_per_user',
-        'start_date', 'end_date', 'is_active'
+        'uuid',
+        'name',
+        'description',
+        'type',
+        'value',
+        'min_order_value',
+        'max_discount_amount',
+        'quantity',
+        'used_count',
+        'limit_per_user',
+        'start_date',
+        'end_date',
+        'is_active'
     ];
 
     protected $casts = [
-        'start_date'          => 'datetime',
-        'end_date'            => 'datetime',
-        'is_active'           => 'boolean',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'is_active' => 'boolean',
         // CHANGE: Cast về integer (BigInt)
-        'value'               => 'integer',
-        'min_order_value'     => 'integer',
+        'value' => 'integer',
+        'min_order_value' => 'integer',
         'max_discount_amount' => 'integer',
-        'quantity'            => 'integer',
-        'used_count'          => 'integer',
-        'limit_per_user'      => 'integer',
+        'quantity' => 'integer',
+        'used_count' => 'integer',
+        'limit_per_user' => 'integer',
     ];
 
     protected static function boot(): void
@@ -47,16 +56,16 @@ class Promotion extends Model
     {
         return $this->belongsToMany(Product::class, 'product_promotion');
     }
-    
+
     /**
      * Scope lấy các promotion đang active và trong thời gian hiệu lực
      */
     public function scopeActive(Builder $query): Builder
     {
         $now = now();
-        return $query->where('is_active', true)
-                     ->where('start_date', '<=', $now)
-                     ->where('end_date', '>=', $now);
+        return $query->where('promotions.is_active', true)
+            ->where('promotions.start_date', '<=', $now)
+            ->where('promotions.end_date', '>=', $now);
     }
 
     /**
@@ -67,7 +76,7 @@ class Promotion extends Model
         if (!$this->is_active) {
             return false;
         }
-        
+
         $now = now();
         if ($this->start_date > $now || $this->end_date < $now) {
             return false;
