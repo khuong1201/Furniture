@@ -9,6 +9,7 @@ use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Modules\Review\Events\ReviewPosted;
 use Modules\Review\Events\ReviewApproved;
@@ -20,6 +21,30 @@ class ReviewService extends BaseService
         protected ProductRepositoryInterface $productRepo
     ) {
         parent::__construct($repository);
+    }
+
+    /**
+     * [FIX QUAN TRỌNG] Override hàm paginate của BaseService 
+     * để đảm bảo Admin gọi hàm này vẫn chạy qua logic filter() của Repository
+     */
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    {
+        return $this->repository->filter($filters + ['per_page' => $perPage]);
+    }
+
+    /**
+     * Hàm dùng cho trang chi tiết sản phẩm (Client)
+     */
+    public function listReviewsForProduct(string $productUuid, array $params): LengthAwarePaginator
+    {
+        $params['product_uuid'] = $productUuid;
+        
+        // Mặc định chỉ lấy review đã duyệt nếu không chỉ định rõ
+        if (!isset($params['is_approved'])) {
+            $params['is_approved'] = true;
+        }
+
+        return $this->repository->filter($params);
     }
 
     public function create(array $data): Model
@@ -70,7 +95,6 @@ class ReviewService extends BaseService
         
         $this->repository->update($review, $data);
         
-        // Clear cache nếu rating thay đổi hoặc trạng thái duyệt thay đổi
         if (isset($data['rating']) || ($data['is_approved'] ?? false) !== $oldStatus) {
              $this->clearStatsCache($review->product_id);
         }
@@ -91,7 +115,6 @@ class ReviewService extends BaseService
         
         if ($result) {
              $this->clearStatsCache($productId);
-             // Trigger event để tính lại rating cho product
              event(new ReviewApproved($review)); 
         }
         
@@ -119,7 +142,6 @@ class ReviewService extends BaseService
             $avgRating = $totalReviews > 0 ? round($sumRating / $totalReviews, 1) : 0;
 
             $distribution = [];
-            // Loop từ 5 xuống 1 để UI hiển thị đúng thứ tự
             for ($i = 5; $i >= 1; $i--) {
                 $count = $counts[$i] ?? 0;
                 $percent = $totalReviews > 0 ? round(($count / $totalReviews) * 100, 1) : 0;

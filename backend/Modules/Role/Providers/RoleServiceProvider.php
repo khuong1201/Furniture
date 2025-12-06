@@ -2,11 +2,14 @@
 
 namespace Modules\Role\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Modules\Role\Domain\Models\Role;
+use Modules\Role\Policies\RolePolicy;
 
 class RoleServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,7 @@ class RoleServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Role::class, RolePolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

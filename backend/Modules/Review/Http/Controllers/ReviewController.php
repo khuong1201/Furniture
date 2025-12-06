@@ -24,26 +24,58 @@ class ReviewController extends BaseController
 
     #[OA\Get(
         path: "/public/reviews",
-        summary: "Xem danh sách đánh giá",
+        summary: "Xem danh sách đánh giá (Khách xem - Bắt buộc có product_uuid)",
+        description: "Chỉ trả về các review đã được duyệt (is_approved=true).",
         tags: ["Reviews"],
         parameters: [
-            new OA\Parameter(name: "product_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
+            new OA\Parameter(name: "product_uuid", in: "query", required: true, schema: new OA\Schema(type: "string", format: "uuid")),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "rating", in: "query", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "admin_view", in: "query", schema: new OA\Schema(type: "boolean")),
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 10)),
+            new OA\Parameter(name: "rating", in: "query", schema: new OA\Schema(type: "integer", enum: [1, 2, 3, 4, 5])),
+            new OA\Parameter(name: "has_image", in: "query", schema: new OA\Schema(type: "boolean")),
         ],
         responses: [new OA\Response(response: 200, description: "Success")]
     )]
     public function index(Request $request): JsonResponse
     {
+        $request->validate([
+            'product_uuid' => 'required|uuid',
+        ]);
+
         $filters = $request->all();
+        $productUuid = $request->query('product_uuid');
 
-        if (!$request->user() || !$request->user()->hasPermissionTo('review.view_all')) {
-            unset($filters['admin_view']);
-            $filters['is_approved'] = true;
-        }
+        // Logic: Khách chỉ xem được review đã duyệt
+        $filters['is_approved'] = true;
 
-        $data = $this->service->paginate($request->integer('per_page', 10), $filters);
+        $data = $this->service->listReviewsForProduct($productUuid, $filters);
+        
+        return response()->json(ApiResponse::paginated($data));
+    }
+
+    #[OA\Get(
+        path: "/admin/reviews",
+        summary: "Quản lý tất cả đánh giá (Admin)",
+        description: "Admin xem toàn bộ review, lọc theo trạng thái duyệt, sản phẩm, rating...",
+        security: [['bearerAuth' => []]],
+        tags: ["Reviews"],
+        parameters: [
+            new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 20)),
+            new OA\Parameter(name: "product_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
+            new OA\Parameter(name: "is_approved", in: "query", schema: new OA\Schema(type: "boolean")),
+            new OA\Parameter(name: "rating", in: "query", schema: new OA\Schema(type: "integer")),
+        ],
+        responses: [new OA\Response(response: 200, description: "Success")]
+    )]
+    public function adminIndex(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Review::class);
+
+        $filters = $request->all();
+        $perPage = $request->integer('per_page', 20);
+
+        $data = $this->service->paginate($perPage, $filters);
         
         return response()->json(ApiResponse::paginated($data));
     }
@@ -133,14 +165,28 @@ class ReviewController extends BaseController
     
     #[OA\Get(
         path: "/public/reviews/{uuid}", 
-        summary: "Xem chi tiết", 
+        summary: "Xem chi tiết một review", 
         tags: ["Reviews"], 
         parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string"))], 
         responses: [new OA\Response(response: 200, description: "Success")]
     )]
     public function show(string $uuid): JsonResponse
     {
+        // [FIX LỖI FATAL ERROR]: Đã bỏ tham số "Request $request" để khớp với BaseController
         $review = $this->service->findByUuidOrFail($uuid);
+
+        // Sử dụng helper request() để lấy thông tin user
+        $request = request();
+
+        if (!$review->is_approved) {
+            // Khách -> 404
+            if (!$request->user()) {
+                abort(404);
+            }
+            // User -> Check quyền
+            $this->authorize('view', $review);
+        }
+
         return response()->json(ApiResponse::success($review));
     }
 }

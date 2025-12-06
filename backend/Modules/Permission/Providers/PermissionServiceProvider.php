@@ -2,6 +2,7 @@
 
 namespace Modules\Permission\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -10,6 +11,7 @@ use RecursiveIteratorIterator;
 use Modules\Permission\Domain\Models\Permission;
 use Modules\Permission\Services\PermissionService;
 use Modules\Permission\Http\Middleware\CheckPermission;
+use Modules\Permission\Policies\PermissionPolicy;
 
 class PermissionServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,7 @@ class PermissionServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Permission::class, PermissionPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
