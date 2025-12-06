@@ -461,7 +461,7 @@ const ProductList = () => {
                         {/* Pagination */}
                         <div className="pagination">
                             <div className="pagination-info">
-                                Hiển thị {(currentPage - 1) * perPage + 1} - {Math.min(currentPage * perPage, totalItems)} / {totalItems} sản phẩm
+                                Hiển thị {perPage} / {totalItems} sản phẩm
                             </div>
 
                             <div className="pagination-controls">

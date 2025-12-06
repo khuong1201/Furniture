@@ -1,121 +1,175 @@
-/* Product Form - Scoped with product_form prefix */
-
-.admin-app-container .product_form {
-    max-width: 1000px;
+/* Product Form - Modern Clean Design */
+.product_form {
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 24px;
+    padding: 1.5rem;
+    font-family: inherit;
+
+    /* Thêm border */
+    border: 1.5px solid #e5e7eb;
+    /* màu xám nhạt hiện đại */
+    border-radius: 8px;
+    /* bo góc mềm mại */
+    background: #fff;
+    /* nền trắng */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    /* shadow nhẹ, nổi bật */
 }
 
-/* === Page Header === */
-.admin-app-container .product_form .page-header {
+/* Loading State */
+.product_form .loading-state {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 28px;
-    padding: 24px 28px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
-    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
+    justify-content: center;
+    min-height: 300px;
 }
 
-.admin-app-container .product_form .btn-back {
+.product_form .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: product_form-spin 1s linear infinite;
+}
+
+@keyframes product_form-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Header */
+.product_form .page-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.product_form .btn-back {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: 100px;
     height: 40px;
+    padding: 0px;
     background: white;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
-    color: var(--admin-text-secondary);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #6b7280;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
-.admin-app-container .product_form .btn-back:hover {
-    background: var(--admin-accent-light);
-    border-color: var(--admin-primary);
-    color: var(--admin-primary-dark);
+.product_form .btn-back:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #374151;
 }
 
-.admin-app-container .product_form .page-header h1 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--admin-text);
+.product_form .page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
     margin: 0;
+    flex: 1;
 }
 
-/* === Form Container === */
-.admin-app-container .product_form .form-container {
+/* Form Container */
+.product_form .form-container {
     background: white;
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* === Alert === */
-.admin-app-container .product_form .alert {
-    padding: 14px 20px;
-    border-radius: var(--admin-radius);
-    margin: 20px;
-    font-size: 14px;
+/* Alert */
+.product_form .alert {
+    padding: 1rem 1.25rem;
+    margin: 0;
+    border-radius: 0;
+    border-bottom: 1px solid;
+    font-size: 0.875rem;
+}
+
+.product_form .alert-danger {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+/* Form Layout */
+.product_form .admin-form {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 2rem;
 }
 
-.admin-app-container .product_form .alert-danger {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    color: #991b1b;
-    border: 1px solid #f87171;
+/* Sections */
+.product_form .form-section {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f3f4f6;
 }
 
-/* === Form Section === */
-.admin-app-container .product_form .form-section {
-    padding: 28px;
-    border-bottom: 1px solid var(--admin-border-light);
-}
-
-.admin-app-container .product_form .form-section:last-of-type {
+.product_form .form-section:last-of-type {
     border-bottom: none;
 }
 
-.admin-app-container .product_form .form-section h3 {
-    font-size: 16px;
+.product_form .form-section h3 {
+    font-size: 1.125rem;
     font-weight: 600;
-    color: var(--admin-primary-dark);
-    margin: 0 0 20px 0;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--admin-border-light);
+    color: #374151;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
 }
 
-/* === Form Group === */
-.admin-app-container .product_form .form-group {
-    margin-bottom: 20px;
+.product_form .form-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin: 0 0 1rem 0;
 }
 
-.admin-app-container .product_form .form-group:last-child {
+.product_form .form-section h5 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin: 0 0 1rem 0;
+}
+
+/* Form Groups */
+.product_form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.product_form .form-group:last-child {
     margin-bottom: 0;
 }
 
-.admin-app-container .product_form .form-group label {
+.product_form .form-group label {
     display: block;
     font-weight: 500;
-    color: var(--admin-text);
-    font-size: 14px;
-    margin-bottom: 8px;
+    color: #374151;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
 }
 
-.admin-app-container .product_form .text-danger {
-    color: #ef4444;
+.product_form .text-danger {
+    color: #dc2626;
+    font-weight: 600;
 }
 
-/* === Form Row === */
-.admin-app-container .product_form .form-row {
+/* Form Rows */
+.product_form .form-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 1.5rem;
+    align-items: start;
 }
 
 @media (max-width: 768px) {
@@ -124,274 +178,396 @@
     }
 }
 
-/* === Form Control === */
-.admin-app-container .product_form .form-control {
+/* Form Controls */
+.product_form .form-control {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--admin-border);
-    border-radius: var(--admin-radius);
-    font-size: 14px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
     background: white;
-    transition: all 0.2s;
-    color: var(--admin-text);
+    transition: all 0.2s ease;
+    color: #374151;
+    font-family: inherit;
 }
 
-.admin-app-container .product_form .form-control:focus {
+.product_form .form-control:focus {
     outline: none;
-    border-color: var(--admin-primary);
-    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.admin-app-container .product_form .form-control::placeholder {
-    color: var(--admin-text-muted);
+.product_form .form-control::placeholder {
+    color: #9ca3af;
 }
 
-.admin-app-container .product_form textarea.form-control {
+.product_form textarea.form-control {
     min-height: 120px;
     resize: vertical;
+    line-height: 1.5;
 }
 
-.admin-app-container .product_form select.form-control {
+.product_form select.form-control {
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 16px;
-    padding-right: 44px;
+    background-position: right 1rem center;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
 }
 
-/* === Checkbox Group === */
-.admin-app-container .product_form .checkbox-group {
+/* Checkbox */
+.product_form .checkbox-group {
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
-.admin-app-container .product_form .checkbox-label {
+.product_form .checkbox-label {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     cursor: pointer;
     user-select: none;
-    color: var(--admin-text);
-    font-size: 14px;
+    color: #374151;
+    font-size: 0.875rem;
     font-weight: 500;
+
+    border: 1px solidrgb(73, 73, 73)c;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
 }
 
-.admin-app-container .product_form .checkbox-label input[type="checkbox"] {
+
+.product_form .checkbox-label input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--admin-primary);
-    border-radius: 6px;
-    appearance: none;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
-.admin-app-container .product_form .checkbox-label input[type="checkbox"]:checked {
-    background: var(--admin-primary);
-    border-color: var(--admin-primary);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
+.product_form .checkbox-label input[type="checkbox"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
     background-position: center;
+    background-repeat: no-repeat;
+    background-size: 12px;
 }
 
-/* === Variants Manager === */
-.admin-app-container .product_form .variants-manager {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid var(--admin-border-light);
+/* Variants Manager */
+.product_form .variants-manager {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
 }
 
-.admin-app-container .product_form .variants-manager h4,
-.admin-app-container .product_form .variants-manager h5 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--admin-text);
-    margin: 0 0 16px 0;
-}
-
-/* === Variants Table === */
-.admin-app-container .product_form .variants-table {
+/* Variants Table */
+.product_form .variants-table {
     width: 100%;
     background: white;
-    border-radius: var(--admin-radius);
+    border-radius: 6px;
     overflow: hidden;
-    border: 1px solid var(--admin-border-light);
-    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
 }
 
-.admin-app-container .product_form .variants-table thead {
-    background: var(--admin-accent-light);
+.product_form .variants-table thead {
+    background: #f3f4f6;
 }
 
-.admin-app-container .product_form .variants-table th {
-    padding: 14px 16px;
+.product_form .variants-table th {
+    padding: 0.75rem 1rem;
     text-align: left;
     font-weight: 600;
-    color: var(--admin-primary-dark);
-    font-size: 13px;
-    border-bottom: 1px solid var(--admin-border);
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
 }
 
-.admin-app-container .product_form .variants-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--admin-border-light);
-    font-size: 14px;
-    color: var(--admin-text);
+
+.product_form .variants-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
 }
 
-.admin-app-container .product_form .variants-table tr:last-child td {
+.product_form .variants-table tr:last-child td {
     border-bottom: none;
 }
 
-.admin-app-container .product_form .btn-icon {
+.product_form .variants-table .text-muted {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Action Buttons in Table */
+.product_form .btn-icon {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 6px;
+    border: 1px solid #fecaca;
     background: white;
-    color: #ef4444;
+    color: #dc2626;
     cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-app-container .product_form .btn-icon:hover {
-    background: #fef2f2;
-    border-color: #ef4444;
-}
-
-/* === Add Variant Box === */
-.admin-app-container .product_form .add-variant-box {
-    background: var(--admin-accent-light);
-    border-radius: var(--admin-radius);
-    padding: 20px;
-    border: 1px dashed var(--admin-border);
-}
-
-.admin-app-container .product_form .add-variant-box .form-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-@media (max-width: 768px) {
-    .product_form .add-variant-box .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-.admin-app-container .product_form .text-muted {
-    color: var(--admin-text-muted);
-    font-size: 12px;
-}
-
-/* === Form Actions === */
-.admin-app-container .product_form .form-actions {
-    display: flex;
-    gap: 14px;
-    padding: 24px 28px;
-    background: var(--admin-accent-light);
-    border-top: 1px solid var(--admin-border);
-    justify-content: flex-end;
-}
-
-.admin-app-container .product_form .btn {
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: var(--admin-radius);
-    border: none;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
-.admin-app-container .product_form .btn-secondary {
+.product_form .btn-icon:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+/* Add Variant Box */
+.product_form .add-variant-box {
     background: white;
-    color: var(--admin-text-secondary);
-    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 2px dashed #d1d5db;
 }
 
-.admin-app-container .product_form .btn-secondary:hover {
-    background: var(--admin-accent-light);
-    border-color: var(--admin-primary);
-    color: var(--admin-primary-dark);
+.product_form .add-variant-box .form-row {
+    margin-bottom: 1rem;
 }
 
-.admin-app-container .product_form .btn-primary {
-    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+.product_form .text-muted {
+    color: #6b7280;
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 0.25rem;
 }
 
-.admin-app-container .product_form .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
-}
-
-.admin-app-container .product_form .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.admin-app-container .product_form .btn-sm {
-    padding: 8px 16px;
-    font-size: 13px;
-}
-
-/* === Loading === */
-.admin-app-container .product_form .loading-state {
-    display: flex;
+/* Buttons */
+.product_form .btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
 }
 
-.admin-app-container .product_form .spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--admin-border-light);
-    border-top-color: var(--admin-primary);
-    border-radius: 50%;
-    animation: product_form_spin 1s linear infinite;
+.product_form .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
 }
 
-@keyframes product_form_spin {
-    to {
-        transform: rotate(360deg);
-    }
+.product_form .btn-secondary {
+    background: white;
+    color: #374151;
+    border-color: #d1d5db;
 }
 
-/* === Responsive === */
+.product_form .btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.product_form .btn-primary {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.product_form .btn-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.product_form .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Form Actions */
+.product_form .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1.5rem 2rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    justify-content: flex-end;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .product_form {
-        padding: 16px;
+        padding: 1rem;
     }
 
     .product_form .page-header {
-        padding: 20px;
+        margin-bottom: 1.5rem;
+    }
+
+    .product_form .page-header h1 {
+        font-size: 1.25rem;
     }
 
     .product_form .form-section {
-        padding: 20px;
+        padding: 1.25rem;
+    }
+
+    .product_form .variants-manager {
+        padding: 1.25rem;
     }
 
     .product_form .form-actions {
         flex-direction: column;
-        padding: 20px;
+        padding: 1.25rem;
     }
 
     .product_form .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .product_form .variants-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .product_form .add-variant-box .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Focus and Active States */
+.product_form input:focus,
+.product_form select:focus,
+.product_form textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Required Field Indicator */
+.product_form .required::after {
+    content: " *";
+    color: #dc2626;
+}
+
+/* Help Text */
+.product_form .help-text {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Number Input Spinners */
+.product_form input[type="number"]::-webkit-inner-spin-button,
+.product_form input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: auto;
+    margin-left: 0.5rem;
+}
+
+/* Section Transitions */
+.product_form .form-section {
+    transition: all 0.2s ease;
+}
+
+.product_form .form-section:hover {
+    background: #fafafa;
+}
+
+/* Fieldset-like Visual Separation */
+.product_form .variants-manager {
+    border-left: 4px solid #3b82f6;
+}
+
+/* Success/Error Field States */
+.product_form .form-control.is-invalid {
+    border-color: #dc2626;
+}
+
+.product_form .form-control.is-valid {
+    border-color: #10b981;
+}
+
+/* Grid Gap Consistency */
+.product_form .form-row+.form-row {
+    margin-top: 0.5rem;
+}
+
+/* Button Icons */
+.product_form .btn svg {
+    flex-shrink: 0;
+}
+
+/* Select Option Indentation */
+.product_form select option {
+    padding: 0.5rem;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .product_form {
+        color: #e5e7eb;
+    }
+
+    .product_form .form-container {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .product_form .page-header h1 {
+        color: #f9fafb;
+    }
+
+    .product_form .form-section {
+        border-bottom-color: #374151;
+    }
+
+    .product_form .form-section h3 {
+        color: #e5e7eb;
+        border-bottom-color: #4b5563;
+    }
+
+    .product_form .form-control {
+        background: #374151;
+        border-color: #4b5563;
+        color: #e5e7eb;
+    }
+
+    .product_form .form-control:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+
+    .product_form .variants-manager,
+    .product_form .add-variant-box {
+        background: #111827;
+        border-color: #374151;
+    }
+
+    .product_form .variants-table {
+        background: #374151;
+        border-color: #4b5563;
+    }
+
+    .product_form .variants-table thead {
+        background: #1f2937;
+    }
+
+    .product_form .form-actions {
+        background: #111827;
+        border-top-color: #374151;
     }
 }

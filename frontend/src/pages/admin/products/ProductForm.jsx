@@ -201,13 +201,17 @@ const ProductForm = () => {
 
                             <div className="form-group checkbox-group" style={{ marginTop: '32px' }}>
                                 <label className="checkbox-label">
-                                    <input
-                                        type="checkbox"
-                                        name="is_active"
-                                        checked={formData.is_active}
-                                        onChange={handleChange}
-                                    />
-                                    Đang kinh doanh
+                                    <div>
+                                        <input
+                                            type="checkbox"
+                                            name="is_active"
+                                            checked={formData.is_active}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div>
+                                        Đang kinh doanh
+                                    </div>
                                 </label>
                             </div>
                         </div>
@@ -267,7 +271,9 @@ const ProductForm = () => {
                                     checked={formData.has_variants}
                                     onChange={handleChange}
                                 />
-                                Sản phẩm có nhiều biến thể (Màu sắc, Kích thước...)
+                                <span>
+                                    Sản phẩm có nhiều biến thể (Màu sắc, Kích thước...)
+                                </span>
                             </label>
                         </div>
 
@@ -294,7 +300,7 @@ const ProductForm = () => {
                                                     <td>{variant.stock}</td>
                                                     <td>
                                                         {variant.attributes && variant.attributes.length > 0
-                                                            ? variant.attributes.join(', ')
+                                                            ? variant.attributes.map(a => a.value || a).join(', ')
                                                             : <span className="text-muted">Mặc định</span>}
                                                     </td>
                                                     <td>

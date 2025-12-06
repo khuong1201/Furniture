@@ -57,17 +57,17 @@ class OrderService {
     // Get all orders (admin)
     async getOrders(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/orders${queryString ? `?${queryString}` : ''}`);
+        return this._request(`/orders${queryString ? `?${queryString}` : ''}`);
     }
 
     // Get single order (admin)
     async getOrder(uuid) {
-        return this._request(`/admin/orders/${uuid}`);
+        return this._request(`/orders/${uuid}`);
     }
 
     // Update order status
     async updateOrderStatus(uuid, status) {
-        return this._request(`/admin/orders/${uuid}/status`, {
+        return this._request(`/orders/${uuid}/status`, {
             method: 'PUT',
             body: JSON.stringify({ status }),
         });

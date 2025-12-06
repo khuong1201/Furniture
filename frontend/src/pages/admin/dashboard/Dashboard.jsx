@@ -56,61 +56,51 @@ const Dashboard = () => {
     const fetchAllData = async () => {
         try {
             setLoading(true);
-            const [summaryRes, revenueRes, ordersRes, productsRes, statsRes] = await Promise.all([
+            const [summaryRes, ordersRes] = await Promise.all([
                 DashboardService.getSummary(),
-                DashboardService.getRevenue({ year: selectedYear }),
-                OrderService.getOrders({ limit: 5 }), // Assuming backend supports limit or we slice
-                ProductService.getProducts({ limit: 5 }),
-                DashboardService.getStats()
+                OrderService.getOrders({ limit: 5 })
             ]);
 
             // Process Summary
             if (summaryRes.success && summaryRes.data) {
-                setStats({
-                    totalRevenue: summaryRes.data.total_revenue || 0,
-                    totalOrders: summaryRes.data.total_orders || 0,
-                    totalUsers: summaryRes.data.total_users || 0,
-                    totalProducts: summaryRes.data.total_products || 0,
-                });
-            }
+                const data = summaryRes.data;
 
-            // Process Revenue Chart
-            if (revenueRes.success && revenueRes.data) {
-                // API returns array [{ month: 1, revenue: 1000, total_orders: 5 }, ...]
-                // We need to map it to Recharts format and ensure all months are present
-                const rawData = Array.isArray(revenueRes.data) ? revenueRes.data : (revenueRes.data.data || []);
+                // Stats Cards
+                if (data.cards) {
+                    setStats({
+                        totalRevenue: data.cards.total_revenue || 0,
+                        totalOrders: data.cards.total_orders || 0,
+                        totalUsers: data.cards.total_users || 0,
+                        totalProducts: data.cards.low_stock_variants || 0, // Using low_stock as placeholder or if available
+                    });
+                }
 
-                // Create array for all 12 months initialized to 0
-                const fullYearData = Array.from({ length: 12 }, (_, i) => {
-                    const monthIndex = i + 1;
-                    const monthData = rawData.find(item => item.month === monthIndex);
-                    return {
-                        name: `T${monthIndex}`,
-                        value: monthData ? parseFloat(monthData.revenue) : 0,
-                        orders: monthData ? monthData.total_orders : 0
-                    };
-                });
+                // Top Products (Best Sellers)
+                if (data.best_sellers) {
+                    setTopProducts(data.best_sellers);
+                }
 
-                setRevenueData(fullYearData);
+                // Top Customers (Top Spenders)
+                if (data.top_spenders) {
+                    setTopCustomers(data.top_spenders);
+                }
+
+                // Process Revenue Chart
+                if (data.revenue_chart) {
+                    // Map API data directly for the chart
+                    const chartData = data.revenue_chart.map(item => ({
+                        name: item.label || item.date, // Use label (Monday) or date
+                        value: parseFloat(item.value),
+                        date: item.date
+                    }));
+                    setRevenueData(chartData);
+                }
             }
 
             // Process Recent Orders
             if (ordersRes.success && ordersRes.data) {
                 const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.data || []);
                 setRecentOrders(orders.slice(0, 5));
-            }
-
-            // Process Top Products (using recent products as proxy if top selling not available)
-            if (productsRes.success && productsRes.data) {
-                const products = Array.isArray(productsRes.data) ? productsRes.data : (productsRes.data.data || []);
-                setTopProducts(products.slice(0, 5));
-            }
-
-            // Process Detailed Stats
-            if (statsRes.success && statsRes.data) {
-                setOrderStatusData(statsRes.data.order_status || []);
-                setCategorySalesData(statsRes.data.category_sales || []);
-                setTopCustomers(statsRes.data.top_customers || []);
             }
 
         } catch (error) {
@@ -147,7 +137,7 @@ const Dashboard = () => {
         },
         {
             title: 'Sản phẩm',
-            value: stats.totalProducts,
+            value: stats.totalProducts, // Note: API returns low_stock_variants, not total products count in cards
             icon: Package,
             color: '#f59e0b',
             trend: '+2.4%',
@@ -269,54 +259,26 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Order Status Pie Chart */}
+                {/* Order Status Pie Chart - Placeholder or Hidden if no data */}
                 <div className="chart-card">
                     <div className="chart-header">
                         <h3>Trạng thái đơn hàng</h3>
                     </div>
-                    <div className="chart-content">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={orderStatusData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    paddingAngle={5}
-                                    dataKey="count"
-                                    nameKey="status"
-                                >
-                                    {orderStatusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
+                    <div className="chart-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+                        <p>Chưa có dữ liệu</p>
                     </div>
                 </div>
             </div>
 
             {/* Secondary Charts Row */}
             <div className="dashboard-grid">
-                {/* Category Sales Bar Chart */}
+                {/* Category Sales Bar Chart - Placeholder */}
                 <div className="chart-card">
                     <div className="chart-header">
                         <h3>Doanh thu theo danh mục</h3>
                     </div>
-                    <div className="chart-content">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={categorySalesData} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
-                                <Tooltip formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)} />
-                                <Bar dataKey="revenue" fill="#d4af37" radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    <div className="chart-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+                        <p>Chưa có dữ liệu</p>
                     </div>
                 </div>
 
@@ -330,14 +292,14 @@ const Dashboard = () => {
                             <div key={index} className="top-product-item">
                                 <div className="product-rank">#{index + 1}</div>
                                 <div className="product-details">
-                                    <h4 className="product-name">{customer.name}</h4>
-                                    <span className="product-sales">{customer.email}</span>
+                                    <h4 className="product-name">{customer.user?.name || 'Unknown'}</h4>
+                                    <span className="product-sales">{customer.user?.email}</span>
                                 </div>
                                 <div className="text-right">
                                     <div className="product-price">
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(customer.total_spent)}
                                     </div>
-                                    <span className="product-sales">{customer.order_count} đơn</span>
+                                    {/* Removed order count as it is not in API response */}
                                 </div>
                             </div>
                         ))}
@@ -400,7 +362,8 @@ const Dashboard = () => {
                                 <div className="product-details">
                                     <h4 className="product-name">{product.name}</h4>
                                     <span className="product-price">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                                        {/* Displaying Total Revenue as Price is not available in best_sellers API */}
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.total_revenue)}
                                     </span>
                                 </div>
                             </div>
