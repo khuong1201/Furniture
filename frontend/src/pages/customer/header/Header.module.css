@@ -30,6 +30,12 @@
   gap: 16px;         /* Khoảng cách giữa Search và Icons */
 }
 
+.header-logo {
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 32px;
+}
+
 .search-box { 
   display: flex;
   align-items: center;

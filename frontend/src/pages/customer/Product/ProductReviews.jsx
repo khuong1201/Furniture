@@ -1,41 +1,59 @@
 // components/product/ProductReviews.jsx
 import React, { useEffect, useMemo, useState } from 'react';
-import { Star, ThumbsUp } from 'lucide-react';
+import { Star } from 'lucide-react';
+// 1. Import hook
 import { useReview } from '@/hooks/useReview'; 
 import ReviewItem from './ReviewItem';
 import styles from './ProductReviews.module.css';
 
 const ProductReviews = ({ productId }) => {
-  // 1. Gọi hook xử lý API
-  const { reviews, loading, error, pagination, fetchReviews } = useReview(productId);
+  // 2. Lấy thêm 'stats' và 'fetchReviewStats' từ hook
+  const { 
+    reviews, 
+    stats: apiStats, // Đổi tên biến này để tránh trùng
+    loading, 
+    error, 
+    pagination, 
+    fetchReviews,
+    fetchReviewStats // Hàm gọi API thống kê
+  } = useReview(productId);
+
   const [filterType, setFilterType] = useState('All');
 
-  // 2. Fetch dữ liệu khi có productId
+  // 3. Fetch cả Review List và Review Stats
   useEffect(() => {
     if (productId) {
       fetchReviews();
+      fetchReviewStats(); // ✅ Gọi API lấy thống kê
     }
-  }, [productId, fetchReviews]);
+  }, [productId, fetchReviews, fetchReviewStats]);
 
-  // 3. Tính toán thống kê (Rating Score & Bars) dựa trên dữ liệu reviews
+  // 4. Chuẩn hóa dữ liệu từ API Stats để hiển thị
+  // Không tự tính toán (reduce) nữa, mà map dữ liệu từ API vào
   const stats = useMemo(() => {
-    const total = reviews.length;
-    if (total === 0) return { average: 0, distribution: [] };
+    // Giá trị mặc định nếu API chưa tải xong
+    if (!apiStats) {
+        return { 
+            average: 0, 
+            total: 0,
+            distribution: [5, 4, 3, 2, 1].map(s => ({ star: s, percent: '0%', count: 0 }))
+        };
+    }
 
-    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-    const average = (sum / total).toFixed(1);
+    return {
+      average: apiStats.average_rating, // Lấy từ field API: average_rating
+      total: apiStats.total_reviews,    // Lấy từ field API: total_reviews
+      
+      // Map distribution từ API (JSON có mảng distribution rồi)
+      distribution: apiStats.distribution.map(item => ({
+        star: item.star,
+        count: item.count,
+        percent: `${item.percent}%` // ✅ Thêm dấu % vì API trả về số (100)
+      }))
+    };
+  }, [apiStats]);
 
-    // Tính % cho từng mức sao (5, 4, 3, 2, 1)
-    const distribution = [5, 4, 3, 2, 1].map(star => {
-      const count = reviews.filter(r => r.rating === star).length;
-      const percent = total > 0 ? Math.round((count / total) * 100) : 0;
-      return { star, percent: `${percent}%`, count };
-    });
-
-    return { average, distribution };
-  }, [reviews]);
-
-  if (loading && reviews.length === 0) return <div className={styles.loading}>Đang tải đánh giá...</div>;
+  if (loading && !reviews.length && !apiStats) return <div className={styles.loading}>Đang tải đánh giá...</div>;
   if (error) return <div className={styles.error}>Lỗi tải đánh giá: {error}</div>;
 
   return (
@@ -43,24 +61,27 @@ const ProductReviews = ({ productId }) => {
       <h3 className={styles.title}>Product Rating</h3>
 
       <div className={styles.ratingContainer}>
-        {/* --- 1. Tổng quan điểm số (Bên trái) --- */}
+        {/* --- 1. Tổng quan điểm số --- */}
         <div className={styles.ratingOverview}>
           <div className={styles.ratingScore}>
-            <span className={styles.scoreNum}>{stats.average || 0}</span>
+            {/* Hiển thị điểm trung bình từ API */}
+            <span className={styles.scoreNum}>{stats.average}</span>
             <div className={styles.scoreStars}>
               {[1, 2, 3, 4, 5].map((s) => (
                 <Star 
                   key={s} 
                   size={20} 
+                  // So sánh với điểm trung bình đã làm tròn
                   fill={s <= Math.round(stats.average) ? "#ffc107" : "#e4e5e9"} 
                   color={s <= Math.round(stats.average) ? "#ffc107" : "#e4e5e9"} 
                 />
               ))}
             </div>
-            <span className={styles.scoreCount}>{pagination?.total || 0} Ratings</span>
+            {/* Hiển thị tổng số đánh giá từ API */}
+            <span className={styles.scoreCount}>{stats.total} Ratings</span>
           </div>
 
-          {/* --- Biểu đồ thanh ngang (Bên phải) --- */}
+          {/* --- Biểu đồ thanh ngang --- */}
           <div className={styles.ratingBars}>
             {stats.distribution.map((item) => (
               <div key={item.star} className={styles.barRow}>
@@ -68,6 +89,7 @@ const ProductReviews = ({ productId }) => {
                   {item.star} <Star size={12} fill="#ffc107" color="#ffc107"/>
                 </span>
                 <div className={styles.progressBg}>
+                  {/* Style width cần string có % */}
                   <div className={styles.progressFill} style={{ width: item.percent }}></div>
                 </div>
                 <span className={styles.percentLabel}>{item.percent}</span>
@@ -76,7 +98,7 @@ const ProductReviews = ({ productId }) => {
           </div>
         </div>
 
-        {/* --- 2. Bộ lọc --- */}
+        {/* --- 2. Bộ lọc (Logic chưa đổi) --- */}
         <div className={styles.ratingFilters}>
           {['All', 'With Photos', '5 Star', '4 Star', '3 Star', '2 Star', '1 Star'].map((filter, idx) => (
             <button 
@@ -93,21 +115,22 @@ const ProductReviews = ({ productId }) => {
         <div className={styles.reviewList}>
           {reviews.length > 0 ? (
             reviews.map((item) => {
-                // Map dữ liệu từ API (item) sang format của ReviewItem component
+                // Map dữ liệu từng item review
                 const mappedReview = {
                     id: item.id,
-                    name: item.user?.name || 'Ẩn danh', // Cần backend trả về user relation
+                    uuid: item.uuid,
+                    name: item.user?.name || 'Guest User',
                     avatar: item.user?.avatar || 'https://placehold.co/100',
                     rating: item.rating,
                     date: new Date(item.created_at).toLocaleDateString('vi-VN'),
                     content: item.comment,
                     images: item.images || [],
-                    likes: 0 // Backend chưa có thì để 0
+                    likes: 0 
                 };
                 return <ReviewItem key={item.uuid} review={mappedReview} />;
             })
           ) : (
-            <p className={styles.emptyText}>Chưa có đánh giá nào cho sản phẩm này.</p>
+            <p className={styles.emptyText}>Chưa có đánh giá nào.</p>
           )}
         </div>
 

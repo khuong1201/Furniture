@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/useProduct';
 import { useCart } from '@/hooks/useCart';
 import { useOrder } from '@/hooks/useOrder';
-import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin, ThumbsUp } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin } from 'lucide-react';
+import { AiOutlineLoading3Quarters, AiOutlineWarning } from "react-icons/ai";
 import ProductReviews from './ProductReviews';
-// 1. Import styles từ module
 import styles from './ProductDetail.module.css';
 
 const ProductDetail = () => {
@@ -13,15 +13,17 @@ const ProductDetail = () => {
   const { id } = useParams();
 
   const { productDetail, loading, error, getDetail } = useProduct();
-  const { addToCart, loading: cartLoading, error: cartError, message } = useCart();
-
+  const { addToCart, loading: cartLoading } = useCart();
   const { createOrder, loading: orderLoading } = useOrder();
 
   const [activeImage, setActiveImage] = useState(null);
+  
+  // --- STATE QUẢN LÝ BIẾN THỂ ---
   const [selectedVariant, setSelectedVariant] = useState(null);
+  // Thay vì lưu riêng lẻ, ta lưu object: { "Color": "Navy Blue", "Material": "Leather" }
+  const [selectedAttributes, setSelectedAttributes] = useState({}); 
+  
   const [address, setAddress] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
 
   const isLoggedIn = () => {
@@ -29,42 +31,91 @@ const ProductDetail = () => {
     return !!token;
   };
 
+  // 1. Fetch dữ liệu
   useEffect(() => {
     if (id) {
       getDetail(id);
     }
   }, [id, getDetail]);
 
-
+  // 2. Set ảnh mặc định
   useEffect(() => {
     if (!productDetail?.images?.length) return;
-
-    const primary =
-      productDetail.images.find(img => img.is_primary === 1) ||
-      productDetail.images[0];
-
+    const primary = productDetail.images.find(img => img.is_primary === 1) || productDetail.images[0];
     setActiveImage(primary.url);
   }, [productDetail]);
 
+  // 3. TÍNH TOÁN DANH SÁCH OPTIONS TỪ VARIANTS (Dynamic)
+  // Logic: Quét toàn bộ variants để gom nhóm các thuộc tính có sẵn
+  const attributeOptions = useMemo(() => {
+    if (!productDetail?.variants) return {};
+
+    const options = {};
+    productDetail.variants.forEach(variant => {
+      variant.attributes.forEach(attr => {
+        const name = attr.attribute_name; // VD: "Color", "Material"
+        const value = attr.value;         // VD: "Navy Blue", "Leather"
+
+        if (!options[name]) {
+          options[name] = new Set(); // Dùng Set để lọc trùng
+        }
+        options[name].add(value);
+      });
+    });
+
+    // Chuyển Set thành Array để render
+    const result = {};
+    Object.keys(options).forEach(key => {
+      result[key] = Array.from(options[key]);
+    });
+    
+    return result;
+  }, [productDetail]);
+
+  // 4. Set mặc định attribute ban đầu (Lấy variant đầu tiên làm chuẩn)
   useEffect(() => {
-    if (!selectedVariant && productDetail?.variants?.length) {
-      setSelectedVariant(productDetail.variants[0]);
+    if (productDetail?.variants?.length && !selectedVariant) {
+      const firstVariant = productDetail.variants[0];
+      
+      // Xây dựng state attributes từ variant đầu tiên
+      const initialAttrs = {};
+      firstVariant.attributes.forEach(attr => {
+        initialAttrs[attr.attribute_name] = attr.value;
+      });
+
+      setSelectedAttributes(initialAttrs);
+      setSelectedVariant(firstVariant);
     }
-  }, [productDetail, selectedVariant]);
+  }, [productDetail]);
 
+  // 5. Tìm Variant khi người dùng thay đổi lựa chọn
   useEffect(() => {
-    if (!productDetail?.variants?.length) return;
-    if (!selectedColor || !selectedSize) return;
+    if (!productDetail?.variants) return;
+    if (Object.keys(selectedAttributes).length === 0) return;
 
-    const foundVariant = productDetail.variants.find(v =>
-      v.attributes.some(a => a.value_uuid === selectedColor) &&
-      v.attributes.some(a => a.value_uuid === selectedSize)
+    // Tìm variant có TẤT CẢ attribute khớp với selectedAttributes
+    const foundVariant = productDetail.variants.find(v => 
+      v.attributes.every(attr => 
+        selectedAttributes[attr.attribute_name] === attr.value
+      )
     );
 
-    if (foundVariant) {
-      setSelectedVariant(foundVariant);
+    setSelectedVariant(foundVariant || null);
+    
+    // Nếu tìm thấy variant và có ảnh riêng, update ảnh hiển thị
+    if (foundVariant && foundVariant.image) {
+        setActiveImage(foundVariant.image);
     }
-  }, [selectedColor, selectedSize, productDetail]);
+
+  }, [selectedAttributes, productDetail]);
+
+  // 6. Handler chọn attribute
+  const handleAttributeSelect = (attributeName, value) => {
+    setSelectedAttributes(prev => ({
+      ...prev,
+      [attributeName]: value
+    }));
+  };
 
   const handleQuantity = (type) => {
     if (type === 'dec' && quantity > 1) setQuantity(quantity - 1);
@@ -72,14 +123,24 @@ const ProductDetail = () => {
   };
   
   const handleProductAction = async (actionType) => {
-
     if (!isLoggedIn()) {
       alert('Bạn cần đăng nhập để tiếp tục!');
       return navigate('/customer/login');
     }
-    if (!selectedColor) return alert('Please select a color!');
-    if (!selectedSize) return alert('Please select a size!');
-    if (!address.trim()) return alert('Please enter your delivery address!');
+
+    // Validate động: Kiểm tra xem đã chọn đủ các nhóm thuộc tính chưa
+    const requiredAttributes = Object.keys(attributeOptions);
+    const missingAttributes = requiredAttributes.filter(key => !selectedAttributes[key]);
+
+    if (missingAttributes.length > 0) {
+      return alert(`Vui lòng chọn: ${missingAttributes.join(', ')}`);
+    }
+
+    if (!selectedVariant) {
+        return alert('Phiên bản sản phẩm này hiện không khả dụng. Vui lòng chọn kết hợp khác.');
+    }
+
+    if (!address.trim()) return alert('Vui lòng nhập địa chỉ giao hàng!');
 
     try {
       if (actionType === 'cart') {
@@ -91,9 +152,8 @@ const ProductDetail = () => {
         const isConfirmed = window.confirm(`Bạn muốn đặt hàng ngay ${quantity} sản phẩm này?`);
         if (!isConfirmed) return;
 
-        // Tạo payload chuẩn cho OrderController
         const payload = {
-          address_id: parseInt(address) || 1, // Parse ID từ input
+          address_id: parseInt(address) || 1, 
           items: [
             {
               variant_uuid: selectedVariant.uuid,
@@ -114,32 +174,45 @@ const ProductDetail = () => {
       }
 
     } catch (error) {
-      console.error('❌ ADD TO CART FAILED:', error);
-      alert(error.message || 'Add to cart failed');
+      console.error('❌ ACTION FAILED:', error);
+      alert(error.message || 'Có lỗi xảy ra');
     }
-
   };
 
-
-  // Sử dụng styles['class-name'] cho các trạng thái loading/error
-  if (loading) return <div className={styles['pd-loading']}>⏳ Đang tải chi tiết sản phẩm...</div>;
-  if (error) return <div className={styles['pd-error']}>❌ Lỗi: {error}</div>;
-  if (!productDetail) return <div className={styles['pd-error']}>⚠️ Không tìm thấy sản phẩm</div>;
-
+  if (loading){
+    return (
+      <div className="loading-state">
+        <AiOutlineLoading3Quarters className="loading-icon" />
+        <span>Đang tải sản phẩm...</span>
+      </div>
+    )
+  }
+  if (!productDetail || error){
+    return (
+      <div className="error-state">
+        <AiOutlineWarning className="error-icon" />
+        <span>{error}</span>
+      </div>
+    )
+  }
 
   const displayImages = productDetail.images || [];
+  const rating = productDetail.rating_avg;
+  const reviewsCount = productDetail.rating_count;
+  const soldCount = productDetail.sold_count;
   
-  const colors = productDetail?.available_options?.find(
-    opt => opt.attribute_name === "Màu sắc"
-  )?.values || [];
+  // Hiển thị giá: Ưu tiên giá của Variant đang chọn, nếu không thì lấy giá gốc
+  const currentPrice = selectedVariant 
+    ? selectedVariant.price_formatted 
+    : productDetail.price_formatted;
   
-  const sizes = productDetail?.available_options?.find(
-    opt => opt.attribute_name === "Kích thước"
-  )?.values || [];
+  const originalPrice = selectedVariant
+    ? (selectedVariant.original_price_formatted || null)
+    : productDetail.original_price_formatted;
 
-  const rating = 4.9;
-  const reviewsCount = 156;
-  const soldCount = 89;
+  const isFlashSale = productDetail.flash_sale?.is_active;
+
+  const showOriginalPrice = isFlashSale || (originalPrice && originalPrice !== currentPrice);
 
   return (
     <div className={styles['pd-wrapper']}>
@@ -162,7 +235,6 @@ const ProductDetail = () => {
             {displayImages.map((img, index) => (
               <div
                 key={img.uuid}
-                // Kết hợp class tĩnh và class động bằng Template Literals
                 className={`${styles['thumb-item']} ${activeImage === img.url ? styles['active'] : ''}`}
                 onMouseEnter={() => setActiveImage(img.url)}
               >
@@ -188,23 +260,29 @@ const ProductDetail = () => {
             </div>
 
             <div className={styles['price-section']}>
+
               <span className={styles['current-price']}>
-                {Number(selectedVariant?.price || productDetail.variants?.[0]?.price || 0).toLocaleString()} VND
+                {currentPrice}
               </span>
-              {/* Nếu có giá gốc thì hiển thị */}
-              {productDetail.original_price && (
-                  <>
-                      <span className={styles['original-price']}>
-                          {Number(productDetail.original_price).toLocaleString()} VND
-                      </span>
-                      <span className={styles['discount-badge']}>-10%</span>
-                  </>
+
+              {showOriginalPrice && (
+                <>
+                  <span className={styles['original-price']}>
+                    {originalPrice}
+                  </span>
+
+                  {isFlashSale && (
+                    <span className={styles['discount-badge']}>
+                      -{productDetail.flash_sale.discount_percent}%
+                    </span>
+                  )}
+                </>
               )}
-          </div>  
+            </div>  
           </div>
           
           <div className={styles['product-body']}>
-            {/* delivery */}
+            {/* Delivery */}
             <div className={styles['variant-section']}>
               <span className={styles['label']}>Delivery</span>
               <div className={styles['address-input-group']}>
@@ -212,44 +290,34 @@ const ProductDetail = () => {
                   <input 
                       type="text" 
                       className={styles['addr-input']}
-                      placeholder="Enter address to see delivery options"
+                      placeholder="Enter address..."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                   />
               </div>
             </div>
 
-            {/* Chọn Màu */}
-            <div className={styles['variant-section']}>
-              <span className={styles['label']}>Color</span>
-              <div className={styles['options-row']}>
-                {colors.map((c) => (
-                  <button 
-                    key={c.uuid}
-                    className={`${styles['option-btn']} ${selectedColor === c.uuid ? styles['selected'] : ''}`}
-                    onClick={() => setSelectedColor(c.uuid)}
-                  >
-                    {c.value}
-                  </button>
-                ))}
+            {/* --- RENDER THUỘC TÍNH ĐỘNG (Dynamic Attributes) --- */}
+            {/* Tự động render Color, Material, Size,... dựa trên dữ liệu API */}
+            {Object.entries(attributeOptions).map(([attrName, values]) => (
+              <div className={styles['variant-section']} key={attrName}>
+                <span className={styles['label']}>{attrName}</span>
+                <div className={styles['options-row']}>
+                  {values.map((val) => {
+                    const isSelected = selectedAttributes[attrName] === val;
+                    return (
+                      <button 
+                        key={val}
+                        className={`${styles['option-btn']} ${isSelected ? styles['selected'] : ''}`}
+                        onClick={() => handleAttributeSelect(attrName, val)}
+                      >
+                        {val}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-
-            {/* Size */}
-            <div className={styles['variant-section']}>
-              <span className={styles['label']}>Size</span>
-              <div className={styles['options-row']}>
-                {sizes.map((s) => (
-                  <button 
-                    key={s.uuid}
-                    className={`${styles['option-btn']} ${selectedSize === s.uuid ? styles['selected'] : ''}`}
-                    onClick={() => setSelectedSize(s.uuid)}
-                  >
-                    {s.value}
-                  </button>
-                ))}
-              </div>
-            </div>
+            ))}
 
             {/* Quantity */}
             <div className={styles['variant-section']}>
@@ -261,7 +329,14 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Nút hành động */}
+            {/* Variant Stock Warning (Optional) */}
+            {selectedVariant && (
+                <div style={{ marginBottom: '15px', color: '#666', fontSize: '14px' }}>
+                    Stock available: {selectedVariant.stock_quantity}
+                </div>
+            )}
+
+            {/* Action Buttons */}
             <div className={styles['action-buttons']}>
               <button 
                 className={styles['btn-add-cart']} 
@@ -278,7 +353,7 @@ const ProductDetail = () => {
               >
                 {orderLoading ? 'Processing...' : 'Buy Now'}
               </button>
-            </div>
+            </div>  
           </div>
         </div>
       </div>
@@ -298,8 +373,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* --- PHẦN 4: PRODUCT DESCRIPTION --- */}
-      
+      {/* --- PHẦN DESCRIPTION --- */}
       <h4 className={styles['desc-title']}>Product Description</h4>
       <div className={styles['product-description-section']}>
       
@@ -307,32 +381,23 @@ const ProductDetail = () => {
           <p>{productDetail.description || "No description available."}</p>
         </div>
 
-        {/*--- PHẦN 5: SPECIFICATIONS --- */}
+        {/*--- SPECIFICATIONS --- */}
         <h3 className={styles['desc-title']} >Product Specifications</h3>
         <div className={styles['specs-table']}>
             <div className={styles['spec-row']}>
                 <span className={styles['spec-label']}>Brand</span>
                 <span className={styles['spec-value']}>Atelier Home</span>
             </div>
-            <div className={styles['spec-row']}>
-                <span className={styles['spec-label']}>Material</span>
-                <span className={styles['spec-value']}>Premium Velvet, Solid Oak Frame</span>
-            </div>
-            <div className={styles['spec-row']}>
-                <span className={styles['spec-label']}>Dimensions</span>
-                <span className={styles['spec-value']}>W: 84" x D: 36" x H: 33"</span>
-            </div>
-            <div className={styles['spec-row']}>
-                <span className={styles['spec-label']}>Warranty</span>
-                <span className={styles['spec-value']}>2 years manufacturer warranty</span>
-            </div>
-            <div className={styles['spec-row']}>
-                <span className={styles['spec-label']}>Country of Origin</span>
-                <span className={styles['spec-value']}>Italy</span>
-            </div>
+            {/* Hiển thị các thuộc tính của variant đang chọn trong bảng thông số (nếu cần) */}
+            {selectedVariant?.attributes?.map((attr, idx) => (
+                <div className={styles['spec-row']} key={idx}>
+                    <span className={styles['spec-label']}>{attr.attribute_name}</span>
+                    <span className={styles['spec-value']}>{attr.value}</span>
+                </div>
+            ))}
         </div>
 
-        {/* --- PHẦN 6: PRODUCT RATING --- */}
+        {/* --- RATING --- */}
         <h3 className={styles['desc-title']} style={{ marginTop: '40px' }}>Product Rating</h3>
         <ProductReviews productId={productDetail.uuid} />
       </div>      

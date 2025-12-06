@@ -644,3 +644,40 @@
       background: #f9f9f9;
       border-color: #aaa;
 }
+
+/* --- Loading --- */
+  .loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    font-size: 18px;
+    color: #555;
+    background: #f0f8ff;
+    margin: 20px 0;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .loading-icon {
+    font-size: 24px;
+    color: #007bff;
+    animation: spin 1s linear infinite;
+  }
+
+  /* --- Error --- */
+  .error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    font-size: 18px;
+    color: #d9534f;
+    background: #fde2e2;
+    margin: 20px 0;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  .error-icon {
+    font-size: 24px;
+  }

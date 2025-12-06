@@ -30,9 +30,13 @@ function Header() {
   return (
     <header className={styles['header-wrapper']}>
       <div className={styles['header-top']}>
-        {/* Lưu ý: Khi có 2 class trở lên, ta dùng Template Literals để nối chuỗi */}
+    
         <div className={`${styles['container']} ${styles['top-container']}`}>
-
+          <Link to='/customer'>
+            <div className={styles['header-logo']}>
+              Aterlier
+            </div>
+          </Link>
           <div className={styles['search-box']}>
             <div className={styles['search-icon-wrapper']}>
               <img src={searchIcon} alt="Search" className={styles['search-icon']} />
@@ -43,8 +47,6 @@ function Header() {
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={handleKeyDown}
-              // Input thường không có class riêng trong code cũ của bạn, 
-              // nếu trong CSS bạn style theo tag input nằm trong .search-box thì không cần thêm class ở đây
             />
           </div>
 
