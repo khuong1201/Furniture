@@ -30,12 +30,12 @@
   /* --- TAGS --- */
 .discount-tag {
   position: absolute;
+  min-width: 67px;
   top: 8px;
   right: 3px;
   background: #FFC3A4;
   color: #FE6D20;
-  padding-left: 16px;
-  padding-right: 8px;
+  justify-content: center;
   border-radius: 100px;
   display: flex;
   align-items: center;
@@ -126,13 +126,24 @@
   .price-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center;  
   }
 
   .price-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .price-curent {
     color: #E82525;
     font-size: 18px;
     font-weight: 600;
+  }
+  .price-original {
+    font-size: 18px;
+    text-decoration: line-through;
+    color: #999;
   }
   .btn-add-cart1 {
     min-width: 100px;
