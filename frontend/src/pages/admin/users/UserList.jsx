@@ -80,7 +80,7 @@ const UserList = () => {
                     <p className="page-subtitle">Danh sách tất cả người dùng trong hệ thống</p>
                 </div>
                 <button
-                    className="btn btn-primary"
+                    className="btn-primary-user"
                     onClick={() => navigate('/admin/users/create')}
                 >
                     <Plus size={20} />

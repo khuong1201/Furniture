@@ -1,4 +1,4 @@
-/* Role Management - Modern Gold Theme */
+/* Role Management - Modern Gold Theme với màu chủ đạo #CBA890 */
 
 .admin-app-container .role_management {
     max-width: 1400px;
@@ -13,8 +13,8 @@
     margin-bottom: 24px;
     padding: 24px 28px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
 }
 
 .admin-app-container .role_header-content h1 {
@@ -23,16 +23,16 @@
     gap: 12px;
     font-size: 26px;
     font-weight: 700;
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0;
 }
 
 .admin-app-container .role_header-content h1 svg {
-    color: var(--admin-primary);
+    color: #CBA890;
 }
 
 .admin-app-container .role_header-content p {
-    color: var(--admin-text-muted);
+    color: #6b7280;
     font-size: 14px;
     margin: 8px 0 0 0;
 }
@@ -43,7 +43,7 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    border-radius: var(--admin-radius);
+    border-radius: 8px;
     margin-bottom: 20px;
     font-size: 14px;
 }
@@ -61,13 +61,23 @@
     font-size: 20px;
     cursor: pointer;
     color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.admin-app-container .role_alert-close:hover {
+    background: rgba(239, 68, 68, 0.2);
 }
 
 /* === Container === */
 .admin-app-container .roles_container {
     background: white;
-    border-radius: var(--admin-radius-lg);
-    border: 1px solid var(--admin-border-light);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     padding: 24px;
 }
 
@@ -79,19 +89,21 @@
 
 /* === Role Card === */
 .admin-app-container .role_card {
-    background: var(--admin-accent-light);
-    border-radius: var(--admin-radius);
-    border: 1px solid var(--admin-border-light);
+    background: #fdf6e3;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
     transition: all 0.2s;
 }
 
 .admin-app-container .role_card:hover {
-    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #CBA890;
 }
 
 .admin-app-container .role_card.expanded {
-    border-color: var(--admin-primary);
+    border-color: #CBA890;
+    box-shadow: 0 4px 16px rgba(203, 168, 144, 0.15);
 }
 
 .admin-app-container .role_header {
@@ -113,24 +125,26 @@
 .admin-app-container .role_icon {
     width: 44px;
     height: 44px;
-    border-radius: var(--admin-radius);
-    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    border-radius: 8px;
+    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .admin-app-container .role_details h3 {
     font-size: 16px;
     font-weight: 600;
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0 0 4px 0;
 }
 
 .admin-app-container .role_details p {
     font-size: 13px;
-    color: var(--admin-text-muted);
+    color: #6b7280;
     margin: 0;
 }
 
@@ -145,11 +159,13 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: var(--admin-text-secondary);
+    color: #6b7280;
 }
 
 .admin-app-container .role_meta-item svg {
-    color: var(--admin-primary);
+    color: #CBA890;
+    width: 16px;
+    height: 16px;
 }
 
 .admin-app-container .role_badge {
@@ -162,6 +178,7 @@
 .admin-app-container .role_badge-system {
     background: rgba(59, 130, 246, 0.1);
     color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .admin-app-container .role_actions {
@@ -172,7 +189,7 @@
 .admin-app-container .role_btn-icon {
     width: 34px;
     height: 34px;
-    border-radius: var(--admin-radius);
+    border-radius: 8px;
     border: 1px solid;
     background: white;
     cursor: pointer;
@@ -184,12 +201,13 @@
 
 .admin-app-container .role_btn-edit {
     border-color: rgba(203, 168, 144, 0.3);
-    color: var(--admin-primary);
+    color: #CBA890;
 }
 
 .admin-app-container .role_btn-edit:hover {
-    background: var(--admin-accent-light);
-    border-color: var(--admin-primary);
+    background: #fdf6e3;
+    border-color: #CBA890;
+    transform: translateY(-1px);
 }
 
 .admin-app-container .role_btn-delete {
@@ -200,31 +218,41 @@
 .admin-app-container .role_btn-delete:hover {
     background: rgba(239, 68, 68, 0.1);
     border-color: #ef4444;
+    transform: translateY(-1px);
 }
 
 .admin-app-container .role_btn-expand {
-    border-color: var(--admin-border);
-    color: var(--admin-text-secondary);
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.admin-app-container .role_btn-expand:hover {
+    background: #fdf6e3;
+    border-color: #CBA890;
+    color: #a88b75;
 }
 
 /* === Permissions Section === */
 .admin-app-container .role_permissions {
     padding: 24px;
     background: white;
-    border-top: 1px solid var(--admin-border-light);
+    border-top: 1px solid #f3f4f6;
 }
 
 .admin-app-container .role_permissions h4 {
     font-size: 14px;
     font-weight: 600;
-    color: var(--admin-primary-dark);
+    color: #a88b75;
     margin: 0 0 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .admin-app-container .no-permissions {
-    color: var(--admin-text-muted);
+    color: #9ca3af;
     font-size: 14px;
     font-style: italic;
+    padding: 8px 0;
 }
 
 .admin-app-container .permissions-grid {
@@ -236,7 +264,7 @@
 .admin-app-container .role_permission-group h5 {
     font-size: 13px;
     font-weight: 600;
-    color: var(--admin-text);
+    color: #374151;
     margin: 0 0 8px 0;
     text-transform: capitalize;
 }
@@ -249,11 +277,19 @@
 
 .admin-app-container .role_permission-tag {
     padding: 4px 10px;
-    background: var(--admin-accent-light);
-    border: 1px solid var(--admin-border);
+    background: #fdf6e3;
+    border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 12px;
-    color: var(--admin-text-secondary);
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.admin-app-container .role_permission-tag:hover {
+    background: white;
+    border-color: #CBA890;
+    color: #a88b75;
+    transform: translateY(-1px);
 }
 
 /* === Buttons === */
@@ -262,7 +298,7 @@
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    border-radius: var(--admin-radius);
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -271,7 +307,7 @@
 }
 
 .admin-app-container .role_btn-primary {
-    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
 }
@@ -295,8 +331,8 @@
 .admin-app-container .role_spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid var(--admin-border-light);
-    border-top-color: var(--admin-primary);
+    border: 4px solid #e5e7eb;
+    border-top-color: #CBA890;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
@@ -309,34 +345,474 @@
 }
 
 .admin-app-container .role_empty-state svg {
-    color: var(--admin-text-muted);
+    color: #9ca3af;
     margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
 }
 
 .admin-app-container .role_empty-state h3 {
-    color: var(--admin-text);
+    color: #1f2937;
     margin: 0 0 20px 0;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 /* === Responsive === */
 @media (max-width: 768px) {
-    .role_page-header {
+    .admin-app-container .role_page-header {
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
     }
 
-    .role_header {
+    .admin-app-container .role_header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
 
-    .role_meta {
+    .admin-app-container .role_meta {
         flex-wrap: wrap;
+        gap: 12px;
     }
 
-    .permissions-grid {
+    .admin-app-container .permissions-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+.admin-app-container .role_btn.role_btn-primary {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+
+
+/* Role Form - Permissions Selector Styles */
+
+.admin-app-container .role-form-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-app-container .form-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+/* === Form Header === */
+.admin-app-container .form-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-app-container .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.admin-app-container .btn-back:hover {
+    background: #fdf6e3;
+    border-color: #CBA890;
+    color: #a88b75;
+}
+
+.admin-app-container .form-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    flex: 1;
+}
+
+.admin-app-container .form-header h1 svg {
+    color: #CBA890;
+}
+
+/* === Form Sections === */
+.admin-app-container .role-form-page form {
+    padding: 28px;
+}
+
+.admin-app-container .form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.admin-app-container .form-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.admin-app-container .form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #a88b75;
+    margin: 0 0 20px 0;
+}
+
+.admin-app-container .form-section h3 svg {
+    color: #CBA890;
+    width: 18px;
+    height: 18px;
+}
+
+/* === Form Group === */
+.admin-app-container .form-group {
+    margin-bottom: 20px;
+}
+
+.admin-app-container .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.admin-app-container .form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+/* === Inputs === */
+.admin-app-container .form-input,
+.admin-app-container .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #374151;
+    background: white;
+    transition: all 0.2s;
+}
+
+.admin-app-container .form-input:focus,
+.admin-app-container .form-textarea:focus {
+    outline: none;
+    border-color: #CBA890;
+    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+}
+
+.admin-app-container .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* === Permissions Selector === */
+.admin-app-container .permissions-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+}
+
+/* === Permission Module === */
+.admin-app-container .permission-module {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.admin-app-container .permission-module:hover {
+    border-color: #CBA890;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* === Module Header === */
+.admin-app-container .module-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fdf6e3;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.admin-app-container .module-header:hover {
+    background: #fbf2d7;
+}
+
+.admin-app-container .module-header .checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 2px solid #d1d5db;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.admin-app-container .module-header .checkbox.checked {
+    background: #CBA890;
+    border-color: #CBA890;
+    color: white;
+}
+
+.admin-app-container .module-header .checkbox.partial {
+    background: rgba(203, 168, 144, 0.2);
+    border-color: #CBA890;
+    color: #a88b75;
+}
+
+.admin-app-container .module-header .checkbox svg {
+    width: 18px;
+    height: 18px;
+}
+
+.admin-app-container .module-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.admin-app-container .module-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    background: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+}
+
+/* === Module Permissions === */
+.admin-app-container .module-permissions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* === Permission Item === */
+.admin-app-container .permission-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-app-container .permission-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.admin-app-container .permission-item.selected {
+    background: #fdf6e3;
+    border-color: #CBA890;
+}
+
+.admin-app-container .permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #CBA890;
+    cursor: pointer;
+}
+
+.admin-app-container .perm-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+}
+
+.admin-app-container .permission-item.selected .perm-name {
+    color: #a88b75;
+    font-weight: 600;
+}
+
+/* === Form Actions === */
+.admin-app-container .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid #f3f4f6;
+    margin-top: 32px;
+}
+
+/* === Buttons === */
+.admin-app-container .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+    justify-content: center;
+}
+
+.admin-app-container .btn-primary {
+    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+}
+
+.admin-app-container .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
+}
+
+.admin-app-container .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.admin-app-container .btn-secondary {
+    background: white;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+.admin-app-container .btn-secondary:hover {
+    background: #fdf6e3;
+    border-color: #CBA890;
+    color: #a88b75;
+}
+
+/* === Alert === */
+.admin-app-container .alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin: 0 28px 20px 28px;
+    font-size: 14px;
+}
+
+.admin-app-container .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.admin-app-container .alert svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+/* === Loading State === */
+.admin-app-container .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.admin-app-container .loading-state .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #CBA890;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+.admin-app-container .loading-state p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .admin-app-container .form-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .admin-app-container .btn-back {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-app-container .role-form-page form {
+        padding: 20px;
+    }
+
+    .admin-app-container .form-actions {
+        flex-direction: column;
+    }
+
+    .admin-app-container .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-app-container .module-permissions {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-app-container .alert {
+        margin: 0 20px 16px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-app-container .module-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .admin-app-container .module-count {
+        align-self: flex-start;
     }
 }

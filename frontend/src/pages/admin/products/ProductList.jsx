@@ -297,7 +297,7 @@ const ProductList = () => {
                             onClick={() => navigate('/admin/products/create')}
                             className="btn btn-primary"
                         >
-                            <Plus size={16} />
+                            <Plus size={2} />
                             Thêm sản phẩm mới
                         </button>
                     </div>

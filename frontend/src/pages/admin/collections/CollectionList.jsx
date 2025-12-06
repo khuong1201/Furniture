@@ -60,22 +60,27 @@ const CollectionList = () => {
                     <h1><Layers size={28} /> Bộ sưu tập</h1>
                     <p>{pagination.total} bộ sưu tập</p>
                 </div>
-                <button onClick={() => navigate('/admin/collections/create')} className="btn btn-primary">
+            </div>
+            <div className="collection_headerxxxx">
+
+                {/* Search */}
+                <div className="search-bar">
+                    <Search size={18} />
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm bộ sưu tập..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <button onClick={fetchCollections} className="btn-refresh"><RefreshCw size={18} /></button>
+                </div>
+
+
+                <button onClick={() => navigate('/admin/collections/create')} className="btn-primary">
                     <Plus size={20} /> Thêm mới
                 </button>
             </div>
 
-            {/* Search */}
-            <div className="search-bar">
-                <Search size={18} />
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm bộ sưu tập..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-                <button onClick={fetchCollections} className="btn-refresh"><RefreshCw size={18} /></button>
-            </div>
 
             {error && <div className="alert alert-error"><AlertCircle size={20} />{error}</div>}
 
