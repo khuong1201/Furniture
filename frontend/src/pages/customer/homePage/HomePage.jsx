@@ -19,9 +19,16 @@ function HomePage() {
 
   const { products, loading, error, fetchProducts } = useProduct();
 
+  const { 
+    products: flashProducts, 
+    loading: flashLoading, 
+    getProducts: fetchFlashSale 
+  } = useProduct();
+
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    fetchFlashSale({ is_flash_sale: true, per_page: 8 });
+  }, [fetchProducts, fetchFlashSale]);
 
   const categories = [
     { name: "Bed", img: bedIcon },
@@ -33,7 +40,7 @@ function HomePage() {
     { name: "Shelf", img: shelfIcon },
     { name: "Outdoor", img: outdoorIcon },
   ];
-
+  
   return (
     <div className="home-container">
 
@@ -67,67 +74,65 @@ function HomePage() {
         </div>
       </section>
 
-      {/* --- PHẦN 3: FLASH SALE (DÙNG API TỪ HOOK) --- */}
-      {!loading && !error && (
-        <>
-          <section className="pd-sale-section">
-            <div className="flash-header">
-              <h3>Flash Sale <span className="timer">01 : 23 : 20</span></h3>
-              <a href="#" className="view-all">View all</a>
-            </div>
+      {/* --- PHẦN 3: FLASH SALE  --- */}
+      <section className="pd-sale-section">
+        <div className="flash-header">
+          <h3>Flash Sale 
+            {/* <span className="timer">01 : 23 : 20</span> */}
+          </h3>
+          <a href="#" className="view-all">View all</a>
+        </div>
 
-            {/* 4. Hiển thị dữ liệu khi đã tải xong */}
-            <div className="product-horizontal">
-              {products.map((item) => (
-                <ProductCard 
-                  key={item.uuid || item.id}  
-                  item={item}
-                  variant="flash"
-                />
-              ))}
-            </div>
-          </section>
 
-          {/* Top Trending */} 
-          <section className='pd-trending-section'> 
-            <div className="trending-header"> 
-              <h3>Top Trending
-                <img src={trending} alt='trending' className="trending-icon" />
-              </h3> 
-              <a href="#" className="view-all">
-                View all
-              </a> 
-            </div> 
+        <div className="product-horizontal">
+          {flashProducts.map((item) => (
+            <ProductCard 
+              key={item.uuid || item.id}  
+              item={item}
+              variant="flash"
+            />
+          ))}
+        </div>  
+      </section>
 
-            <div className="product-horizontal">
-              {products.map((item) => (
-                <ProductCard 
-                  key={item.uuid || item.id}  
-                  item={item}
-                  variant="top"
-                />
-              ))}
-            </div>  
-          </section>
-          
-            {/* Today's Suggestions */}
-          <section className='pd-suggestion-section'>
-            <div className="suggestion-header">
-              <h3>Today's Suggestions</h3> 
-            </div>
+      {/* Top Trending */} 
+      <section className='pd-trending-section'> 
+        <div className="trending-header"> 
+          <h3>Top Trending
+            <img src={trending} alt='trending' className="trending-icon" />
+          </h3> 
+          <a href="#" className="view-all">
+            View all
+          </a> 
+        </div> 
 
-            <div className="product-grid">
-              {products.map((item) => (
-                <ProductCard 
-                  key={item.uuid || item.id}  
-                  item={item}
-                  variant="default"
-                />
-              ))}
-            </div>
-          </section>
-        </> 
-      )}
+        <div className="product-horizontal">
+          {products.map((item) => (
+            <ProductCard 
+              key={item.uuid || item.id}  
+              item={item}
+              variant="top"
+            />
+          ))}
+        </div>  
+      </section>
+      
+        {/* Today's Suggestions */}
+      <section className='pd-suggestion-section'>
+        <div className="suggestion-header">
+          <h3>Today's Suggestions</h3> 
+        </div>
+
+        <div className="product-grid">
+          {products.map((item) => (
+            <ProductCard 
+              key={item.uuid || item.id}  
+              item={item}
+              variant="default"
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

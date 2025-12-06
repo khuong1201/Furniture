@@ -68,10 +68,10 @@ export const useProduct = () => {
     await getProducts({ search: keyword, page: 1 });
   }, [getProducts]);
 
-  // Tự động load khi component mount
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+  // // Tự động load khi component mount
+  // useEffect(() => {
+  //   fetchProducts();
+  // }, [fetchProducts]);
 
   return {
     products,
