@@ -70,7 +70,7 @@ class ReviewService extends BaseService
             'rating' => $data['rating'],
             'comment' => $data['comment'] ?? null,
             'images' => $data['images'] ?? [],
-            'is_approved' => false 
+            'is_approved' => true
         ];
 
         $review = $this->repository->create($reviewData);

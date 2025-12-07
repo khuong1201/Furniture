@@ -20,10 +20,15 @@ php artisan key:
 
 #### 3. Chạy migration và seed dữ liệu
 - php artisan migrate:fresh --seed
+
+
 #### 4. Khởi chạy server
 
 - php artisan serve
+- php artisan queue:work
+- php artisan reverb:start
 - Truy cập tại: http://127.0.0.1:8000
+
 #### 5. api documentation
 - php artisan l5-swagger:generate
 - Truy cập tại: http://127.0.0.1:8000/api/documentation
