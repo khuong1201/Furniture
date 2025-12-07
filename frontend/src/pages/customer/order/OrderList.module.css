@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.container {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    padding-bottom: 50px;
+}
+
+/* --- Header --- */
+.topHeader {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 15px 0;
+    margin-bottom: 20px;
+}
+.headerContent {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.logoArea {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+.pageTitle {
+    color: #c4a48c;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+.searchBar {
+    position: relative;
+    width: 500px;
+}
+.searchIcon {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); color: #999;
+}
+.searchBar input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    outline: none; background: #f9f9f9;
+}
+.searchBar input:focus { border-color: #c4a48c; background: #fff; }
+
+/* --- Wrapper & Tabs --- */
+.content-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.tabsContainer {
+    display: flex;
+    background: #fff;
+    margin-bottom: 15px;
+    border-radius: 2px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tabBtn {
+    flex: 1;
+    background: none; border: none;
+    padding: 15px 0;
+    font-size: 15px; color: #555;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.tabBtn:hover { color: #c4a48c; }
+.activeTab {
+    color: #c4a48c; font-weight: 600;
+    border-bottom: 2px solid #c4a48c;
+}
+
+/* --- Order Card --- */
+.listContainer {
+    display: flex; flex-direction: column; gap: 15px;
+}
+
+.orderCard {
+    background: #fff;
+    border-radius: 3px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+
+/* Card Header */
+.cardHeader {
+    display: flex; justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    margin-bottom: 15px;
+}
+.shopName {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 600; font-size: 14px; color: #333;
+}
+.chatBtn {
+    background: #c4a48c; color: #fff;
+    border: none; font-size: 11px;
+    padding: 2px 8px; cursor: pointer; border-radius: 2px;
+}
+.statusLabel {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 500; text-transform: uppercase;
+}
+.divider { color: #ddd; margin: 0 5px; }
+.statusText { color: #888; font-weight: 400; }
+
+/* Card Body (Product List) */
+.cardBody {
+    text-decoration: none; display: block;
+}
+.productRow {
+    display: flex; align-items: center; gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #fafafa;
+}
+.productRow:last-child { border-bottom: none; padding-bottom: 0; }
+
+.productImg {
+    width: 70px; height: 70px;
+    object-fit: cover; border: 1px solid #eee;
+}
+.productInfo { flex: 1; }
+.productName { font-size: 15px; color: #333; margin-bottom: 4px; line-height: 1.4; }
+.productVariant { color: #888; font-size: 13px; margin-bottom: 2px; }
+.productQty { color: #333; font-size: 13px; }
+.productPrice { font-size: 14px; color: #333; }
+
+/* Card Footer */
+.cardFooter {
+    background: #fffefb; /* Nền hơi khác chút cho footer */
+    padding-top: 20px;
+    border-top: 1px dashed #e8e8e8;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 15px;
+}
+
+.totalSection {
+    font-size: 14px; color: #333;
+    display: flex; align-items: center; gap: 10px;
+}
+.totalPrice {
+    font-size: 20px; color: #c4a48c; font-weight: 600;
+}
+
+.actionButtons {
+    display: flex; gap: 10px;
+}
+.btnPrimary {
+    background: #c4a48c; color: #fff;
+    border: none; padding: 10px 25px;
+    font-size: 14px; border-radius: 2px; cursor: pointer;
+    transition: background 0.2s;
+}
+.btnPrimary:hover { background: #b08d74; }
+
+.btnSecondary {
+    background: #999; color: #fff;
+    border: none; padding: 10px 20px;
+    font-size: 14px; border-radius: 2px; cursor: pointer;
+}
+.btnSecondary:disabled { opacity: 0.6; cursor: default; }
+
+.btnOutline {
+    background: #fff; color: #555;
+    border: 1px solid #ddd; padding: 10px 20px;
+    font-size: 14px; border-radius: 2px; cursor: pointer;
+}
+.btnOutline:hover { border-color: #c4a48c; color: #c4a48c; }
+
+/* States */
+.loadingState, .emptyState {
+    background: #fff; padding: 60px 20px;
+    text-align: center; border-radius: 3px; color: #888;
+}
+.spin { animation: spin 1s linear infinite; margin-right: 10px; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.emptyIcon { font-size: 50px; margin-bottom: 15px; }
+
+.btnGoShopping {
+    display: inline-block;
+    background: #c4a48c; color: #fff;
+    padding: 10px 25px; text-decoration: none;
+    border-radius: 2px; margin-top: 15px;
+}
+
+/* Pagination */
+.pagination {
+    display: flex; justify-content: center;
+    align-items: center; gap: 15px; margin-top: 30px;
+}
+.pageBtn {
+    background: #fff; border: 1px solid #ddd;
+    padding: 8px 16px; cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    border-radius: 2px; color: #555;
+}
+.pageBtn:disabled { background: #f5f5f5; color: #bbb; cursor: not-allowed; }
+.pageInfo { font-size: 14px; color: #666; }

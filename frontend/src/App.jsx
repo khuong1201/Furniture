@@ -11,7 +11,8 @@ import ProductDetail from './pages/customer/Product/ProductDetail';
 import SearchPage from './pages/customer/searchPage/SearchPage';
 import CartPage from './pages/customer/cart/CartPage';
 import AddressForm from './pages/customer/address/AddressForm';
-import Orders from './pages/customer/order/OrderDetail';
+import OrdersDetail from './pages/customer/order/OrderDetail';
+import OrdersList from './pages/customer/order/OrderDetail';
 import Payment from './pages/customer/payment/PaymentHistory';
 import Notification from './pages/customer/notification/NotificationPage';
 
@@ -63,7 +64,8 @@ function App() {
         <Route path="product" element={<SearchPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="address" element={<AddressForm />} />
-        <Route path="orders/:uuid" element={<Orders />} />
+        <Route path="orders/:uuid" element={<OrdersDetail />} />
+        <Route path="orders" element={<OrdersList />} />
         <Route path="payment" element={<Payment />} />
         <Route path="notification" element={<Notification />} />
 

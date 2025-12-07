@@ -53,7 +53,9 @@ function Header() {
           <div className={styles['header-actions']}>
             
             <div className={styles['action-item']}>
-              <img src={bellIcon} alt="Bell" className={styles['svg-icon']}/>
+              <Link to="/customer/notification">
+                <img src={bellIcon} alt="Bell" className={styles['svg-icon']}/>
+              </Link>
             </div>
 
             <div className={styles['action-item']}>

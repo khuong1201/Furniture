@@ -85,6 +85,141 @@
     padding-top: 28px;
     overflow: hidden;
 }
+/* ... Giữ nguyên CSS cũ của trang ... */
+
+/* --- MODAL STYLES --- */
+.modalOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s;
+}
+
+.modalContent {
+    background: #fff;
+    width: 600px;
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: 4px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s;
+}
+
+.modalHeader {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f1f1f1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modalHeader h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+.btnClose {
+    background: none; border: none;
+    cursor: pointer; color: #888;
+}
+.btnClose:hover { color: #333; }
+
+.modalBody {
+    padding: 20px;
+    background: #fbfbfb;
+}
+
+/* --- ADDRESS LIST IN MODAL --- */
+.addressList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.addressCard {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Highlight địa chỉ đang active */
+.addressActive {
+    border-color: #c4a48c;
+    background: #fffbf8;
+}
+
+.addrInfo { flex: 1; }
+.addrRow {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 5px;
+}
+.addrName { font-weight: 700; color: #333; font-size: 14px; }
+.addrPhone { color: #666; font-size: 13px; }
+
+.defaultTag {
+    border: 1px solid #c4a48c; color: #c4a48c;
+    font-size: 10px; padding: 1px 4px; border-radius: 2px;
+}
+.typeTag {
+    background: #f0f0f0; color: #666;
+    font-size: 10px; padding: 2px 4px; border-radius: 2px;
+}
+
+.addrText {
+    font-size: 13px; color: #555; line-height: 1.4;
+}
+
+.addrActions {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+}
+
+.btnEditAddr {
+    background: none; border: none;
+    color: #0055aa; font-size: 13px; cursor: pointer;
+}
+.btnEditAddr:hover { text-decoration: underline; }
+
+.btnSelectAddr {
+    background: #fff; border: 1px solid #ddd;
+    padding: 5px 15px; font-size: 13px; cursor: pointer;
+    border-radius: 2px; color: #555;
+}
+.btnSelectAddr:hover {
+    border-color: #c4a48c; color: #c4a48c;
+}
+
+.selectedMark {
+    color: #c4a48c; font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+}
+
+.btnAddAddress {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    border: 1px dashed #c4a48c;
+    color: #c4a48c;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin-top: 10px;
+    transition: all 0.2s;
+}
+.btnAddAddress:hover { background: #fffbf8; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 /* Dải màu trang trí trên đầu ô địa chỉ */
 .addressDecoration {
     height: 3px;

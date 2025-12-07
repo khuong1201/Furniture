@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAddress } from '@/hooks/useAddress';
+import { MapPin } from 'lucide-react'; // Thêm icon cho đồng bộ
 import styles from './AddressForm.module.css';
 
 const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
   const { createAddress, updateAddress, loading } = useAddress();
 
-  // State lưu dữ liệu form
+  // State
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -14,12 +15,12 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
     ward: '',
     street: '',
     is_default: false,
-    type: 'home' // Mặc định là nhà riêng
+    type: 'home'
   });
 
   const [errors, setErrors] = useState({});
 
-  // Nếu có initialData (trường hợp Edit), fill dữ liệu vào form
+  // Fill Data (Edit Mode)
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -35,24 +36,19 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
     }
   }, [initialData]);
 
-  // Xử lý thay đổi input text
+  // Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Xóa lỗi khi người dùng gõ
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
   };
 
-  // Xử lý thay đổi checkbox / radio
   const handleCheckChange = (e) => {
     const { name, checked, type, value } = e.target;
     const val = type === 'checkbox' ? checked : value;
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // Hàm validate đơn giản
   const validate = () => {
     const newErrors = {};
     const phoneRegex = /^[0-9]{10,11}$/;
@@ -79,16 +75,13 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
 
     try {
       if (initialData?.uuid) {
-        // Trường hợp UPDATE
         await updateAddress(initialData.uuid, formData);
-        alert('Cập nhật địa chỉ thành công!');
+        // alert('Cập nhật địa chỉ thành công!'); 
+        // Có thể bỏ alert nếu muốn UX mượt hơn, onSuccess tự xử lý reload
       } else {
-        // Trường hợp CREATE
         await createAddress(formData);
-        alert('Thêm địa chỉ mới thành công!');
       }
       
-      // Callback để đóng modal hoặc reload list bên ngoài
       if (onSuccess) onSuccess();
 
     } catch (err) {
@@ -99,11 +92,12 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
   return (
     <div className={styles['form-container']}>
       <h3 className={styles['form-title']}>
+        <MapPin size={24} />
         {initialData ? 'Cập Nhật Địa Chỉ' : 'Thêm Địa Chỉ Mới'}
       </h3>
       
       <form onSubmit={handleSubmit}>
-        {/* HỌ TÊN & SỐ ĐIỆN THOẠI */}
+        {/* ROW 1: Họ tên & Phone */}
         <div className={styles['form-row']}>
           <div className={styles['form-col']}>
             <label className={styles['label']}>Họ và tên</label>
@@ -112,7 +106,7 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
               name="full_name" 
               value={formData.full_name} 
               onChange={handleChange}
-              className={styles['input']}
+              className={`${styles['input']} ${errors.full_name ? styles['input-error'] : ''}`}
               placeholder="Nguyễn Văn A"
             />
             {errors.full_name && <span className={styles['error-text']}>{errors.full_name}</span>}
@@ -124,14 +118,14 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
               name="phone" 
               value={formData.phone} 
               onChange={handleChange}
-              className={styles['input']}
+              className={`${styles['input']} ${errors.phone ? styles['input-error'] : ''}`}
               placeholder="0901234567"
             />
             {errors.phone && <span className={styles['error-text']}>{errors.phone}</span>}
           </div>
         </div>
 
-        {/* TỈNH - HUYỆN - XÃ (Lưu ý: Thực tế nên dùng Select Dropdown API) */}
+        {/* ROW 2: Tỉnh & Huyện */}
         <div className={styles['form-row']}>
           <div className={styles['form-col']}>
             <label className={styles['label']}>Tỉnh/Thành phố</label>
@@ -140,7 +134,7 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
               name="province" 
               value={formData.province} 
               onChange={handleChange}
-              className={styles['input']}
+              className={`${styles['input']} ${errors.province ? styles['input-error'] : ''}`}
               placeholder="TP. Hồ Chí Minh"
             />
             {errors.province && <span className={styles['error-text']}>{errors.province}</span>}
@@ -152,13 +146,14 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
               name="district" 
               value={formData.district} 
               onChange={handleChange}
-              className={styles['input']}
+              className={`${styles['input']} ${errors.district ? styles['input-error'] : ''}`}
               placeholder="Quận 1"
             />
             {errors.district && <span className={styles['error-text']}>{errors.district}</span>}
           </div>
         </div>
 
+        {/* ROW 3: Xã & Chi tiết */}
         <div className={styles['form-row']}>
           <div className={styles['form-col']}>
             <label className={styles['label']}>Phường/Xã</label>
@@ -167,26 +162,26 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
               name="ward" 
               value={formData.ward} 
               onChange={handleChange}
-              className={styles['input']}
+              className={`${styles['input']} ${errors.ward ? styles['input-error'] : ''}`}
               placeholder="Phường Bến Nghé"
             />
             {errors.ward && <span className={styles['error-text']}>{errors.ward}</span>}
           </div>
           <div className={styles['form-col']}>
-            <label className={styles['label']}>Địa chỉ chi tiết</label>
+            <label className={styles['label']}>Địa chỉ cụ thể</label>
             <input 
               type="text" 
               name="street" 
               value={formData.street} 
               onChange={handleChange}
-              className={styles['input']}
+              className={`${styles['input']} ${errors.street ? styles['input-error'] : ''}`}
               placeholder="Số 123, Đường Lê Lợi"
             />
             {errors.street && <span className={styles['error-text']}>{errors.street}</span>}
           </div>
         </div>
 
-        {/* LOẠI ĐỊA CHỈ */}
+        {/* Loại địa chỉ */}
         <div className={styles['form-group']}>
           <label className={styles['label']}>Loại địa chỉ</label>
           <div className={styles['radio-group']}>
@@ -197,6 +192,7 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
                 value="home" 
                 checked={formData.type === 'home'} 
                 onChange={handleCheckChange} 
+                className={styles['accent-radio']}
               />
               Nhà riêng
             </label>
@@ -207,13 +203,14 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
                 value="office" 
                 checked={formData.type === 'office'} 
                 onChange={handleCheckChange} 
+                className={styles['accent-radio']}
               />
               Văn phòng
             </label>
           </div>
         </div>
 
-        {/* ĐẶT LÀM MẶC ĐỊNH */}
+        {/* Mặc định */}
         <div className={styles['checkbox-wrapper']}>
           <input 
             type="checkbox" 
@@ -221,11 +218,12 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
             id="is_default"
             checked={formData.is_default} 
             onChange={handleCheckChange} 
+            className={styles['accent-checkbox']}
           />
-          <label htmlFor="is_default" style={{cursor: 'pointer', fontSize: '14px'}}>Đặt làm địa chỉ mặc định</label>
+          <label htmlFor="is_default">Đặt làm địa chỉ mặc định</label>
         </div>
 
-        {/* BUTTONS */}
+        {/* Actions */}
         <div className={styles['btn-group']}>
           <button 
             type="button" 
@@ -233,7 +231,7 @@ const AddressForm = ({ initialData = null, onSuccess, onCancel }) => {
             onClick={onCancel}
             disabled={loading}
           >
-            Hủy
+            Trở lại
           </button>
           <button 
             type="submit" 
