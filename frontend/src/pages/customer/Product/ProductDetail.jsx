@@ -1,69 +1,90 @@
 import React, { useState, useEffect, useMemo } from 'react';
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/useProduct';
 import { useCart } from '@/hooks/useCart';
 import { useOrder } from '@/hooks/useOrder';
-import { Star, Minus, Plus, ShoppingCart, MessageCircle, Store, ChevronRight, MapPin } from 'lucide-react';
+import { useAddress } from '@/hooks/useAddress'; 
+
+import { Star, Minus, Plus, ShoppingCart, ChevronRight, MapPin, Plus as PlusIcon } from 'lucide-react';
 import { AiOutlineLoading3Quarters, AiOutlineWarning } from "react-icons/ai";
+
 import ProductReviews from './ProductReviews';
+import AddressForm from '@/pages/customer/address/AddressForm.jsx'; 
 import styles from './ProductDetail.module.css';
 
 const ProductDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // --- HOOKS ---
   const { productDetail, loading, error, getDetail } = useProduct();
   const { addToCart, loading: cartLoading } = useCart();
   const { createOrder, loading: orderLoading } = useOrder();
+  const { addresses, fetchAddresses } = useAddress(); // Lấy danh sách địa chỉ
 
+  // --- STATES ---
   const [activeImage, setActiveImage] = useState(null);
   
-  // --- STATE QUẢN LÝ BIẾN THỂ ---
+  // State biến thể
   const [selectedVariant, setSelectedVariant] = useState(null);
-  // Thay vì lưu riêng lẻ, ta lưu object: { "Color": "Navy Blue", "Material": "Leather" }
   const [selectedAttributes, setSelectedAttributes] = useState({}); 
   
-  const [address, setAddress] = useState('');
+  // State địa chỉ & số lượng
+  const [addressId, setAddressId] = useState(''); // Lưu ID địa chỉ (thay vì text)
   const [quantity, setQuantity] = useState(1);
+  
+  // State Modal thêm địa chỉ
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
+  // --- HELPER ---
   const isLoggedIn = () => {
     const token = localStorage.getItem('access_token');
     return !!token;
   };
 
-  // 1. Fetch dữ liệu
+  // 1. Fetch dữ liệu sản phẩm
   useEffect(() => {
-    if (id) {
-      getDetail(id);
-    }
+    if (id) getDetail(id);
   }, [id, getDetail]);
 
-  // 2. Set ảnh mặc định
+  // 2. Fetch danh sách địa chỉ nếu đã login
+  useEffect(() => {
+    if (isLoggedIn()) {
+      fetchAddresses();
+    }
+  }, [fetchAddresses]);
+
+  // 3. Tự động chọn địa chỉ mặc định
+  useEffect(() => {
+    if (addresses.length > 0 && !addressId) {
+      // Ưu tiên địa chỉ mặc định, nếu không có thì lấy cái đầu tiên
+      const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
+      setAddressId(defaultAddr.id || defaultAddr.uuid);
+    }
+  }, [addresses, addressId]);
+
+  // 4. Set ảnh chính mặc định
   useEffect(() => {
     if (!productDetail?.images?.length) return;
     const primary = productDetail.images.find(img => img.is_primary === 1) || productDetail.images[0];
     setActiveImage(primary.url);
   }, [productDetail]);
 
-  // 3. TÍNH TOÁN DANH SÁCH OPTIONS TỪ VARIANTS (Dynamic)
-  // Logic: Quét toàn bộ variants để gom nhóm các thuộc tính có sẵn
+  // 5. Tính toán các Options (Màu, Size...) từ Variants
   const attributeOptions = useMemo(() => {
     if (!productDetail?.variants) return {};
 
     const options = {};
     productDetail.variants.forEach(variant => {
       variant.attributes.forEach(attr => {
-        const name = attr.attribute_name; // VD: "Color", "Material"
-        const value = attr.value;         // VD: "Navy Blue", "Leather"
-
-        if (!options[name]) {
-          options[name] = new Set(); // Dùng Set để lọc trùng
-        }
+        const name = attr.attribute_name;
+        const value = attr.value;
+        if (!options[name]) options[name] = new Set();
         options[name].add(value);
       });
     });
 
-    // Chuyển Set thành Array để render
     const result = {};
     Object.keys(options).forEach(key => {
       result[key] = Array.from(options[key]);
@@ -72,12 +93,10 @@ const ProductDetail = () => {
     return result;
   }, [productDetail]);
 
-  // 4. Set mặc định attribute ban đầu (Lấy variant đầu tiên làm chuẩn)
+  // 6. Chọn variant mặc định ban đầu
   useEffect(() => {
     if (productDetail?.variants?.length && !selectedVariant) {
       const firstVariant = productDetail.variants[0];
-      
-      // Xây dựng state attributes từ variant đầu tiên
       const initialAttrs = {};
       firstVariant.attributes.forEach(attr => {
         initialAttrs[attr.attribute_name] = attr.value;
@@ -88,12 +107,11 @@ const ProductDetail = () => {
     }
   }, [productDetail]);
 
-  // 5. Tìm Variant khi người dùng thay đổi lựa chọn
+  // 7. Logic tìm variant khi user thay đổi attribute
   useEffect(() => {
     if (!productDetail?.variants) return;
     if (Object.keys(selectedAttributes).length === 0) return;
 
-    // Tìm variant có TẤT CẢ attribute khớp với selectedAttributes
     const foundVariant = productDetail.variants.find(v => 
       v.attributes.every(attr => 
         selectedAttributes[attr.attribute_name] === attr.value
@@ -102,14 +120,13 @@ const ProductDetail = () => {
 
     setSelectedVariant(foundVariant || null);
     
-    // Nếu tìm thấy variant và có ảnh riêng, update ảnh hiển thị
     if (foundVariant && foundVariant.image) {
         setActiveImage(foundVariant.image);
     }
-
   }, [selectedAttributes, productDetail]);
 
-  // 6. Handler chọn attribute
+  // --- HANDLERS ---
+
   const handleAttributeSelect = (attributeName, value) => {
     setSelectedAttributes(prev => ({
       ...prev,
@@ -121,6 +138,12 @@ const ProductDetail = () => {
     if (type === 'dec' && quantity > 1) setQuantity(quantity - 1);
     if (type === 'inc') setQuantity(quantity + 1);
   };
+
+  // Callback khi tạo địa chỉ thành công từ Modal
+  const handleAddressCreated = async () => {
+    setShowAddressModal(false); 
+    await fetchAddresses(); // Load lại để cập nhật Dropdown
+  };
   
   const handleProductAction = async (actionType) => {
     if (!isLoggedIn()) {
@@ -128,7 +151,7 @@ const ProductDetail = () => {
       return navigate('/customer/login');
     }
 
-    // Validate động: Kiểm tra xem đã chọn đủ các nhóm thuộc tính chưa
+    // Validate Attribute
     const requiredAttributes = Object.keys(attributeOptions);
     const missingAttributes = requiredAttributes.filter(key => !selectedAttributes[key]);
 
@@ -137,10 +160,13 @@ const ProductDetail = () => {
     }
 
     if (!selectedVariant) {
-        return alert('Phiên bản sản phẩm này hiện không khả dụng. Vui lòng chọn kết hợp khác.');
+        return alert('Phiên bản sản phẩm này hiện không khả dụng.');
     }
 
-    if (!address.trim()) return alert('Vui lòng nhập địa chỉ giao hàng!');
+    // Validate Address ID
+    if (!addressId) {
+        return alert('Vui lòng chọn địa chỉ giao hàng hoặc thêm mới!');
+    }
 
     try {
       if (actionType === 'cart') {
@@ -153,7 +179,7 @@ const ProductDetail = () => {
         if (!isConfirmed) return;
 
         const payload = {
-          address_id: parseInt(address) || 1, 
+          address_id: parseInt(addressId), // Gửi ID địa chỉ
           items: [
             {
               variant_uuid: selectedVariant.uuid,
@@ -179,6 +205,7 @@ const ProductDetail = () => {
     }
   };
 
+  // --- RENDER LOADING / ERROR ---
   if (loading){
     return (
       <div className="loading-state">
@@ -196,12 +223,13 @@ const ProductDetail = () => {
     )
   }
 
+  // --- VARIABLES DISPLAY ---
   const displayImages = productDetail.images || [];
   const rating = productDetail.rating_avg;
   const reviewsCount = productDetail.rating_count;
   const soldCount = productDetail.sold_count;
   
-  // Hiển thị giá: Ưu tiên giá của Variant đang chọn, nếu không thì lấy giá gốc
+  // Giá
   const currentPrice = selectedVariant 
     ? selectedVariant.price_formatted 
     : productDetail.price_formatted;
@@ -211,7 +239,6 @@ const ProductDetail = () => {
     : productDetail.original_price_formatted;
 
   const isFlashSale = productDetail.flash_sale?.is_active;
-
   const showOriginalPrice = isFlashSale || (originalPrice && originalPrice !== currentPrice);
 
   return (
@@ -260,17 +287,11 @@ const ProductDetail = () => {
             </div>
 
             <div className={styles['price-section']}>
-
-              <span className={styles['current-price']}>
-                {currentPrice}
-              </span>
-
+              <span className={styles['current-price']}>{currentPrice}</span>
+              
               {showOriginalPrice && (
                 <>
-                  <span className={styles['original-price']}>
-                    {originalPrice}
-                  </span>
-
+                  <span className={styles['original-price']}>{originalPrice}</span>
                   {isFlashSale && (
                     <span className={styles['discount-badge']}>
                       -{productDetail.flash_sale.discount_percent}%
@@ -282,23 +303,46 @@ const ProductDetail = () => {
           </div>
           
           <div className={styles['product-body']}>
-            {/* Delivery */}
+            
+            {/* --- SELECTION: DELIVERY ADDRESS --- */}
             <div className={styles['variant-section']}>
               <span className={styles['label']}>Delivery</span>
-              <div className={styles['address-input-group']}>
-                  <MapPin size={18} className={styles['map-icon']} />
-                  <input 
-                      type="text" 
-                      className={styles['addr-input']}
-                      placeholder="Enter address..."
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                  />
+              <div className={styles['address-selection-row']}>
+                <MapPin size={18} className={styles['map-icon']} />
+                
+                {/* Dropdown chọn địa chỉ */}
+                <select 
+                  className={styles['address-select']}
+                  value={addressId}
+                  onChange={(e) => setAddressId(e.target.value)}
+                >
+                  <option value="">-- Select an address --</option>
+                  {addresses.map((addr) => (
+                    <option key={addr.id || addr.uuid} value={addr.id || addr.uuid}>
+                      {addr.province}, {addr.district}, {addr.ward}, {addr.string}-
+                      {addr.is_default ? ' (Default)' : ''}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Nút thêm địa chỉ nhanh */}
+                <button 
+                  className={styles['btn-add-address']} 
+                  onClick={() => setShowAddressModal(true)}
+                  title="Add new address"
+                >
+                  <PlusIcon size={20} />
+                </button>
               </div>
+              
+              {addresses.length === 0 && (
+                 <small style={{color: '#888', marginTop: '5px', display: 'block'}}>
+                    You haven't added any address yet. Click + to add.
+                 </small>
+              )}
             </div>
 
-            {/* --- RENDER THUỘC TÍNH ĐỘNG (Dynamic Attributes) --- */}
-            {/* Tự động render Color, Material, Size,... dựa trên dữ liệu API */}
+            {/* --- SELECTION: DYNAMIC ATTRIBUTES --- */}
             {Object.entries(attributeOptions).map(([attrName, values]) => (
               <div className={styles['variant-section']} key={attrName}>
                 <span className={styles['label']}>{attrName}</span>
@@ -319,7 +363,7 @@ const ProductDetail = () => {
               </div>
             ))}
 
-            {/* Quantity */}
+            {/* --- SELECTION: QUANTITY --- */}
             <div className={styles['variant-section']}>
               <span className={styles['label']}>Quantity</span>
               <div className={styles['qty-control']}>
@@ -328,15 +372,15 @@ const ProductDetail = () => {
                 <button onClick={() => handleQuantity('inc')}><Plus size={24}/></button>
               </div>
             </div>
-
-            {/* Variant Stock Warning (Optional) */}
+            
+            {/* Variant Stock Warning */}
             {selectedVariant && (
                 <div style={{ marginBottom: '15px', color: '#666', fontSize: '14px' }}>
                     Stock available: {selectedVariant.stock_quantity}
                 </div>
             )}
 
-            {/* Action Buttons */}
+            {/* --- ACTION BUTTONS --- */}
             <div className={styles['action-buttons']}>
               <button 
                 className={styles['btn-add-cart']} 
@@ -358,37 +402,19 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* --- PHẦN SHOP INFO --- */}
-      <div className={styles['shop-section']}>
-        <div className={styles['shop-info']}>
-          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100" alt="Shop Avatar" className={styles['shop-avatar']} />
-          <div className={styles['shop-text']}>
-            <h4>Furniture Official Store</h4>
-            <p>Active 5 minutes ago</p>
-          </div>
-        </div>
-        <div className={styles['shop-actions']}>
-          <button className={styles['btn-shop-chat']}><MessageCircle size={16}/> Chat</button>
-          <button className={styles['btn-shop-view']}><Store size={16}/> View</button>
-        </div>
-      </div>
-
-      {/* --- PHẦN DESCRIPTION --- */}
+      {/* --- DESCRIPTION & SPECS --- */}
       <h4 className={styles['desc-title']}>Product Description</h4>
       <div className={styles['product-description-section']}>
-      
         <div className={styles['desc-content']}>
           <p>{productDetail.description || "No description available."}</p>
         </div>
 
-        {/*--- SPECIFICATIONS --- */}
-        <h3 className={styles['desc-title']} >Product Specifications</h3>
+        <h3 className={styles['desc-title-tiny']} >Product Specifications</h3>
         <div className={styles['specs-table']}>
             <div className={styles['spec-row']}>
                 <span className={styles['spec-label']}>Brand</span>
                 <span className={styles['spec-value']}>Atelier Home</span>
             </div>
-            {/* Hiển thị các thuộc tính của variant đang chọn trong bảng thông số (nếu cần) */}
             {selectedVariant?.attributes?.map((attr, idx) => (
                 <div className={styles['spec-row']} key={idx}>
                     <span className={styles['spec-label']}>{attr.attribute_name}</span>
@@ -397,10 +423,28 @@ const ProductDetail = () => {
             ))}
         </div>
 
-        {/* --- RATING --- */}
         <h3 className={styles['desc-title']} style={{ marginTop: '40px' }}>Product Rating</h3>
         <ProductReviews productId={productDetail.uuid} />
       </div>      
+
+      {/* --- MODAL ADD ADDRESS --- */}
+      {showAddressModal && (
+        <div className={styles['modal-overlay']}>
+          <div className={styles['modal-content']}>
+            <button 
+              className={styles['close-modal-btn']} 
+              onClick={() => setShowAddressModal(false)}
+            >
+              &times;
+            </button>
+            
+            <AddressForm 
+              onSuccess={handleAddressCreated}
+              onCancel={() => setShowAddressModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

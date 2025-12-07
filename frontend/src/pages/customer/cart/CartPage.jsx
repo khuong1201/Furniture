@@ -1,16 +1,24 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useCart } from '@/hooks/useCart';
-import { Link } from 'react-router-dom';
-import styles from './CartPage.module.css'; // ✅ CSS MODULE
+import { useOrder } from '@/hooks/useOrder';
+import { useAddress } from '@/hooks/useAddress';
+import { Link, useNavigate } from 'react-router-dom';
+import { AiOutlineLoading3Quarters, AiOutlineWarning } from "react-icons/ai";
+import styles from './CartPage.module.css';
+
 
 const CartPage = () => {
   const { cartItems, loading, error, updateQuantity, removeItem, fetchCart } = useCart();
+
+  const { checkout, loading: orderLoading } = useOrder();
   
+  const { addresses, fetchAddresses } = useAddress();
   const [selectedItems, setSelectedItems] = useState(new Set());
 
-  useEffect(() => {
+ useEffect(() => {
     fetchCart();
-  }, [fetchCart]);
+    fetchAddresses(); 
+  }, [fetchCart, fetchAddresses]);
 
   const toggleItem = (uuid) => {
     const newSelected = new Set(selectedItems);
@@ -18,7 +26,7 @@ const CartPage = () => {
       newSelected.delete(uuid);
     } else {
       newSelected.add(uuid);
-    }
+    } 
     setSelectedItems(newSelected);
   };
 
@@ -32,6 +40,64 @@ const CartPage = () => {
   };
 
   const isAllSelected = cartItems.length > 0 && selectedItems.size === cartItems.length;
+
+  const navigate = useNavigate();
+
+  const handleCheckout = async () => {
+    if (selectedItems.size === 0) {
+      alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+      return;
+    }
+
+    const address = addresses.find(a => a.is_default) || addresses[0];
+
+    // Nếu user chưa có địa chỉ nào -> Báo lỗi hoặc chuyển hướng
+    if (!address) {
+        alert("Bạn chưa có địa chỉ giao hàng. Vui lòng thêm địa chỉ trước khi thanh toán!");
+        navigate('/customer/address'); 
+        return;
+    }
+
+    const selectedVariantUuids = cartItems
+        .filter(item => selectedItems.has(item.uuid))
+        .map(item => {
+            return item.uuid;
+        })
+        .filter(uuid => uuid);
+
+    if (selectedVariantUuids.length === 0) {
+        alert("Lỗi dữ liệu sản phẩm (Không tìm thấy Variant UUID)");
+        return;
+    }
+
+  
+    const payload = { 
+      address_id: parseInt(address.id),
+      notes: "Thanh toán từ giỏ hàng",
+      selected_item_uuids: selectedVariantUuids 
+    };
+    
+    if (window.confirm(`Xác nhận thanh toán cho ${selectedVariantUuids.length} sản phẩm?`)) {
+        try {
+            const result = await checkout(payload);
+            
+            alert('🎉 Đặt hàng thành công!');
+            
+            // Reload giỏ hàng để xóa các món đã mua
+            await fetchCart(); 
+            // Reset selection
+            setSelectedItems(new Set());
+
+            // Chuyển hướng đến chi tiết đơn hàng
+            if (result?.uuid) {
+                navigate(`/customer/orders/${result.uuid}`);
+            }
+        } catch (err) {
+            // Lỗi đã được handle trong hook, nhưng có thể alert thêm nếu cần
+            // alert(err.message);
+        }
+    }
+  };
 
   const totalSelectedPrice = useMemo(() => {
     return cartItems.reduce((total, item) => {
@@ -69,7 +135,7 @@ const CartPage = () => {
       </div>
     );
   }
-
+  
   return (
     <div className={styles['cart-container']}>
       {/* Header */}
@@ -91,23 +157,12 @@ const CartPage = () => {
 
       {/* Store group */}
       <div className={styles['cart-store-group']}>
-        <div className={styles['store-header']}>
-          <input 
-            type="checkbox"
-            checked={isAllSelected}
-            onChange={toggleAll}
-            className={styles['custom-checkbox']}
-          />
-          <span className={styles['store-name']}>
-            Store Chính Hãng <span className={styles['chat-icon']}>💬</span>
-          </span>
-        </div>
 
         {cartItems.map((item) => {
           const product = item.product || {};
           const priceObj = item.price || {};
           const finalPrice = priceObj.final || 0;
-          const subTotal = priceObj.subtotal || (finalPrice * item.quantity);
+          const subTotal = finalPrice * item.quantity;
           const attributesText = renderAttributes(product.attributes);
           const imageUrl = product.image || 'https://via.placeholder.com/100';
 
@@ -198,7 +253,18 @@ const CartPage = () => {
                ₫{formatCurrency(totalSelectedPrice)}
              </span>
           </div>
-          <button className={styles['btn-buy-now']}>Buy Now</button>
+          <button 
+            className={styles['btn-buy-now']} 
+            onClick={handleCheckout}
+            disabled={orderLoading || selectedItems.size === 0}
+            style={{ opacity: (orderLoading || selectedItems.size === 0) ? 0.6 : 1 }}
+          >
+            {orderLoading ? (
+               <>Processing...</> 
+            ) : (
+               'Buy Now'
+            )}
+          </button>
         </div>
       </div>
     </div>

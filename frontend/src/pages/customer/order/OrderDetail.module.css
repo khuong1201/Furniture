@@ -1,0 +1,330 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 50px;
+}
+
+/* --- Top Header --- */
+.topHeader {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 15px 0;
+    margin-bottom: 20px;
+}
+.headerContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+.logoArea {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+.pageTitle {
+    color: #c4a48c; /* Màu logo Payment trong ảnh */
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+.searchBar input {
+    width: 400px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    outline: none;
+    background: #f9f9f9;
+}
+.headerIcons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: #555;
+}
+.userMenu {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* --- Layout --- */
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.backLink {
+    text-decoration: none;
+    color: #666;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+/* --- Sections --- */
+.section {
+  background: #fff;
+  border-radius: 3px;
+  padding: 24px 30px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 1px 0 rgba(0,0,0,.05);
+  position: relative;
+}
+
+/* --- Address Section --- */
+.addressSection {
+    padding-top: 28px;
+    overflow: hidden;
+}
+/* Dải màu trang trí trên đầu ô địa chỉ */
+.addressDecoration {
+    height: 3px;
+    width: 100%;
+    background-image: repeating-linear-gradient(45deg,#6fa6d6,#6fa6d6 33px,transparent 0,transparent 41px,#f18d9b 0,#f18d9b 74px,transparent 0,transparent 82px);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.section-title {
+  color: #c4a48c; /* Màu nâu vàng */
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.icon-marker { color: #c4a48c; }
+
+.address-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.address-info {
+    font-size: 15px;
+    color: #333;
+}
+.user-name { font-weight: 700; margin-right: 5px; }
+.user-phone { font-weight: 700; margin-right: 15px; }
+.defaultBadge {
+    border: 1px solid #c4a48c;
+    color: #c4a48c;
+    font-size: 11px;
+    padding: 1px 5px;
+    margin-left: 10px;
+}
+.btnEdit {
+    color: #0055aa;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* --- Items / Table --- */
+.store-header {
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.chatBtn {
+    color: #c4a48c;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.product-table-header {
+    display: flex;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+/* Column width config */
+.col-product { flex: 5; }
+.col-price { flex: 1.5; text-align: center; }
+.col-quantity { flex: 1.5; text-align: center; }
+.col-operation { flex: 1.5; text-align: right; }
+
+.item-row {
+    display: flex;
+    align-items: flex-start; /* Để căn top nếu tên dài */
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f5f5f5;
+}
+.item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.productFlex {
+    display: flex;
+    gap: 15px;
+}
+.product-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    background: #f0f0f0;
+}
+.product-name {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+.product-variant {
+    color: #888;
+    font-size: 13px;
+}
+.priceText {
+    font-weight: 500;
+}
+
+/* --- Vouchers & Payment --- */
+.rowBetween {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.labelFlex {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+.linkAction { color: #0055aa; cursor: pointer; font-size: 14px; }
+.labelBold { font-weight: 500; font-size: 16px; }
+
+.paymentTags {
+    display: flex;
+    gap: 10px;
+}
+
+.tagItem {
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 14px;
+    background: #fff;
+    color: #333;
+    transition: all 0.2s;
+}
+
+/* Class active khi state selectedMethod khớp */
+.activeTag {
+    border-color: #c4a48c !important;
+    color: #c4a48c !important;
+    background: #fbf6f3 !important;
+    font-weight: 500;
+    position: relative;
+}
+
+/* Thêm dấu tích nhỏ ở góc nếu muốn giống hệt Shopee */
+.activeTag::after {
+    content: "✓";
+    position: absolute;
+    top: -1px;
+    right: 0;
+    background: #c4a48c;
+    color: white;
+    font-size: 10px;
+    padding: 0 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.tagItem:hover {
+    border-color: #c4a48c;
+    color: #c4a48c;
+}
+
+/* --- Shipping Info --- */
+.shippingInfoBlock {
+    background: #fafafa;
+    border-top: 1px dashed #ddd;
+    padding: 15px 20px;
+    margin-top: 20px;
+}
+.textChange { color: #0055aa; margin-right: 15px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.textPrice { font-weight: 600; color: #333; }
+.shipDate { color: #26aa99; font-size: 13px; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+.shipNote { color: #888; font-size: 12px; margin-top: 5px; }
+
+/* --- Footer Summary --- */
+.summaryContainer {
+    background: #fff;
+    padding: 20px 30px;
+    border-top: 1px solid #f1f1f1;
+}
+.summaryRow {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 14px;
+}
+.summaryRow span:first-child { width: 200px; text-align: right; }
+.summaryRow span:last-child { width: 150px; text-align: right; color: #333; }
+
+.totalRow {
+    margin-top: 20px;
+    align-items: flex-end; /* Căn đáy dòng chữ */
+}
+.totalAmount {
+    font-size: 28px;
+    color: #c4a48c;
+    font-weight: 700;
+}
+
+.actionArea {
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px dashed #ddd;
+}
+.btnPlaceOrder {
+    background: #c4a48c;
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    font-size: 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.btnPlaceOrder:hover { background: #b08d74; }
+.btnPlaceOrder:disabled { background: #ccc; }
+
+.btnCancel {
+    background: #fff;
+    border: 1px solid #d9534f;
+    color: #d9534f;
+    padding: 12px 20px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+/* Loading/Spin */
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.loading-state, .error-state { padding: 50px; text-align: center; font-size: 16px; color: #666; }

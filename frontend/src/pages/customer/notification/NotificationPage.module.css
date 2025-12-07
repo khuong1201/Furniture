@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.container {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    padding-bottom: 50px;
+}
+
+/* --- Header --- */
+.topHeader {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 15px 0;
+    margin-bottom: 20px;
+}
+.headerContent {
+    max-width: 900px; /* Nhỏ gọn hơn để tập trung đọc */
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.logoArea {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.pageTitle {
+    color: #c4a48c;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+.unreadBadge {
+    background: #c4a48c;
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* --- Wrapper & Toolbar --- */
+.content-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background: #fff;
+    padding: 0 20px;
+    border-radius: 3px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+
+.tabs {
+    display: flex;
+    gap: 20px;
+}
+
+.tabBtn {
+    background: none;
+    border: none;
+    padding: 15px 0;
+    font-size: 15px;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.tabBtn:hover { color: #c4a48c; }
+
+.activeTab {
+    color: #c4a48c;
+    font-weight: 600;
+}
+.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #c4a48c;
+}
+
+.markReadBtn {
+    background: none;
+    border: none;
+    color: #0055aa; /* Màu link action */
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.markReadBtn:hover { text-decoration: underline; }
+
+/* --- List Items --- */
+.listContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Khoảng cách nhỏ giữa các item */
+}
+
+.itemCard {
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.itemCard:hover {
+    background-color: #fafafa;
+}
+
+/* Style riêng cho tin chưa đọc: Màu nền hơi pha be nhẹ */
+.unreadCard {
+    background-color: #fffaf5; 
+}
+.unreadCard:hover {
+    background-color: #fdf3e8;
+}
+
+/* --- Left Side: Icons/Image --- */
+.itemLeft {
+    flex-shrink: 0;
+}
+
+.itemImage {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.iconBox {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+.iconOrder { background-color: #26aa99; }
+.iconPromo { background-color: #ee4d2d; }
+.iconSystem { background-color: #c4a48c; }
+
+/* --- Center: Content --- */
+.itemContent {
+    flex: 1;
+}
+
+.itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+
+.itemTitle {
+    font-size: 15px;
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+}
+/* Nếu chưa đọc thì tiêu đề đậm hơn */
+.unreadCard .itemTitle {
+    font-weight: 700;
+    color: #000;
+}
+
+.itemTime {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    margin-left: 10px;
+}
+
+.itemMessage {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.typeLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #999;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 2px;
+}
+
+/* --- Right: Dot Indicator --- */
+.unreadDot {
+    width: 10px;
+    height: 10px;
+    background-color: #ee4d2d; /* Màu đỏ cam gây chú ý */
+    border-radius: 50%;
+    align-self: center;
+    margin-left: 10px;
+}
+
+/* --- Empty State --- */
+.emptyState {
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    color: #888;
+    border-radius: 3px;
+}
+.emptyIcon {
+    color: #ddd;
+    margin-bottom: 15px;
+}

@@ -12,6 +12,8 @@ import SearchPage from './pages/customer/searchPage/SearchPage';
 import CartPage from './pages/customer/cart/CartPage';
 import AddressForm from './pages/customer/address/AddressForm';
 import Orders from './pages/customer/order/OrderDetail';
+import Payment from './pages/customer/payment/PaymentHistory';
+import Notification from './pages/customer/notification/NotificationPage';
 
 // Admin Pages
 import Dashboard from './pages/admin/dashboard/Dashboard';
@@ -61,7 +63,9 @@ function App() {
         <Route path="product" element={<SearchPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="address" element={<AddressForm />} />
-        <Route path="orders" element={<Orders />} />
+        <Route path="orders/:uuid" element={<Orders />} />
+        <Route path="payment" element={<Payment />} />
+        <Route path="notification" element={<Notification />} />
 
       </Route>
 

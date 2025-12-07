@@ -45,36 +45,19 @@ class OrderService {
         throw new Error(result.message || `Lỗi API: ${response.status}`);
       }
 
-      // ✅ Trả về data cốt lõi để Hook dễ xử lý
       return result.data || result;
     } catch (error) {
       console.error(`Order Service Error (${endpoint}):`, error);
       throw error;
     }
   }
+
   // ================================
   // ========== APIs =================
   // ================================
 
-  // ✅ Tạo order thường: POST /orders
-  async createOrder(data) {
-    return this._request('/orders', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  // ✅ Checkout từ giỏ hàng: POST /orders/checkout
-  async checkout(data) {
-    return this._request('/orders/checkout', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  // ✅ Lấy danh sách đơn hàng: GET /orders
+  // 1. Lấy danh sách đơn hàng: GET /orders
   async getMyOrders(params = {}) {
-    // Lọc bỏ param rỗng
     const validParams = Object.fromEntries(
       Object.entries(params).filter(([_, v]) => v != null && v !== '')
     );
@@ -85,17 +68,41 @@ class OrderService {
     });
   }
 
-  // ✅ Lấy chi tiết đơn theo UUID: GET /orders/{uuid}
+  // 2. Checkout từ giỏ hàng: POST /orders/checkout
+  async checkout(data) {
+    return this._request('/orders/checkout', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // 3. Mua ngay: POST /orders/buy-now
+  async buyNow(data) {
+    return this._request('/orders/buy-now', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // 4. Lấy chi tiết đơn: GET /orders/{uuid}
   async getOrderDetail(uuid) {
     return this._request(`/orders/${uuid}`, {
       method: 'GET',
     });
   }
 
-  // ✅ Hủy đơn: POST /orders/{uuid}/cancel
+  // 5. Hủy đơn: POST /orders/{uuid}/cancel
   async cancelOrder(uuid) {
     return this._request(`/orders/${uuid}/cancel`, {
       method: 'POST',
+    });
+  }
+
+  // 6. Tạo thủ công (Ít dùng cho Customer): POST /orders
+  async createOrder(data) {
+    return this._request('/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 
@@ -103,25 +110,12 @@ class OrderService {
   // ========== Static Call =========
   // ================================
 
-  static createOrder(data) {
-    return OrderService.instance.createOrder(data);
-  }
-
-  static checkout(data) {
-    return OrderService.instance.checkout(data);
-  }
-
-  static getMyOrders() {
-    return OrderService.instance.getMyOrders();
-  }
-
-  static getOrderDetail(uuid) {
-    return OrderService.instance.getOrderDetail(uuid);
-  }
-
-  static cancelOrder(uuid) {
-    return OrderService.instance.cancelOrder(uuid);
-  }
+  static getMyOrders(params) { return OrderService.instance.getMyOrders(params); }
+  static checkout(data) { return OrderService.instance.checkout(data); }
+  static buyNow(data) { return OrderService.instance.buyNow(data); } // [BỔ SUNG]
+  static getOrderDetail(uuid) { return OrderService.instance.getOrderDetail(uuid); }
+  static cancelOrder(uuid) { return OrderService.instance.cancelOrder(uuid); }
+  static createOrder(data) { return OrderService.instance.createOrder(data); }
 }
 
 export default OrderService;

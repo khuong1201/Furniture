@@ -58,7 +58,6 @@ const ProductReviews = ({ productId }) => {
 
   return (
     <div className={styles.wrapper}>
-      <h3 className={styles.title}>Product Rating</h3>
 
       <div className={styles.ratingContainer}>
         {/* --- 1. Tổng quan điểm số --- */}

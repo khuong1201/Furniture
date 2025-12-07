@@ -1,0 +1,264 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.container {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    padding-bottom: 50px;
+}
+
+/* --- Top Header (Giống OrderDetail) --- */
+.topHeader {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 15px 0;
+    margin-bottom: 25px;
+}
+.headerContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.logoArea {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+.pageTitle {
+    color: #c4a48c; /* Màu chủ đạo */
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+.searchBar {
+    position: relative;
+    width: 450px;
+}
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+.searchBar input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    outline: none;
+    background: #f9f9f9;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.searchBar input:focus {
+    border-color: #c4a48c;
+    background: #fff;
+}
+
+/* --- Layout --- */
+.content-wrapper {
+    max-width: 1000px; /* Nhỏ hơn OrderDetail xíu cho focus */
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- Filters / Tabs --- */
+.filterSection {
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 15px;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.05);
+}
+
+.filterTab {
+    border: none;
+    background: none;
+    padding: 8px 0;
+    font-size: 15px;
+    color: #555;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.filterTab:hover {
+    color: #c4a48c;
+}
+
+/* Active Tab Style (Gạch chân màu cam nâu) */
+.activeTab {
+    color: #c4a48c;
+    font-weight: 600;
+}
+.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #c4a48c;
+}
+
+/* --- List Items --- */
+.listContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.paymentCard {
+    background: #fff;
+    border-radius: 3px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.05);
+    border-left: 4px solid transparent; /* Border ẩn */
+    transition: transform 0.2s;
+}
+
+.paymentCard:hover {
+    transform: translateY(-2px);
+    border-left-color: #c4a48c; /* Hiện border khi hover */
+}
+
+/* Left Side */
+.cardLeft {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.iconBox {
+    background: #fbf6f3; /* Màu nền icon nhạt */
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.infoBox {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.transCode {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.methodTag {
+    background: #eee;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #666;
+}
+
+.dateText {
+    font-size: 13px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.orderRef {
+    font-size: 13px;
+    color: #555;
+}
+.orderRef a {
+    color: #0055aa;
+    text-decoration: none;
+    font-weight: 500;
+}
+.orderRef a:hover { text-decoration: underline; }
+
+/* Right Side */
+.cardRight {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #c4a48c; /* Màu giá tiền giống OrderDetail */
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.btnDetail {
+    font-size: 13px;
+    color: #666;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+}
+.btnDetail:hover { color: #c4a48c; }
+
+/* --- States --- */
+.loadingState, .emptyState {
+    background: #fff;
+    padding: 50px;
+    text-align: center;
+    border-radius: 3px;
+    color: #888;
+}
+.spin { animation: spin 1s linear infinite; margin-right: 10px; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.emptyIcon { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
+
+/* --- Pagination --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+.pageBtn {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 2px;
+    color: #555;
+}
+.pageBtn:disabled {
+    background: #f5f5f5;
+    color: #bbb;
+    cursor: not-allowed;
+}
+.pageInfo { font-size: 14px; color: #666; }
