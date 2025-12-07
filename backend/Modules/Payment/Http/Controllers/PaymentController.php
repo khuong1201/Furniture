@@ -41,7 +41,7 @@ class PaymentController extends BaseController
         $user = $request->user();
 
         if (!$user->hasPermissionTo('payment.view_all')) {
-             $filters['user_id'] = $user->id; // Filter by relationship via Order usually, handled in Repo logic
+             $filters['user_id'] = $user->id;
         }
 
         $data = $this->service->paginate($request->integer('per_page', 15), $filters);

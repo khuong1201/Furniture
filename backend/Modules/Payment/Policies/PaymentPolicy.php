@@ -14,7 +14,7 @@ class PaymentPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('payment.view');
+        return true;
     }
 
     public function view(User $user, Payment $payment): bool
