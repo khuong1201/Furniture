@@ -30,7 +30,17 @@ class SendPaymentSuccessNotification implements ShouldQueue
             $payment = $event->payment;
             
             // Lấy User ID từ payment (giả sử model Payment có user_id)
-            $userId = $payment->user_id; 
+            $payment->load('order.user');
+
+            // 2. Lấy đối tượng User Model và User ID
+            $user = $payment->order->user ?? null; 
+            $userId = $user->id ?? null; 
+
+            // 3. Kiểm tra sự tồn tại của User Model VÀ ID (đảm bảo $userId là int)
+            if (!$user || !$userId) {
+                \Illuminate\Support\Facades\Log::warning("Không tìm thấy User cho Payment UUID: {$payment->uuid}");
+                return; // Dừng nếu không có người dùng
+            }
 
             // Format tiền tệ (nếu cần)
             $amount = number_format((float)$payment->amount, 0, ',', '.');

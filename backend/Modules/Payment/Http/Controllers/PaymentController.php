@@ -97,11 +97,20 @@ class PaymentController extends BaseController
         summary: "Cập nhật trạng thái (Admin Only)",
         security: [['bearerAuth' => []]],
         tags: ["Payments"],
+        parameters: [
+            new OA\Parameter(
+                name: "uuid", 
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "string", format: "uuid"),
+                description: "UUID của giao dịch thanh toán cần cập nhật"
+            )
+        ],
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "status", type: "string", enum: ["paid", "failed", "refunded"]),
-                    new OA\Property(property: "transaction_id", type: "string"),
+                    new OA\Property(property: "status", type: "string", enum: ["paid", "failed", "refunded"], example: "paid"),
+                    new OA\Property(property: "transaction_id", type: "string", nullable: true, example: "TXN_REF_001"),
                 ]
             )
         ),

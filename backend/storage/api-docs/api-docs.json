@@ -2336,6 +2336,18 @@
                 ],
                 "summary": "Cập nhật trạng thái (Admin Only)",
                 "operationId": "3e17e5a5f80fdbfe49a6536073361ca6",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "description": "UUID của giao dịch thanh toán cần cập nhật",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2347,10 +2359,13 @@
                                             "paid",
                                             "failed",
                                             "refunded"
-                                        ]
+                                        ],
+                                        "example": "paid"
                                     },
                                     "transaction_id": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "TXN_REF_001",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"

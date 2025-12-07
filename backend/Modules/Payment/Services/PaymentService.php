@@ -95,19 +95,23 @@ class PaymentService extends BaseService
     }
     
     public function update(string $uuid, array $data): Model
-    {
-        $payment = $this->repository->findByUuidOrFail($uuid);
+{
+    return DB::transaction(function () use ($uuid, $data) { 
 
-        if ($payment->status !== 'paid' && ($data['status'] ?? '') === 'paid') {
+        $payment = $this->findByUuidOrFail($uuid);
+
+        $isStatusChangeToPaid = ($payment->status !== 'paid' && ($data['status'] ?? '') === 'paid');
+
+        if ($isStatusChangeToPaid) {
             $data['paid_at'] = now();
-            $payment->update($data);
+            $payment = $this->repository->update($payment, $data); 
             
-            // Fire event để Order Module lắng nghe và update order status
             event(new PaymentCompleted($payment));
         } else {
-            $payment->update($data);
+            $payment = $this->repository->update($payment, $data); 
         }
         
         return $payment;
-    }
+    }); 
+}
 }
