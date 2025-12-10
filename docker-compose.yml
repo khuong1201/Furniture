@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  php:
+    build:
+      context: ./backend
+      dockerfile: ./php/Dockerfile
+    container_name: app-php
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - appnet
+
+  nginx:
+    build:
+      context: ./backend
+      dockerfile: ./nginx/Dockerfile
+    container_name: app-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - appnet
+
+  queue:
+    build:
+      context: ./backend
+      dockerfile: ./php/Dockerfile
+    container_name: app-queue
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - php
+      - redis
+    networks:
+      - appnet
+
+  reverb:
+    build:
+      context: ./backend
+      dockerfile: ./php/Dockerfile
+    container_name: app-reverb
+    command: php artisan reverb:start
+    ports:
+      - "6001:6001"
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - php
+      - redis
+    networks:
+      - appnet
+
+  redis:
+    image: redis:7-alpine
+    container_name: app-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    container_name: react-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
