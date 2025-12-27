@@ -21,6 +21,6 @@ class OrderConfirmationMail extends Mailable
     public function build()
     {
         return $this->subject('Xác nhận đơn hàng #' . $this->order->uuid)
-                    ->view('order::emails.order_confirmation'); // Namespace 'order'
+                    ->view('order::emails.order_confirmation'); 
     }
 }

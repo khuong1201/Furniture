@@ -7,7 +7,7 @@ namespace Modules\Promotion\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
-use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Shared\Http\Traits\ApiResponseTrait;
 use Modules\Promotion\Services\PromotionService;
 use Modules\Promotion\Http\Requests\StorePromotionRequest;
 use Modules\Promotion\Http\Requests\UpdatePromotionRequest;
@@ -45,7 +45,7 @@ class PromotionController extends BaseController
 
         // Cast per_page đảm bảo int
         $data = $this->service->paginate($request->integer('per_page', 15), $request->all());
-        return response()->json(ApiResponse::paginated($data));
+        return $this->successResponse($data);
     }
 
     #[OA\Post(
@@ -75,7 +75,7 @@ class PromotionController extends BaseController
         $this->authorize('create', Promotion::class);
 
         $promotion = $this->service->create($request->validated());
-        return response()->json(ApiResponse::success($promotion, 'Promotion created', 201), 201);
+        return $this->successResponse($promotion, 'Promotion created', 201);
     }
 
     #[OA\Get(
@@ -94,7 +94,7 @@ class PromotionController extends BaseController
         $this->authorize('view', $promotion);
         
         $promotion->load('products'); 
-        return response()->json(ApiResponse::success($promotion));
+        return $this->successResponse($promotion);
     }
 
     #[OA\Put(
@@ -102,7 +102,7 @@ class PromotionController extends BaseController
         summary: "Cập nhật khuyến mãi",
         security: [["bearerAuth" => []]],
         tags: ["Promotions"],
-        requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [])), // Update schema as needed
+        requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [])), 
         responses: [ new OA\Response(response: 200, description: "Updated") ]
     )]
     public function update(UpdatePromotionRequest $request, string $uuid): JsonResponse
@@ -111,7 +111,7 @@ class PromotionController extends BaseController
         $this->authorize('update', $promotionModel);
 
         $promotion = $this->service->update($uuid, $request->validated());
-        return response()->json(ApiResponse::success($promotion, 'Promotion updated'));
+        return $this->successResponse($promotion, 'Promotion updated');
     }
 
     #[OA\Delete(
@@ -130,6 +130,6 @@ class PromotionController extends BaseController
         $this->authorize('delete', $promotionModel);
 
         $this->service->delete($uuid);
-        return response()->json(ApiResponse::success(null, 'Promotion deleted'));
+        return $this->successResponse(null, 'Promotion deleted');
     }
 }

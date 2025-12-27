@@ -3,51 +3,60 @@
 namespace Modules\User\database\seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\User\Domain\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Modules\User\Domain\Models\User;
 use Modules\Role\Domain\Models\Role;
+use Illuminate\Support\Str;
 
 class UserDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Admin
-        $admin = User::firstOrCreate(['email' => 'admin@system.com'], [
-            'name' => 'System Admin',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'is_active' => true,
-        ]);
-        $this->assignRole($admin, 'admin');
+        $password = Hash::make('password');
+        $now = now();
 
-        // 2. Manager
-        $manager = User::firstOrCreate(['email' => 'manager@system.com'], [
-            'name' => 'Store Manager',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-        ]);
-        $this->assignRole($manager, 'manager');
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'admin'], 
+            ['guard_name' => 'api', 'slug' => 'admin']
+        );
 
-        // 3. Staff
-        $staff = User::firstOrCreate(['email' => 'staff@system.com'], [
-            'name' => 'Sales Staff',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-        ]);
-        $this->assignRole($staff, 'staff');
+        $custRole = Role::firstOrCreate(
+            ['name' => 'customer'],
+            ['guard_name' => 'api', 'slug' => 'customer']
+        );
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@system.com'], 
+            [
+                'uuid'              => (string) Str::uuid(),
+                'name'              => 'Super Admin',
+                'password'          => $password,
+                'is_active'         => true,
+                'email_verified_at' => $now,
+            ]
+        );
+        $admin->roles()->syncWithoutDetaching([$adminRole->id]);
 
-        // 4. Customer
-        $customer = User::firstOrCreate(['email' => 'customer@gmail.com'], [
-            'name' => 'John Doe',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-        ]);
-        $this->assignRole($customer, 'customer');
-    }
+        // 3. Tạo Khách hàng mẫu
+        $customer = User::updateOrCreate(
+            ['email' => 'customer@gmail.com'],
+            [
+                'uuid'              => (string) Str::uuid(),
+                'name'              => 'Nguyen Van A',
+                'password'          => $password,
+                'is_active'         => true,
+                'email_verified_at' => $now,
+            ]
+        );
+        $customer->roles()->syncWithoutDetaching([$custRole->id]);
 
-    private function assignRole(User $user, string $roleName): void
-    {
-        $role = Role::where('name', $roleName)->first();
-        if ($role) $user->roles()->syncWithoutDetaching([$role->id]);
+        // 4. Tạo 20 Khách hàng ngẫu nhiên (Factory)
+        if ($custRole) {
+            User::factory()
+                ->count(20)
+                ->create()
+                ->each(function ($user) use ($custRole) {
+                    $user->roles()->attach($custRole->id);
+                });
+        }
     }
 }

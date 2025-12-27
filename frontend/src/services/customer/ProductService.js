@@ -2,78 +2,88 @@ class ProductService {
   static _instance = null;
 
   constructor() {
-    // ✅ Đảm bảo Base URL trỏ đúng vào /public theo Swagger
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/public';
-    this.headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost/api';
+    this.defaultHeaders = {
+      Accept: 'application/json',
     };
   }
 
   static get instance() {
-    if (!ProductService._instance) {
-      ProductService._instance = new ProductService();
+    if (!this._instance) {
+      this._instance = new ProductService();
     }
-    return ProductService._instance;
+    return this._instance;
   }
 
-  // --- HÀM PRIVATE XỬ LÝ REQUEST ---
   async _request(endpoint, options = {}) {
-    try {
-      // ✅ Tự động lấy Token để hỗ trợ các tính năng cần đăng nhập (nếu có)
-      const token = localStorage.getItem('access_token');
-      const headers = { ...this.headers, ...options.headers };
+    const token = localStorage.getItem('access_token');
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+    const headers = {
+      ...this.defaultHeaders,
+      ...options.headers,
+    };
 
-      const url = `${this.baseUrl}${endpoint}`;
-      const response = await fetch(url, { ...options, headers });
-
-      if (!response.ok) {
-        throw new Error(`Lỗi API (${response.status}): ${response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      // ✅ Swagger trả về: { success: true, data: { ... } }
-      // Trả về phần 'data' để bên ngoài dễ xử lý
-      return result.data || result; 
-    } catch (error) {
-      console.error(`ProductService Error (${endpoint}):`, error);
-      throw error;
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-  }
 
-  // --- 1. LẤY DANH SÁCH & TÌM KIẾM (GỘP CHUNG) ---
-  // Params: { page, per_page, search, category_uuid, sort_by, ... }
-  async getAllProducts(params = {}) {
-    const validParams = Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v != null && v !== '')
+    // ✅ CHỈ set Content-Type nếu có body
+    if (options.body && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const res = await fetch(
+      `${this.baseUrl}${endpoint}`,
+      { ...options, headers }
     );
 
-    const queryString = new URLSearchParams(validParams).toString();
+    if (!res.ok) {
+      throw new Error(`API ${res.status}: ${res.statusText}`);
+    }
 
-    return this._request(`/products?${queryString}`, { method: 'GET' });
+    const json = await res.json();
+    return json.data ?? json;
   }
 
-  // --- CHI TIẾT SẢN PHẨM ---
-  async getProductDetail(id) {
-    return this._request(`/products/${id}`, { method: 'GET' });
-  }
+  // ---------- GET (KHÔNG Content-Type) ----------
 
-  // --- WRAPPER TÌM KIẾM ---
-  async searchProducts(keyword) {
-    return this.getAllProducts({ 
-      search: keyword,
-      page: 1 
+  async getAllProducts(params = {}) {
+    const query = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v != null && v !== '')
+    ).toString();
+
+    return this._request(`/public/products?${query}`, {
+      method: 'GET',
     });
   }
 
-  static async getAllProducts(params) { return ProductService.instance.getAllProducts(params); }
-  static async getProductDetail(id) { return ProductService.instance.getProductDetail(id); }
-  static async searchProducts(keyword) { return ProductService.instance.searchProducts(keyword); }
-}
+  async getProductDetail(id) {
+    return this._request(`/public/products/${id}`, {
+      method: 'GET',
+    });
+  }
 
+  async searchProducts(keyword) {
+    return this.getAllProducts({ search: keyword, page: 1 });
+  }
+
+  // ---------- POST / PUT / PATCH (CÓ Content-Type) ----------
+
+  // async createProduct(payload) {
+  //   return this._request('/products', {
+  //     method: 'POST',
+  //     body: JSON.stringify(payload),
+  //   });
+  // }
+
+  // async updateProduct(id, payload) {
+  //   return this._request(`/products/${id}`, {
+  //     method: 'PUT',
+  //     body: JSON.stringify(payload),
+  //   });
+  // }
+
+  static getAllProducts(p) { return this.instance.getAllProducts(p); }
+  static getProductDetail(id) { return this.instance.getProductDetail(id); }
+}
 export default ProductService;

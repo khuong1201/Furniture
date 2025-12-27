@@ -12,7 +12,5 @@ class ReviewPosted
 {
     use Dispatchable, SerializesModels;
 
-    public function __construct(
-        public Review $review
-    ) {}
+    public function __construct(public Review $review) {}
 }

@@ -1,217 +1,167 @@
-/* Warehouse Form - Modern Gold Theme với màu chủ đạo #CBA890 */
+/* WarehouseForm.css */
 
-.admin-app-container .warehouse_form {
-    max-width: 800px;
+.warehouse-form-page {
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 24px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #1f2937;
+    padding-bottom: 100px;
 }
 
-/* === Form Header === */
-.admin-app-container .warehouse_form .form-header {
+/* Header */
+.warehouse-form-page .form-header-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 28px;
-    padding: 24px 28px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.08);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.admin-app-container .warehouse_form .form-header h1 {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 24px;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
+.warehouse-form-page .header-left h1 {
+    font-size: 20px; font-weight: 700; margin: 0; color: #111827;
 }
 
-.admin-app-container .warehouse_form .form-header h1 svg {
-    color: #a88b75;
+.warehouse-form-page .btn-back {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid #d1d5db;
+    padding: 8px 16px; border-radius: 6px;
+    color: #4b5563; font-weight: 500; font-size: 13px;
+    cursor: pointer; transition: 0.2s;
 }
+.warehouse-form-page .btn-back:hover { border-color: #c5a47e; color: #1e2532; }
 
-/* === Form Container === */
-.admin-app-container .warehouse_form .admin-form {
+/* Form Card */
+.warehouse-form-page .form-card {
     background: white;
-    border-radius: 12px;
     border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     overflow: hidden;
+    margin-bottom: 24px;
 }
 
-/* === Form Section === */
-.admin-app-container .warehouse_form .form-section {
-    padding: 28px;
-}
-
-.admin-app-container .warehouse_form .form-section h2 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #a88b75;
-    margin: 0 0 24px 0;
-    padding-bottom: 12px;
+.warehouse-form-page .card-header {
+    padding: 14px 20px;
     border-bottom: 1px solid #f3f4f6;
+    background: #fffdf5;
+    display: flex; align-items: center;
 }
 
-/* === Form Group === */
-.admin-app-container .warehouse_form .form-group {
-    margin-bottom: 20px;
+.warehouse-form-page .card-title {
+    margin: 0; font-size: 14px; font-weight: 600; color: #1f2937;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 8px;
+}
+.warehouse-form-page .card-title svg { color: #c5a47e; width: 18px; height: 18px; }
+
+.warehouse-form-page .card-body { padding: 24px; }
+
+/* Grid System */
+.warehouse-form-page .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
 }
 
-.admin-app-container .warehouse_form .form-group:last-child {
-    margin-bottom: 0;
-}
+.warehouse-form-page .form-group { margin-bottom: 20px; }
+.warehouse-form-page .form-group:last-child { margin-bottom: 0; }
 
-.admin-app-container .warehouse_form .form-group label {
-    display: block;
-    font-weight: 500;
-    color: #374151;
-    font-size: 14px;
-    margin-bottom: 8px;
+.warehouse-form-page .form-label {
+    display: block; font-weight: 600; font-size: 13px;
+    color: #374151; margin-bottom: 6px;
 }
+.warehouse-form-page .form-label.required::after { content: " *"; color: #ef4444; }
 
-.admin-app-container .warehouse_form .required {
-    color: #ef4444;
-    margin-left: 2px;
-}
-
-.admin-app-container .warehouse_form .form-group input,
-.admin-app-container .warehouse_form .form-group select,
-.admin-app-container .warehouse_form .form-group textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-    background: white;
+/* Inputs */
+.warehouse-form-page .form-input, 
+.warehouse-form-page .form-select {
+    width: 100%; height: 42px;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    font-size: 14px; color: #111827;
     transition: all 0.2s;
-    color: #374151;
-}
-
-.admin-app-container .warehouse_form .form-group input:focus,
-.admin-app-container .warehouse_form .form-group select:focus,
-.admin-app-container .warehouse_form .form-group textarea:focus {
-    outline: none;
-    border-color: #CBA890;
-    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
-}
-
-.admin-app-container .warehouse_form .form-group input::placeholder,
-.admin-app-container .warehouse_form .form-group textarea::placeholder {
-    color: #9ca3af;
-}
-
-.admin-app-container .warehouse_form .form-group input.error,
-.admin-app-container .warehouse_form .form-group select.error {
-    border-color: #ef4444;
-}
-
-.admin-app-container .warehouse_form .form-group input.error:focus,
-.admin-app-container .warehouse_form .form-group select.error:focus {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
-.admin-app-container .warehouse_form .error-message {
+    background-color: #fff; outline: none;
+    box-sizing: border-box;
     display: block;
-    color: #ef4444;
-    font-size: 12px;
-    margin-top: 6px;
-    line-height: 1.4;
 }
 
-/* === Form Actions === */
-.admin-app-container .warehouse_form .form-actions {
-    display: flex;
-    gap: 14px;
-    padding: 24px 28px;
-    background: #fdf6e3;
-    border-top: 1px solid #d1d5db;
-    justify-content: flex-end;
-    border-radius: 0 0 12px 12px;
-}
-
-/* === Buttons === */
-.admin-app-container .warehouse_form .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
+.warehouse-form-page .form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25em 1.25em;
+    padding-right: 2.5rem;
     cursor: pointer;
-    transition: all 0.2s;
-    min-width: 100px;
+    line-height: normal; 
 }
 
-.admin-app-container .warehouse_form .btn-primary {
-    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
+.warehouse-form-page .form-input:focus, 
+.warehouse-form-page .form-select:focus {
+    border-color: #c5a47e;
+    box-shadow: 0 0 0 3px rgba(197, 164, 126, 0.15);
 }
 
-.admin-app-container .warehouse_form .btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
+.warehouse-form-page .form-input.error { border-color: #ef4444; }
+.warehouse-form-page .error-message { font-size: 12px; color: #ef4444; margin-top: 4px; display: block; }
+
+/* Toggle */
+.warehouse-form-page .status-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+    margin-bottom: 12px;
+}
+.warehouse-form-page .status-label { font-size: 14px; font-weight: 600; color: #374151; }
+
+.warehouse-form-page .toggle-switch {
+    position: relative; display: inline-block; width: 48px; height: 26px;
+}
+.warehouse-form-page .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+.warehouse-form-page .slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #e5e7eb; border-radius: 34px; border: 1px solid #d1d5db; transition: .4s;
+}
+.warehouse-form-page .slider:before {
+    position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px;
+    background-color: white; border-radius: 50%; transition: .4s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.warehouse-form-page input:checked + .slider { background-color: #10b981; border-color: #10b981; }
+.warehouse-form-page input:checked + .slider:before { transform: translateX(22px); }
+
+.warehouse-form-page .status-helper { font-size: 12px; color: #6b7280; font-style: italic; }
+
+/* Actions */
+.warehouse-form-page .form-actions {
+    margin-top: 24px;
+    display: flex; justify-content: flex-end; gap: 12px;
 }
 
-.admin-app-container .warehouse_form .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+.warehouse-form-page .btn-secondary {
+    padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;
+    background: white; border: 1px solid #d1d5db; color: #4b5563; transition: 0.2s;
 }
+.warehouse-form-page .btn-secondary:hover { background: #f3f4f6; color: #1e2532; border-color: #9ca3af; }
 
-.admin-app-container .warehouse_form .btn-secondary {
-    background: white;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
+.warehouse-form-page .btn-primary-gradient {
+    padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;
+    background: #1e2532; color: #c5a47e; border: 1px solid #1e2532;
+    display: flex; align-items: center; gap: 8px; transition: 0.2s;
 }
+.warehouse-form-page .btn-primary-gradient:hover { background: #2d3646; color: #fff; box-shadow: 0 4px 12px rgba(30, 37, 50, 0.2); }
+.warehouse-form-page .btn-primary-gradient:disabled { opacity: 0.7; cursor: not-allowed; }
 
-.admin-app-container .warehouse_form .btn-secondary:hover {
-    background: #fdf6e3;
-    border-color: #CBA890;
-    color: #a88b75;
-}
-
-/* === Responsive === */
+/* Responsive */
 @media (max-width: 768px) {
-    .admin-app-container .warehouse_form {
-        padding: 16px;
-    }
-
-    .admin-app-container .warehouse_form .form-header {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
-    }
-
-    .admin-app-container .warehouse_form .form-header h1 {
-        justify-content: center;
-        text-align: center;
-    }
-
-    .admin-app-container .warehouse_form .form-header .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .admin-app-container .warehouse_form .form-section {
-        padding: 20px;
-    }
-
-    .admin-app-container .warehouse_form .form-actions {
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    .admin-app-container .warehouse_form .btn {
-        width: 100%;
-        justify-content: center;
-    }
+    .warehouse-form-page .form-grid { grid-template-columns: 1fr; }
+    .warehouse-form-page .form-actions { flex-direction: column-reverse; }
+    .warehouse-form-page .btn-secondary, 
+    .warehouse-form-page .btn-primary-gradient { width: 100%; justify-content: center; }
 }

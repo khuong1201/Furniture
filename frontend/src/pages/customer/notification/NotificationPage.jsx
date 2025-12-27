@@ -78,7 +78,7 @@ const NotificationPage = () => {
         // 2. Chuyển hướng nếu có order_uuid trong data
         // API trả về: "data": { "order_uuid": "..." }
         if (item.data && item.data.order_uuid) {
-            navigate(`/customer/orders/${item.data.order_uuid}`);
+            navigate(`/orders/${item.data.order_uuid}`);
         }
     };
 

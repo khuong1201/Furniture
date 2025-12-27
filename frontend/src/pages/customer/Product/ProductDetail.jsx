@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/useProduct';
 import { useCart } from '@/hooks/useCart';
 import { useOrder } from '@/hooks/useOrder';
 import { useAddress } from '@/hooks/useAddress'; 
 
-import { Star, Minus, Plus, ShoppingCart, ChevronRight, MapPin, Plus as PlusIcon, Check, X, Edit } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, ChevronRight, MapPin, Plus as PlusIcon, Check, X } from 'lucide-react';
 import { AiOutlineLoading3Quarters, AiOutlineWarning } from "react-icons/ai";
 
 import ProductReviews from './ProductReviews';
@@ -20,13 +20,10 @@ const ProductDetail = () => {
   const { productDetail, loading, error, getDetail } = useProduct();
   const { addToCart, loading: cartLoading } = useCart();
   const { buyNow, loading: orderLoading } = useOrder();
-  const { addresses, fetchAddresses, loading: addressLoading } = useAddress();
+  const { addresses, fetchAddresses } = useAddress();
 
   // --- STATES ---
   const [activeImage, setActiveImage] = useState(null);
-  
-  // State biến thể
-  const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedAttributes, setSelectedAttributes] = useState({}); 
   
   // State địa chỉ & số lượng
@@ -37,39 +34,20 @@ const ProductDetail = () => {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [modalMode, setModalMode] = useState('list'); // 'list' | 'create'
 
-  // --- HELPER ---
-  const isLoggedIn = () => !!localStorage.getItem('access_token');
+  // --- MEMOS (LOGIC TỐI ƯU) ---
+  
+  // 1. Check login 1 lần
+  const isLoggedIn = useMemo(() => !!localStorage.getItem('access_token'), []);
 
-  // 1. Fetch dữ liệu
-  useEffect(() => {
-    if (id) getDetail(id);
-  }, [id, getDetail]);
+  // 2. Tự động tính toán Variant dựa trên attributes đã chọn (Thay vì dùng useEffect set state)
+  const selectedVariant = useMemo(() => {
+    if (!productDetail?.variants || Object.keys(selectedAttributes).length === 0) return null;
+    return productDetail.variants.find(v => 
+      v.attributes.every(attr => selectedAttributes[attr.attribute_name] === attr.value)
+    );
+  }, [productDetail, selectedAttributes]);
 
-  useEffect(() => {
-    if (isLoggedIn()) fetchAddresses();
-  }, [fetchAddresses]);
-
-  // 2. Tự động chọn địa chỉ mặc định
-  useEffect(() => {
-    if (addresses.length > 0 && !addressId) {
-      const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
-      setAddressId(defaultAddr.id || defaultAddr.uuid);
-    }
-  }, [addresses, addressId]);
-
-  // Tìm object địa chỉ đang chọn để hiển thị ra UI
-  const selectedAddressObj = useMemo(() => {
-      if (!addressId) return null;
-      return addresses.find(a => (a.id === addressId || a.uuid === addressId));
-  }, [addresses, addressId]);
-
-  // 3. Logic hình ảnh & Variant (Giữ nguyên)
-  useEffect(() => {
-    if (!productDetail?.images?.length) return;
-    const primary = productDetail.images.find(img => img.is_primary === 1) || productDetail.images[0];
-    setActiveImage(primary.url);
-  }, [productDetail]);
-
+  // 3. Tính toán danh sách Attributes có sẵn
   const attributeOptions = useMemo(() => {
     if (!productDetail?.variants) return {};
     const options = {};
@@ -85,58 +63,85 @@ const ProductDetail = () => {
     return result;
   }, [productDetail]);
 
+  // 4. Tìm object địa chỉ đang chọn
+  const selectedAddressObj = useMemo(() => {
+      if (!addressId) return null;
+      return addresses.find(a => (a.id === addressId || a.uuid === addressId));
+  }, [addresses, addressId]);
+
+  // --- EFFECTS ---
+
+  // 1. Fetch dữ liệu khi vào trang
   useEffect(() => {
-    if (productDetail?.variants?.length && !selectedVariant) {
+    if (id) getDetail(id);
+    if (isLoggedIn) fetchAddresses();
+  }, [id, isLoggedIn, getDetail, fetchAddresses]);
+
+  // 2. Tự động chọn địa chỉ mặc định (Chỉ chạy khi list address thay đổi)
+  useEffect(() => {
+    if (addresses.length > 0 && !addressId) {
+      const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
+      setAddressId(defaultAddr.id || defaultAddr.uuid);
+    }
+  }, [addresses, addressId]);
+
+  // 3. Khởi tạo Attribute mặc định & Ảnh chính khi Product vừa load xong
+  useEffect(() => {
+    if (!productDetail) return;
+
+    // Set ảnh chính
+    const primary = productDetail.images?.find(img => img.is_primary === 1) || productDetail.images?.[0];
+    if (primary) setActiveImage(primary.url);
+
+    // Set attribute mặc định của variant đầu tiên
+    if (productDetail.variants?.length > 0) {
       const firstVariant = productDetail.variants[0];
       const initialAttrs = {};
       firstVariant.attributes.forEach(attr => initialAttrs[attr.attribute_name] = attr.value);
       setSelectedAttributes(initialAttrs);
-      setSelectedVariant(firstVariant);
     }
   }, [productDetail]);
 
+  // 4. Tự động đổi ảnh khi chọn Variant khác
   useEffect(() => {
-    if (!productDetail?.variants) return;
-    if (Object.keys(selectedAttributes).length === 0) return;
-    const foundVariant = productDetail.variants.find(v => 
-      v.attributes.every(attr => selectedAttributes[attr.attribute_name] === attr.value)
-    );
-    setSelectedVariant(foundVariant || null);
-    if (foundVariant?.image) setActiveImage(foundVariant.image);
-  }, [selectedAttributes, productDetail]);
+    if (selectedVariant?.image) {
+      setActiveImage(selectedVariant.image);
+    }
+  }, [selectedVariant]);
 
-  // --- HANDLERS ---
-  const handleAttributeSelect = (attributeName, value) => {
+  // --- HANDLERS (Dùng useCallback để tránh render lại component con) ---
+  
+  const handleAttributeSelect = useCallback((attributeName, value) => {
     setSelectedAttributes(prev => ({ ...prev, [attributeName]: value }));
-  };
+  }, []);
 
-  const handleQuantity = (type) => {
-    if (type === 'dec' && quantity > 1) setQuantity(quantity - 1);
-    if (type === 'inc') setQuantity(quantity + 1);
-  };
+  const handleQuantity = useCallback((type) => {
+    setQuantity(prev => {
+      if (type === 'dec') return Math.max(1, prev - 1);
+      return prev + 1;
+    });
+  }, []);
 
-  // Handler cho Modal Address
-  const handleOpenAddressModal = () => {
-      if (!isLoggedIn()) return navigate('/customer/login');
+  const handleOpenAddressModal = useCallback(() => {
+      if (!isLoggedIn) return navigate('/login');
       setShowAddressModal(true);
       setModalMode(addresses.length === 0 ? 'create' : 'list');
-  };
+  }, [isLoggedIn, addresses.length, navigate]);
 
-  const handleSelectAddressInModal = (addr) => {
+  const handleSelectAddressInModal = useCallback((addr) => {
       setAddressId(addr.id || addr.uuid);
       setShowAddressModal(false);
-  };
+  }, []);
 
   const handleAddressCreated = async () => {
     await fetchAddresses();
     setModalMode('list'); 
-    // Tự động chọn cái mới tạo nếu muốn, hoặc để user tự chọn
   };
   
   const handleProductAction = async (actionType) => {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn) {
       alert('Bạn cần đăng nhập để tiếp tục!');
-      return navigate('/customer/login');
+      return navigate('/login');
     }
 
     const requiredAttributes = Object.keys(attributeOptions);
@@ -158,14 +163,18 @@ const ProductDetail = () => {
           address_id: parseInt(addressId),
           variant_uuid: selectedVariant.uuid, 
           quantity: quantity,
-          voucher_code: 'khong co',
-          note: 'bỏ qua giỏ hàng'
+          voucher_code: null, 
+          note: 'Mua ngay'
         };
 
         const result = await buyNow(payload);
-        alert('🎉 Đặt hàng thành công!');
-        if (result?.uuid) navigate(`/customer/orders/${result.uuid}`);
-        else navigate('/customer/orders');
+        const orderUuid = result?.data?.uuid || result?.uuid;
+            
+            if (orderUuid) {
+                navigate(`/orders/${orderUuid}`);
+            } else {
+                navigate('/me?tab=orders');
+            }
       }
     } catch (error) {
       alert(error.message || 'Có lỗi xảy ra');
@@ -175,7 +184,7 @@ const ProductDetail = () => {
   if (loading) return <div className="loading-state"><AiOutlineLoading3Quarters className="loading-icon" /><span>Đang tải...</span></div>;
   if (!productDetail || error) return <div className="error-state"><AiOutlineWarning className="error-icon" /><span>{error}</span></div>;
 
-  // Variables
+  // Variables tính toán cho UI
   const displayImages = productDetail.images || [];
   const currentPrice = selectedVariant ? selectedVariant.price_formatted : productDetail.price_formatted;
   const originalPrice = selectedVariant ? (selectedVariant.original_price_formatted || null) : productDetail.original_price_formatted;
@@ -237,23 +246,23 @@ const ProductDetail = () => {
                  </div>
                  
                  {selectedAddressObj ? (
-                     <div className={styles['addr-details']}>
-                         <p className={styles['addr-name']}>
-                             {selectedAddressObj.full_name} | {selectedAddressObj.phone}
-                             {selectedAddressObj.is_default && <span className={styles['default-tag']}>Default</span>}
-                         </p>
-                         <p className={styles['addr-text']}>
-                             {selectedAddressObj.street}, {selectedAddressObj.ward}, {selectedAddressObj.district}, {selectedAddressObj.province}
-                         </p>
-                     </div>
+                      <div className={styles['addr-details']}>
+                          <p className={styles['addr-name']}>
+                              {selectedAddressObj.full_name} | {selectedAddressObj.phone}
+                              {selectedAddressObj.is_default && <span className={styles['default-tag']}>Default</span>}
+                          </p>
+                          <p className={styles['addr-text']}>
+                              {selectedAddressObj.street}, {selectedAddressObj.ward}, {selectedAddressObj.district}, {selectedAddressObj.province}
+                          </p>
+                      </div>
                  ) : (
-                     <div className={styles['addr-placeholder']}>
-                         Please select a shipping address
-                     </div>
+                      <div className={styles['addr-placeholder']}>
+                          Please select a shipping address
+                      </div>
                  )}
                  
                  <button className={styles['btn-change-addr']} onClick={handleOpenAddressModal}>
-                     {selectedAddressObj ? 'Change' : 'Select Address'}
+                      {selectedAddressObj ? 'Change' : 'Select Address'}
                  </button>
               </div>
             </div>

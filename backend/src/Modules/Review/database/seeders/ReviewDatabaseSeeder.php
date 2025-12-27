@@ -12,7 +12,7 @@ class ReviewDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Xóa dữ liệu cũ
+        // Xóa dữ liệu cũ để tránh trùng lặp nếu chạy nhiều lần
         Review::truncate();
 
         // Lấy danh sách khách hàng và sản phẩm
@@ -20,92 +20,106 @@ class ReviewDatabaseSeeder extends Seeder
         $products = Product::all();
 
         if ($customers->isEmpty() || $products->isEmpty()) {
-            $this->command->info('Skipping Review Seeder: No customers or products found.');
             return;
         }
 
         foreach ($products as $product) {
-            // Random số lượng đánh giá cho mỗi sản phẩm (từ 2 đến 10 đánh giá)
-            $reviewCount = rand(2, 10);
+            // Random số lượng đánh giá cho mỗi sản phẩm (từ 0 đến 8 đánh giá)
+            $reviewCount = rand(0, 8);
             
-            // Lấy ngẫu nhiên user để đánh giá (tránh 1 user review 2 lần 1 sp)
-            $randomCustomers = $customers->shuffle()->take($reviewCount);
+            if ($reviewCount > 0) {
+                // Lấy ngẫu nhiên user từ danh sách để đánh giá
+                $randomCustomers = $customers->random(min($reviewCount, $customers->count()));
 
-            foreach ($randomCustomers as $customer) {
-                $rating = $this->getWeightedRating(); // Random sao theo trọng số
+                foreach ($randomCustomers as $customer) {
+                    $rating = $this->getWeightedRating(); 
+                    
+                    // Thời gian review: Random trong 6 tháng qua
+                    $createdAt = now()->subDays(rand(1, 180))->subHours(rand(1, 24));
+
+                    Review::create([
+                        'uuid' => (string) Str::uuid(),
+                        'user_id' => $customer->id,
+                        'product_id' => $product->id,
+                        'order_id' => null,
+                        'rating' => $rating,
+                        'comment' => $this->generateFurnitureComment($rating, $product->name),
+                        'is_approved' => true,
+                        'images' => $this->generateReviewImages($rating),
+                        'created_at' => $createdAt,
+                        'updated_at' => $createdAt
+                    ]);
+                }
                 
-                Review::create([
-                    'uuid' => Str::uuid(),
-                    'user_id' => $customer->id,
-                    'product_id' => $product->id,
-                    'order_id' => null, // Seeder đơn giản, bỏ qua check order_id
-                    'rating' => $rating,
-                    'comment' => $this->generateFurnitureComment($rating, $product->name),
-                    'is_approved' => true, // Auto duyệt để hiện lên UI ngay
-                    'images' => $this->generateReviewImages($rating),
-                    'created_at' => now()->subDays(rand(1, 30)) // Rải rác trong 30 ngày qua
-                ]);
+                // Cập nhật thống kê rating cho sản phẩm
+                $this->updateProductStats($product);
             }
-
-            // Cập nhật lại thống kê cho Product (Quan trọng để hiện sao trung bình)
-            $this->updateProductStats($product);
         }
     }
 
-    /**
-     * Random số sao, ưu tiên 4-5 sao để data đẹp
-     */
     protected function getWeightedRating(): int
     {
+        // Tỷ lệ rating thực tế: Ít khi 1-2 sao, chủ yếu 4-5 sao hoặc 3 sao
         $rand = rand(1, 100);
-        if ($rand <= 5) return 1;  // 5% cơ hội 1 sao
-        if ($rand <= 10) return 2; // 5% cơ hội 2 sao
-        if ($rand <= 20) return 3; // 10% cơ hội 3 sao
-        if ($rand <= 50) return 4; // 30% cơ hội 4 sao
-        return 5;                  // 50% cơ hội 5 sao
+        if ($rand <= 5) return 1;
+        if ($rand <= 10) return 2;
+        if ($rand <= 25) return 3;
+        if ($rand <= 60) return 4;
+        return 5;
     }
 
-    /**
-     * Tạo nội dung review phù hợp với nội thất
-     */
     protected function generateFurnitureComment(int $rating, string $productName): string
     {
-        $good = [
-            "Sản phẩm {$productName} rất đẹp, chất gỗ chắc chắn.",
-            "Giao hàng nhanh, đóng gói kỹ. Sofa ngồi rất êm.",
-            "Màu sắc y hệt trong hình, rất hợp với phòng khách nhà mình.",
-            "Tuyệt vời! Lắp ráp dễ dàng, nhìn rất sang trọng.",
-            "Đáng đồng tiền bát gạo, sẽ ủng hộ shop tiếp."
+        $comments = [
+            5 => [
+                "Sản phẩm tuyệt vời, đúng như mô tả. Gỗ rất chắc chắn.",
+                "Giao hàng siêu nhanh, đóng gói kỹ. Sofa ngồi êm lắm.",
+                "Rất hài lòng với chiếc {$productName} này. Sẽ ủng hộ shop tiếp.",
+                "Màu sắc bên ngoài đẹp hơn trong ảnh. Lắp ráp cũng dễ.",
+                "10 điểm cho chất lượng! Nhân viên tư vấn nhiệt tình."
+            ],
+            4 => [
+                "Sản phẩm ổn trong tầm giá, giao hàng hơi lâu xíu.",
+                "Đẹp, nhưng màu hơi khác ảnh một chút xíu.",
+                "Chất lượng tốt, nhưng hướng dẫn lắp ráp hơi khó hiểu.",
+                "Dùng được 1 tuần thấy khá ổn, chưa thấy lỗi gì.",
+                "Hàng đẹp, đóng gói cẩn thận. Trừ 1 điểm vì ship chậm."
+            ],
+            3 => [
+                "Tạm được. Gỗ hơi mỏng so với tưởng tượng.",
+                "Giao hàng lâu quá, chờ mãi mới thấy.",
+                "Sản phẩm bình thường, không có gì đặc sắc.",
+                "Hoàn thiện ở các góc cạnh chưa được tinh xảo lắm.",
+                "Dùng tạm ổn, nhưng giá này hơi cao so với chất lượng."
+            ],
+            2 => [
+                "Không hài lòng lắm. Đệm ngồi hơi cứng.",
+                "Mới dùng vài ngày đã thấy chân ghế hơi lung lay.",
+                "Màu sắc không giống hình, thất vọng.",
+                "Giao thiếu ốc vít, phải chạy đi mua thêm.",
+                "Chăm sóc khách hàng kém, hỏi mãi không trả lời."
+            ],
+            1 => [
+                "Quá tệ! Hàng bị trầy xước tùm lum khi nhận.",
+                "Treo đầu dê bán thịt chó. Đừng mua!",
+                "Đặt màu xanh giao màu đỏ. Làm ăn chán quá.",
+                "Chất lượng quá kém, ọp ẹp như hàng mã.",
+                "Yêu cầu đổi trả mà shop không chịu. Cạch mặt."
+            ]
         ];
 
-        $average = [
-            "Sản phẩm tạm ổn trong tầm giá.",
-            "Giao hàng hơi chậm nhưng {$productName} chất lượng ok.",
-            "Màu sắc hơi nhạt hơn so với ảnh một chút.",
-            "Dùng được, nhưng phần đệm hơi cứng.",
-            "Hoàn thiện chưa được tinh xảo lắm ở các góc cạnh."
-        ];
-
-        $bad = [
-            "Thất vọng. Gỗ bị trầy xước khi nhận hàng.",
-            "Không giống mô tả, chất liệu vải rất nóng.",
-            "Giao sai màu, nhắn tin shop trả lời chậm.",
-            "Chân ghế bị lung lay, không chắc chắn.",
-            "Quá tệ, không bao giờ mua lại."
-        ];
-
-        if ($rating >= 4) return $good[array_rand($good)];
-        if ($rating == 3) return $average[array_rand($average)];
-        return $bad[array_rand($bad)];
+        // FIX: Chọn ngẫu nhiên 1 comment từ mảng dựa trên rating và trả về
+        $list = $comments[$rating] ?? $comments[5]; // Fallback về 5 sao nếu lỗi
+        return $list[array_rand($list)];
     }
 
     protected function generateReviewImages(int $rating): ?array
     {
-        // Chỉ 30% review có ảnh, và chỉ review tốt mới hay chụp ảnh khoe
-        if ($rating >= 4 && rand(0, 1)) {
+        // 20% review 4-5 sao sẽ có ảnh
+        if ($rating >= 4 && rand(1, 100) <= 20) {
             return [
-                "https://placehold.co/400x400?text=Review+Img+1",
-                "https://placehold.co/400x400?text=Review+Img+2"
+                "https://placehold.co/400x400?text=Review+1",
+                "https://placehold.co/400x400?text=Review+2"
             ];
         }
         return null;
@@ -113,13 +127,11 @@ class ReviewDatabaseSeeder extends Seeder
 
     protected function updateProductStats(Product $product): void
     {
-        // Tính toán lại
         $avg = $product->reviews()->where('is_approved', true)->avg('rating');
         $count = $product->reviews()->where('is_approved', true)->count();
 
-        // Lưu vào bảng products
         $product->update([
-            'rating_avg' => round((float)$avg, 1),
+            'rating_avg' => $avg ? round((float)$avg, 1) : 0,
             'rating_count' => $count
         ]);
     }

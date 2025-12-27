@@ -1,21 +1,21 @@
 openapi: 3.0.0
 info:
-  title: 'E-commerce Modular API'
-  description: 'Tài liệu API hệ thống E-commerce'
+  title: 'Ecommerce API'
+  description: 'Tài liệu API cho hệ thống Backend'
   contact:
-    email: admin@system.com
+    email: admin@example.com
   version: 1.0.0
 servers:
   -
-    url: /api
+    url: 'http://localhost'
     description: 'API Server'
 paths:
-  /addresses:
+  /api/addresses:
     get:
       tags:
         - Address
       summary: 'Lấy danh sách địa chỉ của tôi'
-      operationId: daee3e5ef82ac6db0e154ac5a54a74a1
+      operationId: 921fc79b1f8ad342be1d0ffdc85b1c81
       responses:
         200:
           description: Success
@@ -29,10 +29,20 @@ paths:
                   data:
                     type: array
                     items:
+                      properties:
+                        uuid:
+                          type: string
+                        full_name:
+                          type: string
+                        phone:
+                          type: string
+                        full_address:
+                          description: 'Địa chỉ ghép'
+                          type: string
+                        is_default:
+                          type: boolean
                       type: object
                 type: object
-        401:
-          description: Unauthenticated
       security:
         -
           bearerAuth: []
@@ -40,7 +50,7 @@ paths:
       tags:
         - Address
       summary: 'Thêm địa chỉ mới'
-      operationId: 518a68f89c5990fb8f601ccca9fc8da8
+      operationId: 7682cd97065c015b77c3fd96876af708
       requestBody:
         required: true
         content:
@@ -56,42 +66,46 @@ paths:
               properties:
                 full_name:
                   type: string
-                  example: 'Nguyen Van A'
+                  example: 'Nguyễn Văn A'
                 phone:
                   type: string
                   example: '0901234567'
                 province:
                   type: string
+                  example: 'Hồ Chí Minh'
                 district:
                   type: string
+                  example: 'Quận 1'
                 ward:
                   type: string
+                  example: 'Phường Bến Nghé'
                 street:
                   type: string
+                  example: '123 Lê Lợi'
                 is_default:
                   type: boolean
-                  example: false
+                  default: false
                 type:
                   type: string
+                  default: home
                   enum:
                     - home
                     - office
-                  example: home
               type: object
       responses:
         201:
           description: Created
-        422:
-          description: 'Validation Error'
+        400:
+          description: 'Limit reached (400033)'
       security:
         -
           bearerAuth: []
-  '/addresses/{uuid}':
+  '/api/addresses/{uuid}':
     get:
       tags:
         - Address
       summary: 'Xem chi tiết địa chỉ'
-      operationId: ed5d48599f4e65459daf636c6948c6fd
+      operationId: 8e8ecf7b85229c52bdf32314ea8fa60f
       parameters:
         -
           name: uuid
@@ -99,10 +113,11 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: Success
+        404:
+          description: 'Not Found'
       security:
         -
           bearerAuth: []
@@ -110,7 +125,7 @@ paths:
       tags:
         - Address
       summary: 'Cập nhật địa chỉ'
-      operationId: 012e1a8fc981036ab80e2f094b94f859
+      operationId: c1b663988ceed0feab5a2ad950ef51f4
       parameters:
         -
           name: uuid
@@ -118,15 +133,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         content:
           application/json:
             schema:
               properties:
                 full_name:
-                  type: string
-                phone:
                   type: string
                 is_default:
                   type: boolean
@@ -141,7 +153,7 @@ paths:
       tags:
         - Address
       summary: 'Xóa địa chỉ'
-      operationId: 88f6862b99dd137b32657d71a8bf7713
+      operationId: c89e5630baaaa970c7eda6f1e8d719d7
       parameters:
         -
           name: uuid
@@ -149,10 +161,11 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: Deleted
+        403:
+          description: 'Cannot delete default address (403032)'
       security:
         -
           bearerAuth: []
@@ -163,21 +176,15 @@ paths:
       summary: 'Đăng nhập'
       operationId: 3112494b62ec1e0e762028e958cef77b
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - email
-                - password
               properties:
                 email:
                   type: string
-                  format: email
                   example: admin@system.com
                 password:
                   type: string
-                  format: password
                   example: password
                 device_name:
                   type: string
@@ -185,60 +192,46 @@ paths:
               type: object
       responses:
         200:
-          description: 'Login Successful'
-        422:
-          description: 'Validation Error'
+          description: OK
         401:
-          description: 'Invalid credentials'
+          description: 'Sai thông tin (Code: 401020)'
+        423:
+          description: 'Bị khóa (Code: 423014)'
   /auth/register:
     post:
       tags:
         - Auth
-      summary: 'Đăng ký tài khoản'
+      summary: 'Đăng ký'
       operationId: ec3aaa6aae353212c6d4173ea25748b2
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - name
-                - email
-                - password
-                - password_confirmation
               properties:
                 name:
                   type: string
                 email:
                   type: string
-                  format: email
                 password:
                   type: string
-                  format: password
                 password_confirmation:
-                  type: string
-                  format: password
-                device_name:
                   type: string
               type: object
       responses:
         201:
-          description: 'Registered Successfully'
-        422:
-          description: 'Validation Error'
+          description: Created
+        409:
+          description: 'Email trùng (Code: 409011)'
   /auth/refresh:
     post:
       tags:
         - Auth
-      summary: 'Lấy Access Token mới bằng Refresh Token'
+      summary: 'Refresh Token'
       operationId: 54138472c166d1a1f706bb95f3eeddb4
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - refresh_token
               properties:
                 refresh_token:
                   type: string
@@ -247,83 +240,61 @@ paths:
               type: object
       responses:
         200:
-          description: 'Token Refreshed'
-        401:
-          description: 'Invalid Refresh Token'
+          description: OK
   /auth/verify-email:
     post:
       tags:
         - Auth
-      summary: 'Xác thực tài khoản bằng OTP'
+      summary: 'Verify OTP'
       operationId: 55d1c66c65a5999c383bbf9cec79c8f2
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - otp
               properties:
                 otp:
-                  description: 'Mã 6 số nhận được qua email'
                   type: string
-                  example: '123456'
               type: object
       responses:
         200:
-          description: 'Email verified successfully'
-        400:
-          description: 'Invalid OTP'
-      security:
-        -
-          bearerAuth: []
+          description: OK
   /auth/resend-verification:
     post:
       tags:
         - Auth
-      summary: 'Gửi lại mã OTP'
+      summary: 'Resend OTP'
       operationId: 2e88740c51b30645f0ccfd4c2f7574d1
       responses:
         200:
-          description: 'OTP resent'
-        400:
-          description: 'Email already verified'
-      security:
-        -
-          bearerAuth: []
+          description: OK
   /auth/logout:
     post:
       tags:
         - Auth
-      summary: 'Đăng xuất'
+      summary: Logout
       operationId: d5ba94626f1419f9a308da15ed09a40e
       responses:
         200:
-          description: 'Logged out'
-      security:
-        -
-          bearerAuth: []
+          description: OK
   /auth/me:
     get:
       tags:
         - Auth
-      summary: 'Thông tin hiện tại'
+      summary: 'Get Profile'
       operationId: 7e7256de38556bc24ecc0dcf65266aa2
       responses:
         200:
-          description: Success
-      security:
-        -
-          bearerAuth: []
+          description: OK
   /carts:
     get:
       tags:
         - Cart
-      summary: 'Xem giỏ hàng của tôi'
+      summary: 'Xem giỏ hàng hiện tại'
+      description: 'Lấy thông tin chi tiết giỏ hàng của user đang đăng nhập, bao gồm các item, tổng tiền, và voucher đang áp dụng.'
       operationId: 09c3433b5866644b5e6d84c885aa4f44
       responses:
         200:
-          description: Success
+          description: 'Lấy dữ liệu thành công'
           content:
             application/json:
               schema:
@@ -332,6 +303,88 @@ paths:
                     type: boolean
                     example: true
                   data:
+                    properties:
+                      cart_uuid:
+                        type: string
+                        format: uuid
+                      items:
+                        type: array
+                        items:
+                          properties:
+                            uuid:
+                              type: string
+                              format: uuid
+                            product_name:
+                              type: string
+                              example: 'iPhone 15 Pro'
+                            sku:
+                              type: string
+                              example: IP15-BLK-256
+                            image:
+                              type: string
+                              format: url
+                            options:
+                              type: string
+                              example: 'Màu: Đen, Dung lượng: 256GB'
+                            quantity:
+                              type: integer
+                              example: 1
+                            stock_available:
+                              type: integer
+                              example: 10
+                            is_stock_sufficient:
+                              type: boolean
+                              example: true
+                            price:
+                              properties:
+                                raw:
+                                  type: number
+                                  example: 25000000
+                                formatted:
+                                  type: string
+                                  example: '25.000.000 ₫'
+                              type: object
+                            subtotal:
+                              properties:
+                                raw:
+                                  type: number
+                                  example: 25000000
+                                formatted:
+                                  type: string
+                                  example: '25.000.000 ₫'
+                              type: object
+                          type: object
+                      summary:
+                        properties:
+                          item_count:
+                            type: integer
+                            example: 3
+                          currency:
+                            type: string
+                            example: VND
+                          discount:
+                            properties:
+                              code:
+                                type: string
+                                example: SALE50
+                                nullable: true
+                              amount:
+                                type: number
+                                example: 50000
+                              formatted:
+                                type: string
+                                example: '50.000 ₫'
+                            type: object
+                          total:
+                            properties:
+                              raw:
+                                type: number
+                                example: 24950000
+                              formatted:
+                                type: string
+                                example: '24.950.000 ₫'
+                            type: object
+                        type: object
                     type: object
                 type: object
       security:
@@ -341,6 +394,7 @@ paths:
       tags:
         - Cart
       summary: 'Thêm sản phẩm vào giỏ'
+      description: 'Nếu sản phẩm đã có, sẽ cộng dồn số lượng. Sẽ báo lỗi nếu tồn kho không đủ.'
       operationId: f54d6540bce234d581cf30b75f9cc7f2
       requestBody:
         required: true
@@ -352,26 +406,71 @@ paths:
                 - quantity
               properties:
                 variant_uuid:
+                  description: 'UUID của biến thể sản phẩm'
                   type: string
                   format: uuid
                 quantity:
                   type: integer
                   minimum: 1
+                  example: 1
               type: object
       responses:
         200:
-          description: Added
+          description: 'Thêm thành công (Trả về Cart mới nhất)'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Thêm vào giỏ hàng thành công'
+                  data:
+                    description: 'Cart Object (như API Index)'
+                    type: object
+                type: object
+        409:
+          description: 'Hết hàng / Không đủ tồn kho'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error_code:
+                    description: 'Mã lỗi: Out of stock'
+                    type: integer
+                    example: 409042
+                  message:
+                    type: string
+                    example: 'Sản phẩm chỉ còn 5 items.'
+                type: object
+        422:
+          description: 'Sản phẩm không tồn tại hoặc ngưng kinh doanh (422043)'
       security:
         -
           bearerAuth: []
     delete:
       tags:
         - Cart
-      summary: 'Làm trống giỏ hàng (Xóa tất cả)'
+      summary: 'Làm trống giỏ hàng (Clear All)'
       operationId: b7f118663b800d671b1d4923c73dfb3f
       responses:
         200:
-          description: Cleared
+          description: 'Đã làm trống'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: 'null'
+                type: object
       security:
         -
           bearerAuth: []
@@ -385,34 +484,54 @@ paths:
         -
           name: itemUuid
           in: path
+          description: 'UUID của Cart Item (Lấy từ API danh sách giỏ hàng)'
           required: true
           schema:
             type: string
             format: uuid
       requestBody:
+        required: true
         content:
           application/json:
             schema:
+              required:
+                - quantity
               properties:
                 quantity:
+                  description: 'Số lượng mới (0 để xóa)'
                   type: integer
                   minimum: 0
+                  example: 2
               type: object
       responses:
         200:
-          description: Updated
+          description: 'Cập nhật thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    description: 'Cart Object updated'
+                    type: object
+                type: object
+        409:
+          description: 'Số lượng vượt quá tồn kho (409042)'
+        404:
+          description: 'Không tìm thấy item trong giỏ (404041)'
       security:
         -
           bearerAuth: []
-  '/carts/{uuid}':
     delete:
       tags:
         - Cart
-      summary: 'Xóa 1 item'
-      operationId: 919339c6a2f66c87e8da185e0e12843c
+      summary: 'Xóa 1 sản phẩm khỏi giỏ'
+      operationId: 45ab191deb38ce425497a4f9a368a8a1
       parameters:
         -
-          name: uuid
+          name: itemUuid
           in: path
           required: true
           schema:
@@ -420,7 +539,20 @@ paths:
             format: uuid
       responses:
         200:
-          description: Deleted
+          description: 'Xóa thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    description: 'Cart Object updated'
+                    type: object
+                type: object
+        404:
+          description: 'Item not found (404041)'
       security:
         -
           bearerAuth: []
@@ -428,7 +560,8 @@ paths:
     post:
       tags:
         - Cart
-      summary: 'Xóa nhiều sản phẩm đã chọn (Checkbox)'
+      summary: 'Xóa nhiều sản phẩm (Checkbox)'
+      description: 'Dùng khi user tích chọn nhiều sản phẩm rồi nhấn xóa.'
       operationId: 64956d2c12e37ac53d06de991afd148f
       requestBody:
         required: true
@@ -439,15 +572,43 @@ paths:
                 - uuids
               properties:
                 uuids:
-                  description: 'Danh sách UUID của các item trong giỏ hàng cần xóa'
                   type: array
                   items:
                     type: string
                     format: uuid
+                  example:
+                    - uuid-1
+                    - uuid-2
               type: object
       responses:
         200:
-          description: 'Selected items deleted'
+          description: 'Xóa thành công'
+      security:
+        -
+          bearerAuth: []
+  /api/carts/apply-coupon:
+    post:
+      tags:
+        - 'Cart Voucher'
+      summary: 'Áp dụng mã giảm giá'
+      description: 'Kiểm tra mã voucher và áp dụng vào giỏ hàng hiện tại.'
+      operationId: 87fd975e04c2daf99f28cc53d2263c79
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - code
+              properties:
+                code:
+                  description: 'Mã voucher'
+                  type: string
+                  example: SUMMER2025
+              type: object
+      responses:
+        200:
+          description: 'Áp dụng thành công'
           content:
             application/json:
               schema:
@@ -456,57 +617,79 @@ paths:
                     type: boolean
                     example: true
                   data:
+                    description: 'Object Giỏ hàng mới nhất sau khi giảm giá'
+                    type: object
+                type: object
+        404:
+          description: 'Giỏ hàng trống hoặc Không tìm thấy Voucher (404210)'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error_code:
+                    type: integer
+                    example: 404210
+                  message:
+                    type: string
+                    example: 'Voucher not found'
+                type: object
+        400:
+          description: 'Voucher hết hạn hoặc không đủ điều kiện (400211)'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error_code:
+                    type: integer
+                    example: 400211
+                  message:
+                    type: string
+                    example: 'Voucher expired'
+                type: object
+      security:
+        -
+          bearerAuth: []
+  /api/carts/remove-coupon:
+    delete:
+      tags:
+        - 'Cart Voucher'
+      summary: 'Gỡ mã giảm giá'
+      operationId: ea7f164d4f94f11516c22aaec8b1605a
+      responses:
+        200:
+          description: 'Gỡ thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    description: 'Giỏ hàng sau khi gỡ voucher'
                     type: object
                 type: object
       security:
         -
           bearerAuth: []
-  /carts/apply-coupon:
-    post:
-      tags:
-        - Cart
-      summary: 'Áp dụng mã giảm giá'
-      operationId: 3cb434fb6dcd66169123e88096ee033d
-      requestBody:
-        content:
-          application/json:
-            schema:
-              required:
-                - code
-              properties:
-                code:
-                  type: string
-                  example: SALE50
-              type: object
-      responses:
-        200:
-          description: Applied
-      security:
-        -
-          bearerAuth: []
-  /carts/remove-coupon:
-    delete:
-      tags:
-        - Cart
-      summary: 'Gỡ mã giảm giá'
-      operationId: 7530d6adadae897ba3c50bad29f67880
-      responses:
-        200:
-          description: Removed
-      security:
-        -
-          bearerAuth: []
-  /public/categories:
+  /api/public/categories:
     get:
       tags:
         - Categories
       summary: 'Xem danh sách danh mục (Public)'
-      operationId: bebab8114cd078f494482e66e6892b3e
+      description: 'Hỗ trợ 2 chế độ: Cây phân cấp (Tree) hoặc Danh sách phẳng (Pagination).'
+      operationId: 8450966c62f583c937fde17ded5bdde5
       parameters:
         -
           name: tree
           in: query
-          description: 'True: Trả về cây phân cấp. False: Phân trang phẳng'
+          description: 'True: Trả về dạng cây (Nested children). False: Trả về dạng phẳng có phân trang.'
           schema:
             type: boolean
         -
@@ -514,9 +697,17 @@ paths:
           in: query
           schema:
             type: integer
+            default: 1
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
         -
           name: search
           in: query
+          description: 'Tìm theo tên'
           schema:
             type: string
       responses:
@@ -525,28 +716,67 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      properties:
-                        name:
-                          type: string
-                        children:
-                          type: array
-                          items:
-                            type: object
-                      type: object
-                type: object
-  /admin/categories:
+                oneOf:
+                  -
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        type: array
+                        items:
+                          properties:
+                            uuid:
+                              type: string
+                            name:
+                              type: string
+                            children:
+                              type: array
+                              items:
+                                type: object
+                          type: object
+                    type: object
+                  -
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        type: array
+                        items:
+                          type: object
+                      meta:
+                        type: object
+                    type: object
+  '/api/public/categories/{uuid}':
+    get:
+      tags:
+        - Categories
+      summary: 'Chi tiết danh mục'
+      operationId: 192c28d129f56d050948571655945a6b
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResource'
+        404:
+          description: 'Not Found (404050)'
+  /api/admin/categories:
     post:
       tags:
         - Categories
-      summary: 'Tạo danh mục mới (Admin)'
-      operationId: 18403f5d3dc85a743d7b64c6823b6569
+      summary: 'Tạo danh mục (Admin)'
+      operationId: 4af25e562ffbd86d10da28d208c5a3a1
       requestBody:
         required: true
         content:
@@ -557,15 +787,17 @@ paths:
               properties:
                 name:
                   type: string
-                  example: Electronics
+                  example: 'Laptop Gaming'
                 slug:
+                  description: 'Để trống sẽ tự tạo'
                   type: string
-                  example: electronics
-                parent_id:
-                  type: integer
-                  example: 1
+                  example: laptop-gaming
                 description:
                   type: string
+                parent_id:
+                  description: 'ID của danh mục cha'
+                  type: integer
+                  nullable: true
                 is_active:
                   type: boolean
                   default: true
@@ -573,23 +805,22 @@ paths:
       responses:
         201:
           description: Created
+        409:
+          description: 'Duplicate Slug (409051)'
       security:
         -
           bearerAuth: []
-  '/admin/categories/{uuid}':
+  '/api/admin/categories/{uuid}':
     put:
       tags:
         - Categories
-      summary: 'Cập nhật danh mục (Admin)'
-      operationId: 896494ab0c8a816b2a1a8438f1582443
+      summary: 'Cập nhật danh mục'
+      operationId: 14dd36677f1fa231899a0ba29d73ba3d
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -599,53 +830,43 @@ paths:
                   type: string
                 parent_id:
                   type: integer
-                description:
-                  type: string
+                  nullable: true
                 is_active:
                   type: boolean
               type: object
       responses:
         200:
           description: Updated
+        422:
+          description: 'Lỗi Vòng lặp cha con'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error_code:
+                    description: 'Circular reference detected'
+                    type: integer
+                    example: 422052
+                  message:
+                    type: string
+                type: object
       security:
         -
           bearerAuth: []
     delete:
       tags:
         - Categories
-      summary: 'Xóa danh mục (Admin)'
-      operationId: 2e7a41d97a8a554f659f94b5ea9800c2
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      summary: 'Xóa danh mục'
+      operationId: ee66d3ed6fc34ecf5ea4457664b0794c
       responses:
         200:
           description: Deleted
       security:
         -
           bearerAuth: []
-  '/public/categories/{uuid}':
-    get:
-      tags:
-        - Categories
-      summary: 'Xem chi tiết danh mục'
-      operationId: d49a3ecc3083c299e227cb404121eb2c
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Success
   /public/collections:
     get:
       tags:
@@ -784,21 +1005,21 @@ paths:
       security:
         -
           bearerAuth: []
-  /public/currencies:
+  /api/public/currencies:
     get:
       tags:
         - Currencies
       summary: 'Lấy danh sách tiền tệ hỗ trợ (Public)'
-      operationId: 654a2fc5b3d2734f2c716dac287a63a2
+      operationId: 393869c064bd607907c140511e475851
       responses:
         200:
           description: Success
-  /admin/currencies:
+  /api/admin/currencies:
     get:
       tags:
         - Currencies
       summary: 'Quản lý danh sách tiền tệ (Admin)'
-      operationId: 00372af0b6ba8daac270146114fb6e60
+      operationId: 65e84e6562a89d35eb6e97e4f7e1195a
       parameters:
         -
           name: page
@@ -820,7 +1041,7 @@ paths:
       tags:
         - Currencies
       summary: 'Thêm tiền tệ mới'
-      operationId: 2f59f32def05570122e406bd5c0aab78
+      operationId: bd5b8d9fffe919e0ede96d9e19db5fb9
       requestBody:
         content:
           application/json:
@@ -842,7 +1063,6 @@ paths:
                   example: $
                 exchange_rate:
                   type: number
-                  format: float
                   example: 4.0E-5
                 is_default:
                   type: boolean
@@ -855,12 +1075,12 @@ paths:
       security:
         -
           bearerAuth: []
-  '/admin/currencies/{uuid}':
+  '/api/admin/currencies/{uuid}':
     put:
       tags:
         - Currencies
       summary: 'Cập nhật tiền tệ'
-      operationId: b245f13a4603d64fc44b60c42663dda6
+      operationId: 4db638cfc83eb7ce637d65c14e2ea86d
       parameters:
         -
           name: uuid
@@ -868,18 +1088,6 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                exchange_rate:
-                  type: number
-                is_default:
-                  type: boolean
-                is_active:
-                  type: boolean
-              type: object
       responses:
         200:
           description: Updated
@@ -890,7 +1098,7 @@ paths:
       tags:
         - Currencies
       summary: 'Xóa tiền tệ'
-      operationId: 3ead392faf8836f1d1edc0589e5f529b
+      operationId: 0489e350f9ccf912b37a464b12a9cf95
       parameters:
         -
           name: uuid
@@ -901,21 +1109,23 @@ paths:
       responses:
         200:
           description: Deleted
+        409:
+          description: 'Cannot delete default currency (Code: 409071)'
       security:
         -
           bearerAuth: []
-  /admin/dashboard/summary:
+  /api/admin/dashboard/summary:
     get:
       tags:
         - Dashboard
       summary: 'Lấy toàn bộ dữ liệu Dashboard'
       description: 'Trả về Cards, Revenue Chart, Customer Chart, Top Spenders, Best Sellers.'
-      operationId: 14ceca394afefb2231852083fc45b254
+      operationId: 146f12f0632feaa05db6583e632f40f9
       parameters:
         -
           name: period
           in: query
-          description: 'Khoảng thời gian cho biểu đồ doanh thu'
+          description: 'Khoảng thời gian xem biểu đồ doanh thu'
           schema:
             type: string
             default: week
@@ -970,15 +1180,17 @@ paths:
                 type: object
         403:
           description: Forbidden
+        500:
+          description: 'Query Failed (500080)'
       security:
         -
           bearerAuth: []
-  /admin/inventories:
+  /api/admin/inventories:
     get:
       tags:
         - Inventory
       summary: 'Xem danh sách tồn kho'
-      operationId: 60f3767a8279f38400634bcec6ff93a0
+      operationId: e04586388c656a5a7c3458faa19fe18a
       parameters:
         -
           name: warehouse_uuid
@@ -999,67 +1211,57 @@ paths:
             type: integer
       responses:
         200:
-          description: Success
+          description: OK
       security:
         -
           bearerAuth: []
-  /admin/inventories/adjust:
+  /api/admin/inventories/adjust:
     post:
       tags:
         - Inventory
       summary: 'Điều chỉnh kho (Nhập/Xuất)'
-      description: 'Dùng để nhập hàng (+qty) hoặc xuất hủy (-qty).'
-      operationId: 9441ce1bc67b536dcded5b2d56ba04fb
+      description: 'Cộng hoặc trừ số lượng hiện tại.'
+      operationId: ec8f46ce3b90acb20c0f3e6df61bc449
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - variant_uuid
-                - warehouse_uuid
-                - quantity
               properties:
                 variant_uuid:
                   type: string
-                  format: uuid
                 warehouse_uuid:
                   type: string
-                  format: uuid
                 quantity:
-                  description: 'Số dương để nhập, số âm để xuất'
+                  description: 'Số dương để nhập, âm để xuất'
                   type: integer
                 reason:
                   type: string
-                  example: 'Nhập hàng mới'
               type: object
       responses:
         200:
           description: Adjusted
+        400:
+          description: 'Invalid Quantity (400092)'
       security:
         -
           bearerAuth: []
-  /admin/inventories/upsert:
+  /api/admin/inventories/upsert:
     post:
       tags:
         - Inventory
       summary: 'Set cứng tồn kho (Kiểm kê)'
-      operationId: 109e5267df7045ba5112570cb42f07a3
+      description: 'Ghi đè số lượng tồn kho (dùng khi kiểm kê).'
+      operationId: a5acdd4ca0d56b5aa8d906254d1ec116
       requestBody:
         content:
           application/json:
             schema:
-              required:
-                - variant_uuid
-                - warehouse_uuid
-                - quantity
               properties:
                 variant_uuid:
                   type: string
                 warehouse_uuid:
                   type: string
                 quantity:
-                  description: 'Số lượng thực tế'
                   type: integer
                 min_threshold:
                   type: integer
@@ -1070,81 +1272,176 @@ paths:
       security:
         -
           bearerAuth: []
-  /admin/logs:
+  /api/admin/logs:
     get:
       tags:
         - 'System Logs'
-      summary: 'Xem danh sách Log'
-      operationId: 682c7487c29b68fd9dbbd61477696034
+      summary: 'Lấy danh sách Logs (Có lọc & Phân trang)'
+      operationId: 6424099714c1907298570e95556d0374
       parameters:
         -
           name: page
           in: query
+          description: 'Số trang hiện tại'
           schema:
             type: integer
+            default: 1
         -
           name: per_page
           in: query
+          description: 'Số lượng bản ghi mỗi trang'
           schema:
             type: integer
+            default: 20
         -
           name: type
           in: query
-          description: 'audit, system_error'
+          description: 'Loại log (audit, system_error)'
+          schema:
+            type: string
+            enum:
+              - audit
+              - system_error
+        -
+          name: action
+          in: query
+          description: 'Hành động (created, updated, deleted, exception...)'
           schema:
             type: string
         -
           name: user_id
           in: query
+          description: 'ID người dùng thực hiện'
           schema:
             type: integer
         -
+          name: model
+          in: query
+          description: 'Tên Model (VD: App\Models\Product)'
+          schema:
+            type: string
+        -
+          name: model_uuid
+          in: query
+          description: 'UUID của đối tượng bị tác động'
+          schema:
+            type: string
+            format: uuid
+        -
           name: date_from
           in: query
+          description: 'Lọc từ ngày (YYYY-MM-DD)'
           schema:
             type: string
             format: date
         -
           name: date_to
           in: query
+          description: 'Lọc đến ngày (YYYY-MM-DD)'
           schema:
             type: string
             format: date
       responses:
         200:
-          description: Success
+          description: 'Thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Success
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          type: integer
+                        uuid:
+                          type: string
+                          format: uuid
+                        type:
+                          type: string
+                        action:
+                          type: string
+                        message:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                      type: object
+                  meta:
+                    properties:
+                      current_page:
+                        type: integer
+                      total:
+                        type: integer
+                      per_page:
+                        type: integer
+                    type: object
+                type: object
+        401:
+          description: 'Chưa đăng nhập'
         403:
-          description: Forbidden
+          description: 'Không có quyền truy cập'
       security:
         -
           bearerAuth: []
-  '/admin/logs/{uuid}':
+  '/api/admin/logs/{uuid}':
     get:
       tags:
         - 'System Logs'
-      summary: 'Xem chi tiết Log'
-      operationId: c7c9b88cabffbd44d6ef387e741c7f4d
+      summary: 'Xem chi tiết một Log'
+      operationId: 40f01b2d4aa06cc629a8e461679ef1e9
       parameters:
         -
           name: uuid
           in: path
+          description: 'UUID của Log'
           required: true
           schema:
             type: string
             format: uuid
       responses:
         200:
-          description: Success
+          description: 'Thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    properties:
+                      id:
+                        type: integer
+                      uuid:
+                        type: string
+                      message:
+                        type: string
+                      metadata:
+                        description: 'Chi tiết thay đổi hoặc lỗi'
+                        type: object
+                      ip_address:
+                        type: string
+                    type: object
+                type: object
+        404:
+          description: 'Không tìm thấy Log'
       security:
         -
           bearerAuth: []
-  /admin/media:
+  /api/admin/media:
     post:
       tags:
         - Media
-      summary: 'Upload file (Generic)'
-      description: 'Upload file gắn vào User hiện tại (Ví dụ: Avatar tạm).'
-      operationId: 33992e41f72a9c0d3895e75e0f3939ba
+      summary: 'Upload file'
+      description: 'Upload file gắn vào User hiện tại (Mặc định).'
+      operationId: fe2aae5ec91e534153cbd639186870f3
       requestBody:
         content:
           multipart/form-data:
@@ -1158,17 +1455,27 @@ paths:
                   default: default
               type: object
       responses:
-        201:
-          description: Uploaded
+        200:
+          description: 'Upload thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                type: object
       security:
         -
           bearerAuth: []
-  '/admin/media/{uuid}':
+  '/api/admin/media/{uuid}':
     delete:
       tags:
         - Media
       summary: 'Xóa file/ảnh'
-      operationId: 8e0e6f7ed14a2041f068fe752221dd5e
+      operationId: d4a7d71b181a083371709171996313ab
       parameters:
         -
           name: uuid
@@ -1182,12 +1489,12 @@ paths:
       security:
         -
           bearerAuth: []
-  /notifications:
+  /api/notifications:
     get:
       tags:
         - Notifications
       summary: 'Lấy danh sách thông báo'
-      operationId: 945df4ec12a434066af5174c3cfcdd73
+      operationId: 17461e0bd5c21ee62eecdc88225b888f
       parameters:
         -
           name: page
@@ -1202,15 +1509,32 @@ paths:
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items: []
+                  meta:
+                    properties:
+                      unread_count:
+                        type: integer
+                        example: 5
+                    type: object
+                type: object
       security:
         -
           bearerAuth: []
-  '/notifications/{uuid}/read':
+  '/api/notifications/{uuid}/read':
     patch:
       tags:
         - Notifications
       summary: 'Đánh dấu đã đọc 1 thông báo'
-      operationId: 72a26746caef2751340b557fb934f6f1
+      operationId: a570917df37eb9b3229e87c955ba6b51
       parameters:
         -
           name: uuid
@@ -1220,28 +1544,28 @@ paths:
             type: string
       responses:
         200:
-          description: 'Marked as read'
+          description: Success
       security:
         -
           bearerAuth: []
-  /notifications/read-all:
+  /api/notifications/read-all:
     post:
       tags:
         - Notifications
       summary: 'Đánh dấu đã đọc tất cả'
-      operationId: f421c6c894f390ac43d4185094f065da
+      operationId: d52b60af4a1e5d3a21faf3be04b62adf
       responses:
         200:
-          description: 'All read'
+          description: Success
       security:
         -
           bearerAuth: []
-  '/notifications/{uuid}':
+  '/api/notifications/{uuid}':
     delete:
       tags:
         - Notifications
       summary: 'Xóa thông báo'
-      operationId: ad9d090bf69c03a9630d37119929ff1e
+      operationId: dd0142e3f4675efeebc74854b745b83b
       parameters:
         -
           name: uuid
@@ -1255,83 +1579,15 @@ paths:
       security:
         -
           bearerAuth: []
-  /orders:
-    get:
-      tags:
-        - Orders
-      summary: 'Xem danh sách đơn hàng'
-      operationId: 4e011b1dd08685b7386fdce144bf8f7b
-      parameters:
-        -
-          name: status
-          in: query
-          schema:
-            type: string
-            enum:
-              - pending
-              - processing
-              - shipped
-              - delivered
-              - cancelled
-        -
-          name: page
-          in: query
-          schema:
-            type: integer
-        -
-          name: per_page
-          in: query
-          schema:
-            type: integer
-      responses:
-        200:
-          description: Success
-      security:
-        -
-          bearerAuth: []
+  /api/orders/checkout:
     post:
       tags:
         - Orders
-      summary: 'Tạo đơn hàng thủ công (Admin)'
-      operationId: 6dc386d376574a4249e0ddb0cbcb2359
+      summary: 'Đặt hàng từ giỏ (Checkout)'
+      description: 'Tạo đơn hàng từ các sản phẩm trong giỏ. Hệ thống sẽ tự động trừ kho và tính voucher.'
+      operationId: c4e7f6d39c6eff1bdfc81f16e4a9c503
       requestBody:
-        content:
-          application/json:
-            schema:
-              required:
-                - address_id
-                - items
-              properties:
-                address_id:
-                  type: integer
-                notes:
-                  type: string
-                items:
-                  type: array
-                  items:
-                    properties:
-                      variant_uuid:
-                        type: string
-                        format: uuid
-                      quantity:
-                        type: integer
-                    type: object
-              type: object
-      responses:
-        201:
-          description: Created
-        422:
-          description: 'Validation Error / Out of stock'
-      security:
-        -
-          bearerAuth: []
-  /orders/checkout:
-    post:
-      tags:
-        - Orders
-      summary: 'Đặt hàng từ giỏ hàng (Checkout)'
-      operationId: d214f391766889d74685377a5f161aaa
-      requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1339,14 +1595,15 @@ paths:
                 - address_id
               properties:
                 address_id:
-                  description: 'ID của địa chỉ nhận hàng'
+                  description: 'ID địa chỉ giao hàng'
                   type: integer
+                  example: 1
                 notes:
-                  description: 'Ghi chú đơn hàng'
                   type: string
+                  example: 'Giao giờ hành chính'
                   nullable: true
                 selected_item_uuids:
-                  description: 'Danh sách UUID của các Cart Item được chọn để checkout (Checkbox). Nếu không có, mặc định mua hết.'
+                  description: 'Chỉ thanh toán các item này. Nếu null/rỗng -> Thanh toán hết.'
                   type: array
                   items:
                     type: string
@@ -1354,26 +1611,35 @@ paths:
               type: object
       responses:
         201:
-          description: 'Order placed'
+          description: 'Đặt hàng thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/OrderResource'
+                type: object
         422:
-          description: 'Cart Empty / Out of Stock'
+          description: 'Giỏ hàng trống (422131)'
+        409:
+          description: 'Hết hàng (409091)'
       security:
         -
           bearerAuth: []
-  /orders/buy-now:
+  /api/orders/buy-now:
     post:
       tags:
         - Orders
-      summary: 'Mua ngay (Bỏ qua giỏ hàng)'
-      operationId: 7e7bdb894d2fc43e1f232acadfc6f226
+      summary: 'Mua ngay (Buy Now)'
+      description: 'Tạo đơn nhanh cho 1 sản phẩm, bỏ qua giỏ hàng.'
+      operationId: 60a135147a73f64a453a20c88577080e
       requestBody:
         content:
           application/json:
             schema:
-              required:
-                - variant_uuid
-                - quantity
-                - address_id
               properties:
                 variant_uuid:
                   type: string
@@ -1385,114 +1651,64 @@ paths:
                   type: integer
                 voucher_code:
                   type: string
+                  nullable: true
                 notes:
                   type: string
               type: object
       responses:
         201:
-          description: 'Order placed'
-        422:
-          description: 'Validation Error / Out of Stock'
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResource'
       security:
         -
           bearerAuth: []
-  '/orders/{uuid}':
-    get:
-      tags:
-        - Orders
-      summary: 'Xem chi tiết đơn hàng'
-      operationId: f15bfcfbe0db066bb7ed1468987c7689
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-      security:
-        -
-          bearerAuth: []
-  '/orders/{uuid}/status':
-    put:
-      tags:
-        - Orders
-      summary: 'Cập nhật trạng thái (Admin)'
-      operationId: 2da87d031f5ba61349c98a9c8105c22e
-      requestBody:
-        content:
-          application/json:
-            schema:
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - processing
-                    - shipped
-                    - delivered
-                    - cancelled
-              type: object
-      responses:
-        200:
-          description: Updated
-      security:
-        -
-          bearerAuth: []
-  '/orders/{uuid}/cancel':
+  '/api/orders/{uuid}/cancel':
     post:
       tags:
         - Orders
       summary: 'Hủy đơn hàng'
-      operationId: 68403667692512eb7b881131b53ff0d5
+      operationId: e199946d43e9ad9e02711a0e26e0b5ec
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
       responses:
         200:
           description: Cancelled
+        409:
+          description: 'Không thể hủy (409132)'
       security:
         -
           bearerAuth: []
-  /payments:
+  /api/orders:
     get:
       tags:
-        - Payments
-      summary: 'Lịch sử giao dịch'
-      operationId: d2cb9e33536e2a3d10ea0e21861315fd
-      parameters:
-        -
-          name: page
-          in: query
-          schema:
-            type: integer
-        -
-          name: status
-          in: query
-          schema:
-            type: string
-            enum:
-              - pending
-              - paid
-              - failed
+        - Orders
+      summary: 'Danh sách đơn hàng'
+      operationId: 6042ab9e22d46627475a39b3c2d59026
       responses:
         200:
-          description: Success
-      security:
-        -
-          bearerAuth: []
+          description: OK
+  '/api/orders/{uuid}':
+    get:
+      tags:
+        - Orders
+      summary: 'Chi tiết đơn hàng'
+      operationId: 7b26acb8a7e1032a51b84fff4db777c3
+      responses:
+        200:
+          description: OK
+  /api/payments:
     post:
       tags:
         - Payments
-      summary: 'Tạo yêu cầu thanh toán (Initiate Payment)'
-      operationId: 919d9707a0f0b62ff9bb94318680424b
+      summary: 'Tạo thanh toán'
+      description: 'Khởi tạo giao dịch thanh toán cho đơn hàng. Nếu phương thức là Online (Momo, VNPay), sẽ trả về `redirect_url`.'
+      operationId: 48a1c47c9416060f495f50aeb291f99a
       requestBody:
         required: true
         content:
@@ -1514,16 +1730,60 @@ paths:
               type: object
       responses:
         200:
-          description: 'Payment Initiated'
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    properties:
+                      payment_uuid:
+                        type: string
+                      redirect_url:
+                        description: 'Link thanh toán (null nếu là COD)'
+                        type: string
+                        nullable: true
+                      is_cod:
+                        type: boolean
+                    type: object
+                type: object
+        409:
+          description: 'Order already paid (409143)'
+        400:
+          description: 'Method not supported (400141)'
       security:
         -
           bearerAuth: []
-  '/payments/{uuid}':
+  '/api/payments/callback/{provider}':
+    post:
+      tags:
+        - Payments
+      summary: 'Webhook nhận kết quả (IPN)'
+      description: 'API này dành cho Cổng thanh toán gọi (Server-to-Server). Không dùng Auth.'
+      operationId: 59794136c39e6130786e617d07c9f02a
+      parameters:
+        -
+          name: provider
+          in: path
+          schema:
+            type: string
+            enum:
+              - momo
+              - vnpay
+      responses:
+        204:
+          description: Processed
+        400:
+          description: 'Invalid Signature'
+  '/api/payments/{uuid}':
     get:
       tags:
         - Payments
-      summary: 'Xem chi tiết giao dịch'
-      operationId: 2a56147aab532093b44a043f87eaa1d9
+      summary: 'Chi tiết giao dịch'
+      operationId: 06379bada7088ee24ae33048ebcf0963
       parameters:
         -
           name: uuid
@@ -1537,64 +1797,12 @@ paths:
       security:
         -
           bearerAuth: []
-    put:
-      tags:
-        - Payments
-      summary: 'Cập nhật trạng thái (Admin Only)'
-      operationId: 3e17e5a5f80fdbfe49a6536073361ca6
-      parameters:
-        -
-          name: uuid
-          in: path
-          description: 'UUID của giao dịch thanh toán cần cập nhật'
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - paid
-                    - failed
-                    - refunded
-                  example: paid
-                transaction_id:
-                  type: string
-                  example: TXN_REF_001
-                  nullable: true
-              type: object
-      responses:
-        200:
-          description: Updated
-      security:
-        -
-          bearerAuth: []
-  '/payments/callback/{provider}':
-    post:
-      tags:
-        - Payments
-      summary: 'Webhook nhận kết quả thanh toán'
-      operationId: 62edbc63f5e9271506b563cdbf3d58b6
-      parameters:
-        -
-          name: provider
-          in: path
-          schema:
-            type: string
-      responses:
-        200:
-          description: 'IPN Received'
-  /admin/permissions:
+  /api/admin/permissions:
     get:
       tags:
         - Permissions
       summary: 'Danh sách Permissions'
-      operationId: e5fd5ca862c74d1c6e3ea0017ab9a814
+      operationId: 43c786e94121ec50947149c40b23ce6d
       parameters:
         -
           name: page
@@ -1602,15 +1810,14 @@ paths:
           schema:
             type: integer
         -
-          name: per_page
+          name: search
           in: query
+          description: 'Tìm theo tên/module'
           schema:
-            type: integer
+            type: string
       responses:
         200:
-          description: Success
-        403:
-          description: Forbidden
+          description: OK
       security:
         -
           bearerAuth: []
@@ -1618,14 +1825,11 @@ paths:
       tags:
         - Permissions
       summary: 'Tạo Permission'
-      operationId: cc51094ec0d89bee1d1a6644706945fd
+      operationId: fed076f2b07976d7f84edf1787d42a92
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - name
               properties:
                 name:
                   type: string
@@ -1634,21 +1838,102 @@ paths:
                   type: string
                 module:
                   type: string
+                  example: product
               type: object
       responses:
         201:
           description: Created
-        422:
-          description: 'Validation Error'
       security:
         -
           bearerAuth: []
-  /admin/my-permissions:
+  '/api/admin/permissions/{uuid}':
     get:
       tags:
         - Permissions
-      summary: 'Quyền của tôi'
-      operationId: dc80f999cd8f0559ceeb47a87ce4b29b
+      summary: 'Chi tiết Permission'
+      operationId: 0ab4662c7cdaf15a743d23c55c23af5b
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+      security:
+        -
+          bearerAuth: []
+    put:
+      tags:
+        - Permissions
+      summary: 'Cập nhật Permission'
+      operationId: b695830e31308d1b57375d46d4149fee
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
+      responses:
+        200:
+          description: Updated
+      security:
+        -
+          bearerAuth: []
+    delete:
+      tags:
+        - Permissions
+      summary: 'Xóa Permission'
+      operationId: 60d88baba6c5bbe0545da3b58e66f1b4
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
+      responses:
+        200:
+          description: Deleted
+      security:
+        -
+          bearerAuth: []
+  /api/admin/my-permissions:
+    get:
+      tags:
+        - Permissions
+      summary: 'Lấy danh sách quyền của user đang login'
+      operationId: f64aa80db585fddfd806c8633b42080a
+      responses:
+        200:
+          description: OK
+      security:
+        -
+          bearerAuth: []
+  /api/admin/attributes:
+    get:
+      tags:
+        - 'Product Attributes'
+      summary: 'Lấy danh sách thuộc tính'
+      operationId: 7c2510d8ebc7a3995a3665ec3953d947
+      parameters:
+        -
+          name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+        -
+          name: search
+          in: query
+          description: 'Tìm theo tên (VD: Color)'
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -1662,31 +1947,19 @@ paths:
                   data:
                     type: array
                     items:
-                      type: string
+                      properties:
+                        uuid:
+                          type: string
+                        name:
+                          type: string
+                        values:
+                          type: array
+                          items:
+                            type: object
+                      type: object
+                  meta:
+                    type: object
                 type: object
-      security:
-        -
-          bearerAuth: []
-  /admin/attributes:
-    get:
-      tags:
-        - 'Product Attributes'
-      summary: 'Lấy danh sách thuộc tính'
-      operationId: 1f12a7dd1b0cec51ec4319fabcfdc10c
-      parameters:
-        -
-          name: page
-          in: query
-          schema:
-            type: integer
-        -
-          name: search
-          in: query
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
       security:
         -
           bearerAuth: []
@@ -1694,50 +1967,57 @@ paths:
       tags:
         - 'Product Attributes'
       summary: 'Tạo thuộc tính mới'
-      operationId: 4475e2cd2ab84959216286c3636ac2dd
+      operationId: fbe94290d611d7012bb7cd331861398d
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               required:
                 - name
-                - slug
                 - type
               properties:
                 name:
                   type: string
-                  example: Color
+                  example: 'Kích thước'
                 slug:
                   type: string
-                  example: color
+                  example: size
                 type:
                   type: string
+                  default: select
                   enum:
                     - text
                     - select
                     - color
                 values:
+                  description: 'Danh sách giá trị con'
                   type: array
                   items:
                     properties:
                       value:
                         type: string
+                        example: XL
                       code:
+                        description: 'Mã code hoặc mã màu HEX'
                         type: string
+                        example: SIZE_XL
                     type: object
               type: object
       responses:
         201:
           description: Created
+        409:
+          description: 'Duplicate Slug (409163)'
       security:
         -
           bearerAuth: []
-  '/admin/attributes/{uuid}':
+  '/api/admin/attributes/{uuid}':
     get:
       tags:
         - 'Product Attributes'
-      summary: 'Xem chi tiết'
-      operationId: afdc562bcdad746dbce008a2c8b01e97
+      summary: 'Chi tiết thuộc tính'
+      operationId: 4cbe507e4908d058b8a7c537ce286ecf
       parameters:
         -
           name: uuid
@@ -1745,10 +2025,9 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
-          description: Success
+          description: OK
       security:
         -
           bearerAuth: []
@@ -1756,15 +2035,13 @@ paths:
       tags:
         - 'Product Attributes'
       summary: 'Cập nhật thuộc tính'
-      operationId: 57b9037bc9ae539b0cb1bdb361623b15
+      description: "Lưu ý: Mảng 'values' sẽ thay thế hoàn toàn các giá trị cũ."
+      operationId: 5a10d0c96eacc7e52b6f595af566b1e4
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -1787,28 +2064,27 @@ paths:
       tags:
         - 'Product Attributes'
       summary: 'Xóa thuộc tính'
-      operationId: 845c78f96a1f20ba328c8b262ee336e4
+      operationId: 9bb9189c8c8d0105be743f54188182b4
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
       responses:
         200:
           description: Deleted
+        409:
+          description: 'Đang được sử dụng bởi sản phẩm'
       security:
         -
           bearerAuth: []
-  /public/products:
+  /api/public/products:
     get:
       tags:
         - Products
       summary: 'Danh sách sản phẩm (Public)'
-      description: 'Lấy danh sách sản phẩm active. Hỗ trợ lọc Flash Sale, Giá, Danh mục.'
-      operationId: f089d65f31dc82c6e3b80e06c542463f
+      description: 'API dành cho trang chủ/trang danh sách. Chỉ trả về sản phẩm đang Active.'
+      operationId: a6a4d3f8b1d74fb1a726b2d52b819ad9
       parameters:
         -
           name: page
@@ -1825,12 +2101,13 @@ paths:
         -
           name: search
           in: query
-          description: 'Tìm theo tên/SKU'
+          description: 'Tìm theo tên hoặc SKU'
           schema:
             type: string
         -
           name: category_uuid
           in: query
+          description: 'Lọc theo danh mục'
           schema:
             type: string
             format: uuid
@@ -1849,12 +2126,13 @@ paths:
         -
           name: is_flash_sale
           in: query
-          description: 'Chỉ lấy sản phẩm đang giảm giá'
+          description: 'True: Chỉ lấy sản phẩm đang giảm giá'
           schema:
             type: boolean
         -
           name: sort_by
           in: query
+          description: 'Sắp xếp'
           schema:
             type: string
             enum:
@@ -1875,17 +2153,17 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/ProductResource'
                   meta:
                     type: object
                 type: object
-  /admin/products:
+  /api/admin/products:
     get:
       tags:
         - Products
       summary: 'Danh sách sản phẩm (Admin)'
-      description: 'Lấy toàn bộ sản phẩm bao gồm cả ẩn/hiện.'
-      operationId: 90b09429681f249365da59a28870cfb5
+      description: 'Dành cho CMS. Lấy cả sản phẩm ẩn/hiện.'
+      operationId: 62841a7496b97cd1744354ef83e0dfc1
       parameters:
         -
           name: page
@@ -1900,18 +2178,12 @@ paths:
         -
           name: is_active
           in: query
-          schema:
-            type: boolean
-        -
-          name: is_flash_sale
-          in: query
+          description: 'Lọc trạng thái ẩn hiện'
           schema:
             type: boolean
       responses:
         200:
           description: Success
-        403:
-          description: Forbidden
       security:
         -
           bearerAuth: []
@@ -1919,7 +2191,8 @@ paths:
       tags:
         - Products
       summary: 'Tạo sản phẩm mới'
-      operationId: 6cac846a61b72104adff1ee91bd8f69b
+      description: 'Hỗ trợ tạo sản phẩm đơn hoặc biến thể. Nếu có biến thể, giá và SKU ở root sẽ bị ignore.'
+      operationId: 4576ba76ad96c7ed35c145828146efc1
       requestBody:
         required: true
         content:
@@ -1931,29 +2204,35 @@ paths:
               properties:
                 name:
                   type: string
-                  example: 'Sofa Da Bò Ý'
+                  example: 'Áo Thun Polo'
                 category_uuid:
                   type: string
                   format: uuid
                 description:
                   type: string
-                price:
-                  description: 'Giá VND (BigInt)'
-                  type: integer
                 has_variants:
                   type: boolean
                   default: false
                 is_active:
                   type: boolean
                   default: true
+                price:
+                  description: 'Bắt buộc nếu has_variants=false'
+                  type: integer
+                sku:
+                  description: 'Bắt buộc nếu has_variants=false'
+                  type: string
                 variants:
+                  description: 'Bắt buộc nếu has_variants=true'
                   type: array
                   items:
                     properties:
                       sku:
                         type: string
+                        example: POLO-RED-XL
                       price:
                         type: integer
+                        example: 150000
                       stock:
                         type: array
                         items:
@@ -1963,22 +2242,33 @@ paths:
                             quantity:
                               type: integer
                           type: object
+                      attributes:
+                        type: array
+                        items:
+                          properties:
+                            attribute_slug:
+                              type: string
+                              example: color
+                            value:
+                              type: string
+                              example: Red
+                          type: object
                     type: object
               type: object
       responses:
         201:
-          description: 'Created Successfully'
+          description: 'Product Created'
         422:
-          description: 'Validation Error'
+          description: 'Validation Error (Duplicate SKU, Invalid Attribute)'
       security:
         -
           bearerAuth: []
-  '/public/products/{uuid}':
+  '/api/public/products/{uuid}':
     get:
       tags:
         - Products
       summary: 'Chi tiết sản phẩm'
-      operationId: b96e795a251da1d56654b459cec75057
+      operationId: 3a0bd66d81f934216b55b2a5a1edc3de
       parameters:
         -
           name: uuid
@@ -1986,26 +2276,26 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResource'
         404:
-          description: 'Not Found'
-  '/admin/products/{uuid}':
+          description: 'Product Not Found (404160)'
+  '/api/admin/products/{uuid}':
     put:
       tags:
         - Products
       summary: 'Cập nhật sản phẩm'
-      operationId: ff7d7b298b0d62cf0b4503308d3af809
+      operationId: 9d171256b886572bae2b143aa65b0b51
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -2013,16 +2303,13 @@ paths:
               properties:
                 name:
                   type: string
-                description:
-                  type: string
                 price:
+                  description: 'Chỉ update được giá nếu là SP đơn'
                   type: integer
-                is_active:
-                  type: boolean
               type: object
       responses:
         200:
-          description: 'Updated Successfully'
+          description: Updated
       security:
         -
           bearerAuth: []
@@ -2030,64 +2317,78 @@ paths:
       tags:
         - Products
       summary: 'Xóa sản phẩm (Soft Delete)'
-      operationId: 997ef24991477503409e3edfd16a1553
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      operationId: ede9113fb7b2dfdf530ee4d0676a3cc4
       responses:
         200:
-          description: 'Deleted Successfully'
+          description: Deleted
       security:
         -
           bearerAuth: []
-  '/admin/products/{uuid}/images':
+  '/api/admin/products/{uuid}/images':
     post:
       tags:
         - 'Product Images'
-      summary: 'Upload ảnh'
-      operationId: 34871052eb1f635905f8fcb6c557c603
+      summary: 'Upload thêm ảnh cho sản phẩm'
+      description: 'Upload file ảnh (jpg, png, webp). Max 5MB.'
+      operationId: eee71f8f7e2a28baf36d348f887a58b7
       parameters:
         -
           name: uuid
           in: path
+          description: 'UUID Sản phẩm'
           required: true
-          schema:
-            type: string
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
+              required:
+                - image
               properties:
                 image:
+                  description: 'File ảnh upload'
                   type: string
                   format: binary
                 is_primary:
+                  description: 'Nếu true, ảnh này sẽ thành ảnh đại diện chính'
                   type: boolean
+                  default: false
               type: object
       responses:
         201:
-          description: Uploaded
+          description: 'Upload thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    properties:
+                      image_url:
+                        type: string
+                      is_primary:
+                        type: boolean
+                    type: object
+                type: object
+        502:
+          description: 'Lỗi Upload Cloud (500112)'
       security:
         -
           bearerAuth: []
-  '/admin/product-images/{uuid}':
+  '/api/admin/product-images/{uuid}':
     delete:
       tags:
         - 'Product Images'
-      summary: 'Xóa ảnh'
-      operationId: f7978e2e0e8a4fb631fc0685898fe068
+      summary: 'Xóa ảnh sản phẩm'
+      operationId: bd5fbec252a66b49855b2a053227b436
       parameters:
         -
           name: uuid
           in: path
+          description: 'UUID của Ảnh (ProductImage)'
           required: true
-          schema:
-            type: string
       responses:
         200:
           description: Deleted
@@ -2237,13 +2538,13 @@ paths:
       security:
         -
           bearerAuth: []
-  /public/reviews:
+  /api/public/reviews:
     get:
       tags:
         - Reviews
-      summary: 'Xem danh sách đánh giá (Khách xem - Bắt buộc có product_uuid)'
-      description: 'Chỉ trả về các review đã được duyệt (is_approved=true).'
-      operationId: d1352c2ddc934caf545e4a45c5975346
+      summary: 'Xem đánh giá (Public)'
+      description: 'Lấy danh sách đánh giá của một sản phẩm. Chỉ trả về đánh giá đã được duyệt.'
+      operationId: a9d02afafe124b1df44f0cc0859882df
       parameters:
         -
           name: product_uuid
@@ -2253,19 +2554,9 @@ paths:
             type: string
             format: uuid
         -
-          name: page
-          in: query
-          schema:
-            type: integer
-        -
-          name: per_page
-          in: query
-          schema:
-            type: integer
-            default: 10
-        -
           name: rating
           in: query
+          description: 'Lọc theo số sao (1-5)'
           schema:
             type: integer
             enum:
@@ -2277,19 +2568,9 @@ paths:
         -
           name: has_image
           in: query
+          description: 'Chỉ lấy review có ảnh'
           schema:
             type: boolean
-      responses:
-        200:
-          description: Success
-  /admin/reviews:
-    get:
-      tags:
-        - Reviews
-      summary: 'Quản lý tất cả đánh giá (Admin)'
-      description: 'Admin xem toàn bộ review, lọc theo trạng thái duyệt, sản phẩm, rating...'
-      operationId: a38c3b63c5cd09a9aadc8cb2f6a6b3a0
-      parameters:
         -
           name: page
           in: query
@@ -2300,35 +2581,54 @@ paths:
           in: query
           schema:
             type: integer
-            default: 20
-        -
-          name: product_uuid
-          in: query
-          schema:
-            type: string
-            format: uuid
-        -
-          name: is_approved
-          in: query
-          schema:
-            type: boolean
-        -
-          name: rating
-          in: query
-          schema:
-            type: integer
+            default: 10
       responses:
         200:
           description: Success
-      security:
-        -
-          bearerAuth: []
-  /public/reviews/stats:
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        uuid:
+                          type: string
+                        rating:
+                          type: integer
+                          example: 5
+                        comment:
+                          type: string
+                        images:
+                          type: array
+                          items:
+                            type: string
+                        is_verified_purchase:
+                          type: boolean
+                        user:
+                          properties:
+                            name:
+                              type: string
+                            avatar:
+                              type: string
+                          type: object
+                        created_at:
+                          type: string
+                      type: object
+                  meta:
+                    type: object
+                type: object
+  /api/public/reviews/stats:
     get:
       tags:
         - Reviews
-      summary: 'Lấy thống kê đánh giá (5 sao, 4 sao...)'
-      operationId: 25c4c6008610651b29a52d76aa558a3f
+      summary: 'Thống kê sao (Stats)'
+      description: 'Trả về số lượng đánh giá, điểm trung bình và phân bố sao (5 sao bao nhiêu người, 4 sao bao nhiêu...).'
+      operationId: 36edded42da7574b827681dfce13b5d6
       parameters:
         -
           name: product_uuid
@@ -2340,12 +2640,43 @@ paths:
       responses:
         200:
           description: Success
-  /reviews:
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    properties:
+                      total_reviews:
+                        type: integer
+                        example: 100
+                      average_rating:
+                        type: number
+                        example: 4.5
+                      distribution:
+                        type: array
+                        items:
+                          properties:
+                            star:
+                              type: integer
+                              example: 5
+                            count:
+                              type: integer
+                              example: 80
+                            percent:
+                              type: number
+                              example: 80
+                          type: object
+                    type: object
+                type: object
+  /api/reviews:
     post:
       tags:
         - Reviews
-      summary: 'Tạo đánh giá mới'
-      operationId: fb71a3b9781fdda4cb83976b10b69418
+      summary: 'Gửi đánh giá mới'
+      operationId: d68b33f500e046610086dd7aa532b4a5
       requestBody:
         content:
           application/json:
@@ -2367,19 +2698,53 @@ paths:
                   type: array
                   items:
                     type: string
+                    format: url
               type: object
       responses:
         201:
           description: Created
+        409:
+          description: 'Already reviewed (409181)'
+        422:
+          description: 'Validation Error'
       security:
         -
           bearerAuth: []
-  '/reviews/{uuid}':
-    put:
+  /api/admin/reviews:
+    get:
       tags:
         - Reviews
-      summary: 'Cập nhật đánh giá'
-      operationId: a15331cbca679ed871fedeae4de9f987
+      summary: 'Quản lý đánh giá (Admin)'
+      description: 'Xem tất cả đánh giá bao gồm cả chưa duyệt.'
+      operationId: 33f97329712fcae3f161dc4e79f949fa
+      parameters:
+        -
+          name: page
+          in: query
+          schema:
+            type: integer
+        -
+          name: is_approved
+          in: query
+          schema:
+            type: boolean
+        -
+          name: rating
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+      security:
+        -
+          bearerAuth: []
+  '/api/public/reviews/{uuid}':
+    get:
+      tags:
+        - Reviews
+      summary: 'Chi tiết đánh giá'
+      operationId: 89d493cf0255c74effea41382de7f4ea
       parameters:
         -
           name: uuid
@@ -2387,17 +2752,31 @@ paths:
           required: true
           schema:
             type: string
+      responses:
+        200:
+          description: Success
+  '/api/admin/reviews/{uuid}':
+    put:
+      tags:
+        - Reviews
+      summary: 'Duyệt/Sửa đánh giá'
+      operationId: 9fd8c9504c10e4361afe46a58c2edcbf
+      parameters:
+        -
+          name: uuid
+          in: path
+          required: true
       requestBody:
         content:
           application/json:
             schema:
               properties:
-                rating:
-                  type: integer
-                comment:
-                  type: string
                 is_approved:
+                  description: 'Duyệt hoặc Ẩn bài'
                   type: boolean
+                comment:
+                  description: 'Admin có thể sửa nội dung nếu vi phạm'
+                  type: string
               type: object
       responses:
         200:
@@ -2409,59 +2788,34 @@ paths:
       tags:
         - Reviews
       summary: 'Xóa đánh giá'
-      operationId: 4620691994824d42f0925ef738ba349f
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
+      operationId: 7c7f28e74e31847275b80487f8e6ad99
       responses:
         200:
           description: Deleted
       security:
         -
           bearerAuth: []
-  '/public/reviews/{uuid}':
-    get:
-      tags:
-        - Reviews
-      summary: 'Xem chi tiết một review'
-      operationId: 75fc9d5eed73d63c227cc8cb4c270ca5
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-  /admin/roles:
+  /api/admin/roles:
     get:
       tags:
         - Roles
       summary: 'Danh sách Roles'
-      operationId: 32a55927e34b1d69e3065488f553dacf
+      operationId: d54fb5d1be14922565143503468bc170
       parameters:
-        -
-          name: q
-          in: query
-          description: 'Search keyword'
-          schema:
-            type: string
         -
           name: page
           in: query
           schema:
             type: integer
+        -
+          name: q
+          in: query
+          description: 'Tìm theo tên'
+          schema:
+            type: string
       responses:
         200:
-          description: Success
-        403:
-          description: Forbidden
+          description: OK
       security:
         -
           bearerAuth: []
@@ -2469,37 +2823,35 @@ paths:
       tags:
         - Roles
       summary: 'Tạo Role mới'
-      operationId: f646a9f30ec9c63fb375d03abfb9e9cd
+      operationId: 3ed5e2383fc666470b43da1570ed7644
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - name
               properties:
                 name:
                   type: string
-                  example: editor
+                  example: Manager
                 description:
                   type: string
                 priority:
                   type: integer
+                  default: 0
               type: object
       responses:
         201:
           description: Created
-        422:
-          description: 'Validation Error'
+        409:
+          description: 'Duplicate Name (Code: 409191)'
       security:
         -
           bearerAuth: []
-  '/admin/roles/{uuid}':
+  '/api/admin/roles/{uuid}':
     get:
       tags:
         - Roles
       summary: 'Chi tiết Role'
-      operationId: 63829330ccbf6f4f4712f4002971eef3
+      operationId: 5a593c0b98b62879d99c8c39c0e8771d
       parameters:
         -
           name: uuid
@@ -2509,9 +2861,7 @@ paths:
             type: string
       responses:
         200:
-          description: Success
-        404:
-          description: 'Not Found'
+          description: OK
       security:
         -
           bearerAuth: []
@@ -2519,29 +2869,15 @@ paths:
       tags:
         - Roles
       summary: 'Cập nhật Role'
-      operationId: d8d62fcdcd8bb6d8675c2220ab8d3e6d
+      operationId: a8f057dfc3818d27f9db78385d31b0ff
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-              type: object
       responses:
         200:
           description: Updated
-        403:
-          description: 'Forbidden (System Role)'
       security:
         -
           bearerAuth: []
@@ -2549,37 +2885,48 @@ paths:
       tags:
         - Roles
       summary: 'Xóa Role'
-      operationId: fcec5264356704791561fd53a98e1914
+      operationId: 02af26fbf6168be826350dd3319b644f
       parameters:
         -
           name: uuid
           in: path
           required: true
-          schema:
-            type: string
       responses:
         200:
           description: Deleted
         403:
-          description: 'Forbidden (System Role)'
+          description: 'System Role (Code: 403192)'
       security:
         -
           bearerAuth: []
-  /admin/shippings:
+  /api/admin/shippings:
     get:
       tags:
         - Shipping
       summary: 'Xem danh sách vận đơn'
-      operationId: 24c490146bfeedddb5e7a6ed7d07517d
+      description: 'Lấy danh sách các đơn vận chuyển, hỗ trợ lọc theo mã vận đơn, mã đơn hàng.'
+      operationId: 7bbf97d753810dbb0cf99154ca58ab0c
       parameters:
+        -
+          name: page
+          in: query
+          schema:
+            type: integer
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
         -
           name: tracking_number
           in: query
+          description: 'Mã vận đơn'
           schema:
             type: string
         -
           name: order_uuid
           in: query
+          description: 'UUID Đơn hàng'
           schema:
             type: string
             format: uuid
@@ -2593,29 +2940,45 @@ paths:
               - shipped
               - delivered
               - returned
-        -
-          name: page
-          in: query
-          schema:
-            type: integer
-        -
-          name: per_page
-          in: query
-          schema:
-            type: integer
+              - cancelled
       responses:
         200:
           description: Success
-        403:
-          description: Forbidden
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        uuid:
+                          type: string
+                        provider:
+                          type: string
+                        tracking_number:
+                          type: string
+                        status:
+                          type: string
+                        order:
+                          description: 'Thông tin User của đơn hàng'
+                          type: object
+                      type: object
+                  meta:
+                    type: object
+                type: object
       security:
         -
           bearerAuth: []
     post:
       tags:
         - Shipping
-      summary: 'Tạo vận đơn mới (Ship hàng)'
-      operationId: 31569c150218ed2276714c78bc73658b
+      summary: 'Tạo vận đơn mới (Giao hàng)'
+      description: "Tạo record shipping và cập nhật trạng thái đơn hàng sang 'Shipped'."
+      operationId: cbe664808899b808421d342d52a1c8ad
       requestBody:
         required: true
         content:
@@ -2629,29 +2992,37 @@ paths:
                 order_uuid:
                   type: string
                   format: uuid
+                  example: uuid-order-123
                 provider:
+                  description: 'Đơn vị vận chuyển'
                   type: string
                   example: GHTK
                 tracking_number:
+                  description: 'Mã vận đơn'
                   type: string
                   example: S123456789
                 fee:
                   description: 'Phí ship thực tế (nếu có)'
                   type: number
+                  example: 35000
                   nullable: true
               type: object
       responses:
         201:
           description: Created
+        409:
+          description: 'Tracking number exists (409201)'
+        422:
+          description: 'Invalid Order Status (422202)'
       security:
         -
           bearerAuth: []
-  '/admin/shippings/{uuid}':
+  '/api/admin/shippings/{uuid}':
     get:
       tags:
         - Shipping
       summary: 'Xem chi tiết vận đơn'
-      operationId: fd764cabc28322a8a8594f2d140cf55b
+      operationId: 17cf2194cebcb7d2cb8c19b8db83b6f4
       parameters:
         -
           name: uuid
@@ -2663,14 +3034,17 @@ paths:
       responses:
         200:
           description: Success
+        404:
+          description: 'Not Found (404200)'
       security:
         -
           bearerAuth: []
     put:
       tags:
         - Shipping
-      summary: 'Cập nhật trạng thái vận đơn'
-      operationId: b056ec004f7ee823e224873b2fc3a953
+      summary: 'Cập nhật trạng thái vận chuyển'
+      description: 'Khi update status (VD: delivered), hệ thống sẽ tự động update status của Order.'
+      operationId: 84d1440b608989d9ca5669fba8d64a5c
       parameters:
         -
           name: uuid
@@ -2693,6 +3067,8 @@ paths:
                     - cancelled
                 tracking_number:
                   type: string
+                provider:
+                  type: string
               type: object
       responses:
         200:
@@ -2704,7 +3080,7 @@ paths:
       tags:
         - Shipping
       summary: 'Xóa vận đơn'
-      operationId: e86ca72f6638428d29ac464996604da3
+      operationId: 1270a175328f253b3b99fa6c0eacf4bd
       parameters:
         -
           name: uuid
@@ -2719,20 +3095,15 @@ paths:
       security:
         -
           bearerAuth: []
-  /admin/users:
+  /api/admin/users:
     get:
       tags:
         - Users
-      summary: 'Xem danh sách người dùng'
-      operationId: ebdb37e0aca7226f6630d2b6f1de6946
+      summary: 'Xem danh sách'
+      operationId: f7bde5c5f39fa5557352fc347ce0dce1
       parameters:
         -
           name: page
-          in: query
-          schema:
-            type: integer
-        -
-          name: per_page
           in: query
           schema:
             type: integer
@@ -2747,60 +3118,42 @@ paths:
           in: query
           schema:
             type: boolean
+        -
+          name: role_id
+          in: query
+          schema:
+            type: integer
       responses:
         200:
           description: Success
-        403:
-          description: Forbidden
-      security:
-        -
-          bearerAuth: []
     post:
       tags:
         - Users
       summary: 'Tạo người dùng'
-      operationId: 88de0372c28d80c0be353a8bcce497e7
+      operationId: f65fbd5be1a9dd04fcbc85c2530fa369
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              required:
-                - name
-                - email
-                - password
               properties:
                 name:
                   type: string
                 email:
                   type: string
-                  format: email
                 password:
                   type: string
-                  format: password
-                is_active:
-                  type: boolean
-                roles:
-                  type: array
-                  items:
-                    type: integer
+                role_id:
+                  type: integer
               type: object
       responses:
         201:
           description: Created
-        422:
-          description: 'Validation Error'
-        403:
-          description: Forbidden
-      security:
-        -
-          bearerAuth: []
-  '/admin/users/{uuid}':
+  '/api/admin/users/{uuid}':
     get:
       tags:
         - Users
-      summary: 'Xem chi tiết người dùng'
-      operationId: 0c8ff92257b9f5d7e945b3a8ee6edad6
+      summary: 'Xem chi tiết'
+      operationId: cb857c4064c3e9b9b95cea5262f2023f
       parameters:
         -
           name: uuid
@@ -2808,22 +3161,14 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: Success
-        404:
-          description: 'Not Found'
-        403:
-          description: Forbidden
-      security:
-        -
-          bearerAuth: []
     put:
       tags:
         - Users
-      summary: 'Cập nhật thông tin'
-      operationId: 2d7ab603a4edd1e1187a11eefe3bb856
+      summary: 'Cập nhật Admin'
+      operationId: 6ebead6cb49f2b2a1d9d4f8482136e69
       parameters:
         -
           name: uuid
@@ -2831,7 +3176,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         content:
           application/json:
@@ -2839,30 +3183,17 @@ paths:
               properties:
                 name:
                   type: string
-                password:
-                  type: string
                 is_active:
                   type: boolean
-                roles:
-                  type: array
-                  items:
-                    type: integer
               type: object
       responses:
         200:
           description: Updated
-        403:
-          description: Forbidden
-        404:
-          description: 'Not Found'
-      security:
-        -
-          bearerAuth: []
     delete:
       tags:
         - Users
       summary: 'Xóa người dùng'
-      operationId: 13d69b0c1b0fb851225843080eac0c32
+      operationId: fe9d83513b1a069ea3b91ad221e7ec69
       parameters:
         -
           name: uuid
@@ -2870,35 +3201,63 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: Deleted
-        403:
-          description: Forbidden
-      security:
-        -
-          bearerAuth: []
-  /profile:
+  /api/profile:
     get:
       tags:
         - Users
-      summary: 'Xem thông tin cá nhân'
-      operationId: 02215cf763020c25fc4b65d33aa9cb9f
+      summary: 'Thông tin cá nhân'
+      operationId: e65ceda54bc158cbc32918d7fc5a3fde
       responses:
         200:
           description: Success
-        401:
-          description: Unauthenticated
-      security:
-        -
-          bearerAuth: []
-  /admin/vouchers:
+    put:
+      tags:
+        - Users
+      summary: 'Cập nhật hồ sơ cá nhân'
+      operationId: 2c4834f6de22866d5c5b1ec9e3a4c652
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                phone:
+                  type: string
+              type: object
+      responses:
+        200:
+          description: Updated
+  /api/auth/change-password:
+    post:
+      tags:
+        - Users
+      summary: 'Đổi mật khẩu'
+      operationId: 3a80eface8039f7801eaf80caf01151c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                current_password:
+                  type: string
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+              type: object
+      responses:
+        200:
+          description: 'Password Changed'
+  /api/admin/vouchers:
     get:
       tags:
         - Vouchers
       summary: 'Danh sách Voucher'
-      operationId: e2a5dde2fcdd1a978c34f43e57257c37
+      operationId: 00e8ceb211a3c00801f89a5f40793055
       parameters:
         -
           name: page
@@ -2906,13 +3265,9 @@ paths:
           schema:
             type: integer
         -
-          name: per_page
-          in: query
-          schema:
-            type: integer
-        -
           name: search
           in: query
+          description: 'Tìm theo code hoặc tên'
           schema:
             type: string
         -
@@ -2922,7 +3277,7 @@ paths:
             type: boolean
       responses:
         200:
-          description: Success
+          description: OK
       security:
         -
           bearerAuth: []
@@ -2930,7 +3285,7 @@ paths:
       tags:
         - Vouchers
       summary: 'Tạo Voucher'
-      operationId: 35f637451d4640e6df954c7488aa5b11
+      operationId: 14fcea8d7c43fda0e329cbf6e10672ae
       requestBody:
         content:
           application/json:
@@ -2947,6 +3302,7 @@ paths:
                   example: SALE50
                 name:
                   type: string
+                  example: 'Giảm 50%'
                 type:
                   type: string
                   enum:
@@ -2954,12 +3310,19 @@ paths:
                     - percentage
                 value:
                   type: number
+                  example: 50
                 quantity:
                   type: integer
+                  example: 100
                 min_order_value:
                   type: number
+                  example: 200000
+                max_discount_amount:
+                  type: number
+                  example: 50000
                 limit_per_user:
                   type: integer
+                  default: 1
                 start_date:
                   type: string
                   format: date-time
@@ -2968,6 +3331,7 @@ paths:
                   format: date-time
                 is_active:
                   type: boolean
+                  default: true
               type: object
       responses:
         201:
@@ -2975,23 +3339,15 @@ paths:
       security:
         -
           bearerAuth: []
-  '/admin/vouchers/{uuid}':
+  '/api/admin/vouchers/{uuid}':
     get:
       tags:
         - Vouchers
-      summary: 'Xem chi tiết Voucher'
-      operationId: e758e2538ccc3d06000bd80c24a43bc4
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      summary: 'Chi tiết Voucher'
+      operationId: 68dc97da6a3c2ceff1237ac4c8e02882
       responses:
         200:
-          description: Success
+          description: OK
       security:
         -
           bearerAuth: []
@@ -2999,15 +3355,7 @@ paths:
       tags:
         - Vouchers
       summary: 'Cập nhật Voucher'
-      operationId: b1977c67bb4f04656651cae5ae3ae46e
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      operationId: 7c9b9a75505451c65a700b60cae2ffa3
       requestBody:
         content:
           application/json:
@@ -3030,46 +3378,95 @@ paths:
       tags:
         - Vouchers
       summary: 'Xóa Voucher'
-      operationId: c51b52d3abf7485d79968f1368944af0
-      parameters:
-        -
-          name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      operationId: 28eaefdda9fd1d977391db4a8de63f28
       responses:
         200:
           description: Deleted
       security:
         -
           bearerAuth: []
-  /admin/warehouses:
+  /api/admin/warehouses:
     get:
       tags:
         - Warehouses
       summary: 'Xem danh sách Kho hàng'
-      operationId: 6320efc130774dac5aa7c13dafd0ae2b
+      description: 'Trả về danh sách kho có phân trang, hỗ trợ tìm kiếm và lọc.'
+      operationId: e038360bda6847c820c9adac6fe78c0a
       parameters:
         -
           name: page
           in: query
+          description: 'Trang hiện tại'
           schema:
             type: integer
+            default: 1
+        -
+          name: per_page
+          in: query
+          description: 'Số record mỗi trang'
+          schema:
+            type: integer
+            default: 15
         -
           name: search
           in: query
+          description: 'Tìm theo tên hoặc địa chỉ'
           schema:
             type: string
         -
           name: manager_id
           in: query
+          description: 'Lọc theo ID quản lý'
           schema:
             type: integer
+        -
+          name: is_active
+          in: query
+          description: 'Lọc trạng thái (1: Active, 0: Inactive)'
+          schema:
+            type: boolean
       responses:
         200:
-          description: Success
+          description: 'Lấy danh sách thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        uuid:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                          example: 'Kho Hồ Chí Minh'
+                        location:
+                          type: string
+                          example: 'Quận 7, TP.HCM'
+                        is_active:
+                          type: boolean
+                          example: true
+                        manager:
+                          description: 'Thông tin quản lý (nếu có)'
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                          type: object
+                      type: object
+                  meta:
+                    description: 'Thông tin phân trang (current_page, total...)'
+                    type: object
+                type: object
       security:
         -
           bearerAuth: []
@@ -3077,7 +3474,7 @@ paths:
       tags:
         - Warehouses
       summary: 'Tạo Kho hàng mới'
-      operationId: 1a7c4e3a6a3f36dc8ca5a75d54dff1db
+      operationId: 7a4bf74f05ee4822b503198c09c3fbde
       requestBody:
         required: true
         content:
@@ -3088,29 +3485,62 @@ paths:
               properties:
                 name:
                   type: string
-                  example: 'Kho Hồ Chí Minh'
+                  example: 'Kho Hà Nội'
                 location:
                   type: string
-                  example: 'Quận 7, TP.HCM'
+                  example: 'Cầu Giấy, Hà Nội'
                 manager_id:
+                  description: 'ID của User quản lý'
                   type: integer
-                  example: 1
+                  example: 5
                 is_active:
                   type: boolean
                   default: true
               type: object
       responses:
         201:
-          description: Created
+          description: 'Tạo thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    description: 'Object Warehouse vừa tạo'
+                    type: object
+                  message:
+                    type: string
+                    example: 'Warehouse created successfully'
+                type: object
+        409:
+          description: 'Lỗi nghiệp vụ (Trùng tên)'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error_code:
+                    description: 'Mã lỗi: Warehouse name already exists'
+                    type: integer
+                    example: 409221
+                  message:
+                    type: string
+                type: object
+        422:
+          description: 'Lỗi Validation (Validate Form)'
       security:
         -
           bearerAuth: []
-  '/admin/warehouses/{uuid}':
+  '/api/admin/warehouses/{uuid}':
     get:
       tags:
         - Warehouses
       summary: 'Xem chi tiết Kho hàng'
-      operationId: 6e939c49cfde0998a14c14a181295f74
+      operationId: b03b074849876928839921d9d01a0299
       parameters:
         -
           name: uuid
@@ -3122,6 +3552,28 @@ paths:
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      location:
+                        type: string
+                      manager:
+                        description: 'User Model'
+                        type: object
+                    type: object
+                type: object
+        404:
+          description: 'Không tìm thấy kho (Mã: 404220)'
       security:
         -
           bearerAuth: []
@@ -3129,7 +3581,7 @@ paths:
       tags:
         - Warehouses
       summary: 'Cập nhật Kho hàng'
-      operationId: 9ff30ab1a0694145ef8eb264c224255f
+      operationId: 31acdd889b1cbdc67ad7816283facae3
       parameters:
         -
           name: uuid
@@ -3154,7 +3606,20 @@ paths:
               type: object
       responses:
         200:
-          description: Updated
+          description: 'Cập nhật thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Warehouse updated successfully'
+                type: object
+        409:
+          description: 'Trùng tên kho (Mã: 409221)'
       security:
         -
           bearerAuth: []
@@ -3162,7 +3627,8 @@ paths:
       tags:
         - Warehouses
       summary: 'Xóa Kho hàng'
-      operationId: d20e7ee47b740f732b6fbdb123213f44
+      description: 'Lưu ý: Không thể xóa kho nếu trong kho vẫn còn hàng tồn (Quantity > 0).'
+      operationId: 8d95d2ccd555a35663a510fc98421ab8
       parameters:
         -
           name: uuid
@@ -3173,16 +3639,44 @@ paths:
             format: uuid
       responses:
         200:
-          description: Deleted
+          description: 'Xóa thành công'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Warehouse deleted successfully'
+                type: object
+        409:
+          description: 'Không thể xóa vì còn hàng tồn'
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error_code:
+                    description: 'Mã lỗi: Cannot delete warehouse with stock'
+                    type: integer
+                    example: 409222
+                  message:
+                    type: string
+                    example: 'Warehouse contains inventory items'
+                type: object
       security:
         -
           bearerAuth: []
-  /wishlist:
+  /api/wishlist:
     get:
       tags:
         - Wishlist
       summary: 'Xem danh sách yêu thích của tôi'
-      operationId: e49e161583e37d955615b2d03da889ad
+      operationId: f9f4efe1efacbb6a21bbdd770216204d
       parameters:
         -
           name: page
@@ -3197,16 +3691,34 @@ paths:
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        uuid:
+                          type: string
+                        product:
+                          description: 'Thông tin sản phẩm rút gọn'
+                          type: object
+                      type: object
+                type: object
       security:
         -
           bearerAuth: []
-  /wishlist/toggle:
+  /api/wishlist/toggle:
     post:
       tags:
         - Wishlist
       summary: 'Thêm/Xóa sản phẩm khỏi Wishlist (Toggle)'
       description: 'Cơ chế Toggle: Nếu sản phẩm chưa có trong wishlist thì thêm vào, nếu có rồi thì xóa đi.'
-      operationId: 8da0dd201eb59034c5b91f9f95b991f8
+      operationId: e631e4b3f323dda7444ab6b71238c012
       requestBody:
         content:
           application/json:
@@ -3217,7 +3729,7 @@ paths:
                 product_uuid:
                   type: string
                   format: uuid
-                  example: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+                  example: uuid-product-123
               type: object
       responses:
         200:
@@ -3229,19 +3741,26 @@ paths:
                   success:
                     type: boolean
                     example: true
-                  message:
-                    type: string
-                    example: 'Product added to wishlist'
+                  data:
+                    properties:
+                      status:
+                        type: string
+                        example: added
+                      message:
+                        type: string
+                    type: object
                 type: object
+        404:
+          description: 'Product Not Found (404160)'
       security:
         -
           bearerAuth: []
-  '/wishlist/{uuid}':
+  '/api/wishlist/{uuid}':
     delete:
       tags:
         - Wishlist
       summary: 'Xóa 1 item khỏi Wishlist (Theo UUID Wishlist)'
-      operationId: 569c468d2edc411fe87246fc09906947
+      operationId: 1f87d39a59cbf1f71f040ea08381e163
       parameters:
         -
           name: uuid
@@ -3257,17 +3776,223 @@ paths:
           bearerAuth: []
 components:
   schemas:
-    ApiResponse:
+    CategoryResource:
+      title: 'Category Resource'
+      description: 'Cấu trúc dữ liệu trả về của Danh mục'
       properties:
-        success:
+        uuid:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: 'Laptop Gaming'
+        slug:
+          type: string
+          example: laptop-gaming
+        description:
+          type: string
+          nullable: true
+        parent_id:
+          type: integer
+          nullable: true
+        is_active:
           type: boolean
           example: true
-        message:
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryResource'
+          nullable: true
+        created_at:
           type: string
-          example: Success
-        data:
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      type: object
+    OrderResource:
+      title: 'Order Resource'
+      description: 'Thông tin chi tiết đơn hàng'
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: pending
+        payment_status:
+          type: string
+          example: unpaid
+        shipping_status:
+          type: string
+          example: preparing
+        notes:
+          type: string
+          nullable: true
+        shipping_address:
+          description: 'Snapshot địa chỉ tại thời điểm đặt'
+          type: object
+        currency_code:
+          type: string
+          example: VND
+        total_amount:
+          type: number
+          format: float
+          example: 500000
+        total_formatted:
+          type: string
+          example: '500.000 ₫'
+        voucher_discount:
+          type: number
+          format: float
+          example: 0
+        items:
+          type: array
+          items:
+            properties:
+              product_name:
+                type: string
+              quantity:
+                type: integer
+              unit_price_formatted:
+                type: string
+              subtotal_formatted:
+                type: string
+              sku:
+                type: string
+              image:
+                type: string
+                nullable: true
+              attributes:
+                type: object
+                nullable: true
+            type: object
+        ordered_at:
+          type: string
+          format: date-time
+      type: object
+    ProductResource:
+      title: 'Product Resource'
+      description: 'Thông tin chi tiết sản phẩm'
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: 'Áo Thun Polo'
+        description:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          example: POLO-001
+        currency_code:
+          type: string
+          example: VND
+        price:
+          type: number
+          format: float
+          example: 150000
+        price_formatted:
+          type: string
+          example: '150.000 ₫'
+        original_price:
+          type: number
+          format: float
+          example: 200000
+        original_price_formatted:
+          type: string
+          example: '200.000 ₫'
+        price_range:
+          type: string
+          example: '150.000 ₫ - 200.000 ₫'
+        flash_sale:
+          properties:
+            is_active:
+              type: boolean
+            campaign_name:
+              type: string
+            discount_percent:
+              type: integer
+            ends_at:
+              type: string
+              format: date-time
+            seconds_remaining:
+              type: integer
+            ends_in:
+              type: string
           type: object
           nullable: true
+        has_variants:
+          type: boolean
+          example: true
+        is_active:
+          type: boolean
+          example: true
+        sold_count:
+          type: integer
+          example: 100
+        rating_avg:
+          type: number
+          format: float
+          example: 4.5
+        rating_count:
+          type: integer
+          example: 50
+        category:
+          oneOf:
+            -
+              $ref: '#/components/schemas/CategoryResource'
+          nullable: true
+        images:
+          type: array
+          items:
+            properties:
+              uuid:
+                type: string
+              url:
+                type: string
+              is_primary:
+                type: boolean
+            type: object
+        variants:
+          type: array
+          items:
+            properties:
+              uuid:
+                type: string
+              sku:
+                type: string
+              original_price:
+                type: number
+              original_price_formatted:
+                type: string
+              price:
+                type: number
+              price_formatted:
+                type: string
+              image:
+                type: string
+                nullable: true
+              stock_quantity:
+                type: integer
+              attributes:
+                type: array
+                items:
+                  properties:
+                    attribute_name:
+                      type: string
+                    value:
+                      type: string
+                    code:
+                      type: string
+                  type: object
+            type: object
+        created_at:
+          type: string
+          format: date-time
       type: object
   securitySchemes:
     bearerAuth:
@@ -3277,16 +4002,19 @@ components:
 tags:
   -
     name: Address
-    description: 'API quản lý địa chỉ giao hàng'
+    description: 'API quản lý sổ địa chỉ giao hàng'
   -
     name: Auth
     description: 'Xác thực & Phân quyền'
   -
     name: Cart
-    description: 'API Giỏ hàng'
+    description: 'API Giỏ hàng & Mua sắm (Yêu cầu Token)'
+  -
+    name: 'Cart Voucher'
+    description: 'Quản lý mã giảm giá trong giỏ hàng'
   -
     name: Categories
-    description: 'API quản lý Danh mục sản phẩm'
+    description: 'API quản lý Danh mục sản phẩm (Hỗ trợ cấu trúc cây)'
   -
     name: Collections
     description: 'API quản lý Bộ sưu tập'
@@ -3301,7 +4029,7 @@ tags:
     description: 'Quản lý Tồn kho (Admin/Staff)'
   -
     name: 'System Logs'
-    description: 'API xem nhật ký hệ thống (Admin Only)'
+    description: 'Quản lý nhật ký hoạt động hệ thống (Audit & Error Logs)'
   -
     name: Media
     description: 'API quản lý File/Ảnh hệ thống'
@@ -3310,31 +4038,31 @@ tags:
     description: 'API quản lý thông báo cá nhân'
   -
     name: Orders
-    description: 'API quản lý Đơn hàng'
+    description: 'API quản lý Đơn hàng & Thanh toán'
   -
     name: Payments
     description: 'API quản lý Thanh toán'
   -
     name: Permissions
-    description: 'Quản lý quyền hạn'
+    description: 'Quản lý danh sách quyền hạn'
   -
     name: 'Product Attributes'
-    description: 'API quản lý thuộc tính'
+    description: 'Quản lý thuộc tính sản phẩm (Màu sắc, Kích thước...)'
   -
     name: Products
-    description: 'API quản lý sản phẩm (Hỗ trợ Flash Sale & BigInteger)'
+    description: 'API quản lý sản phẩm'
   -
     name: 'Product Images'
-    description: 'API quản lý ảnh sản phẩm'
+    description: 'Thêm/Xóa ảnh phụ cho sản phẩm'
   -
     name: Promotions
     description: 'Quản lý chương trình khuyến mãi, giảm giá (BigInteger Support)'
   -
     name: Reviews
-    description: 'API quản lý Đánh giá sản phẩm'
+    description: 'API Đánh giá & Nhận xét sản phẩm'
   -
     name: Roles
-    description: 'Quản lý vai trò (RBAC)'
+    description: 'Quản lý vai trò & Phân quyền (RBAC)'
   -
     name: Shipping
     description: 'API quản lý Vận chuyển (Admin/Shipper)'

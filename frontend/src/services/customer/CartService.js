@@ -4,7 +4,7 @@ class CartService {
   static _instance = null;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost/api';
     this.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -58,7 +58,7 @@ class CartService {
         } catch (refreshError) {
           console.error('❌ Refresh thất bại, logout...', refreshError);
           AuthService.logout();
-          window.location.href = '/customer/login';
+          window.location.href = '/login';
           throw refreshError;
         }
       }

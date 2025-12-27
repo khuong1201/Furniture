@@ -1,235 +1,208 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Package, User, MapPin, CreditCard, Truck } from 'lucide-react';
-import OrderService from '@/services/admin/OrderService';
+import { ArrowLeft, User, MapPin, CreditCard, Package } from 'lucide-react';
+import { useOrder } from '@/hooks/admin/useOrder';
+import OrderActions from '@/components/admin/orders/OrderActions';
 import './OrderDetail.css';
 
 const OrderDetail = () => {
     const { uuid } = useParams();
     const navigate = useNavigate();
-    const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { order, loading, error, fetchOrderDetail } = useOrder();
 
     useEffect(() => {
-        fetchOrderDetail();
+        fetchOrderDetail(uuid);
     }, [uuid]);
 
-    const fetchOrderDetail = async () => {
-        try {
-            setLoading(true);
-            const response = await OrderService.getOrder(uuid);
+    // Helper: Parse chuỗi variant text "Color: Red | Size: L"
+    const renderVariantAttributes = (variantText) => {
+        if (!variantText) return null;
+        const attributes = variantText.split('|').map(s => s.trim()).filter(s => s);
+        
+        return attributes.map((attr, idx) => {
+            const parts = attr.split(':');
+            const key = parts[0]?.trim();
+            const value = parts[1]?.trim();
 
-            if (response.success && response.data) {
-                setOrder(response.data);
+            if (value) {
+                return (
+                    <span key={idx} className="attr-tag">
+                        <span className="attr-key">{key}</span> 
+                        <span className="attr-val">{value}</span>
+                    </span>
+                );
             }
-        } catch (err) {
-            setError(err.message || 'Không thể tải chi tiết đơn hàng');
-        } finally {
-            setLoading(false);
-        }
+            return <span key={idx} className="attr-tag">{attr}</span>;
+        });
     };
 
-    const getStatusBadge = (status) => {
-        const statusMap = {
-            'pending': { label: 'Chờ xử lý', class: 'badge-warning' },
-            'processing': { label: 'Đang xử lý', class: 'badge-info' },
-            'shipping': { label: 'Đang giao', class: 'badge-info' },
-            'completed': { label: 'Hoàn thành', class: 'badge-success' },
-            'cancelled': { label: 'Đã hủy', class: 'badge-danger' },
-        };
-        const statusInfo = statusMap[status] || { label: status, class: 'badge-secondary' };
-        return <span className={`badge ${statusInfo.class}`}>{statusInfo.label}</span>;
-    };
+    if (loading) return <div className="loading-state"><div className="spinner"></div>Loading order details...</div>;
+    if (error || !order) return <div className="error-state">{error || 'Order not found'}</div>;
 
-    if (loading) {
-        return (
-            <div className="order-detail">
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Đang tải dữ liệu...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error || !order) {
-        return (
-            <div className="order-detail">
-                <div className="error-state">
-                    <p>{error || 'Không tìm thấy đơn hàng'}</p>
-                    <button onClick={() => navigate('/admin/orders')} className="btn btn-secondary">
-                        Quay lại danh sách
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    // --- SAFETY CHECK ---
+    // Đảm bảo object con tồn tại để tránh crash
+    const customer = order.customer || {};
+    const shipping = order.shipping_info || {};
+    const amounts = order.amounts || {};
+    const dates = order.dates || {};
 
     return (
-        <div className="order-detail">
+        <div className="order-detail-container">
             {/* Header */}
             <div className="detail-header">
-                <button onClick={() => navigate('/admin/orders')} className="btn-back">
-                    <ArrowLeft size={20} />
-                    Quay lại
-                </button>
-                <div className="header-info">
-                    <h1>Đơn hàng #{order.order_number || order.uuid?.slice(0, 8)}</h1>
-                    <div className="header-meta">
-                        {getStatusBadge(order.status)}
-                        <span className="date">
-                            {order.created_at ? new Date(order.created_at).toLocaleString('vi-VN') : '-'}
-                        </span>
+                <div className="header-left">
+                    <button onClick={() => navigate('/admin/orders')} className="btn-back" title="Back to list">
+                        <ArrowLeft size={18} />
+                    </button>
+                    <div>
+                        <h1 className="detail-title">Order #{order.code}</h1>
+                        <span className="detail-date">Placed on {dates.created_at}</span>
                     </div>
+                </div>
+                
+                <div className="action-buttons-wrapper">
+                    <OrderActions 
+                        order={order} 
+                        onUpdate={() => fetchOrderDetail(uuid)} 
+                        showDetailBtn={false}
+                    />
                 </div>
             </div>
 
-            <div className="detail-grid">
-                {/* Customer Info */}
-                <div className="detail-card">
-                    <div className="card-header">
-                        <User size={20} />
-                        <h3>Thông tin khách hàng</h3>
-                    </div>
-                    <div className="card-body">
-                        <div className="info-row">
-                            <span className="label">Tên:</span>
-                            <span className="value">{order.user?.name || order.customer_name || '-'}</span>
-                        </div>
-                        <div className="info-row">
-                            <span className="label">Email:</span>
-                            <span className="value">{order.user?.email || order.customer_email || '-'}</span>
-                        </div>
-                        <div className="info-row">
-                            <span className="label">SĐT:</span>
-                            <span className="value">{order.customer_phone || '-'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Shipping Address */}
-                <div className="detail-card">
-                    <div className="card-header">
-                        <MapPin size={20} />
-                        <h3>Địa chỉ giao hàng</h3>
-                    </div>
-                    <div className="card-body">
-                        {order.shipping_address ? (
-                            typeof order.shipping_address === 'string' ? (
-                                <p>{order.shipping_address}</p>
-                            ) : (
-                                <div className="address-info">
-                                    <p className="font-medium">{order.shipping_address.full_name} - {order.shipping_address.phone}</p>
-                                    <p>{order.shipping_address.street}</p>
-                                    <p>{order.shipping_address.ward}, {order.shipping_address.district}, {order.shipping_address.province}</p>
-                                </div>
-                            )
-                        ) : (
-                            <p>Chưa có thông tin</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Payment Info */}
-                <div className="detail-card">
-                    <div className="card-header">
-                        <CreditCard size={20} />
-                        <h3>Thanh toán</h3>
-                    </div>
-                    <div className="card-body">
-                        <div className="info-row">
-                            <span className="label">Phương thức:</span>
-                            <span className="value">{order.payment_method || 'COD'}</span>
-                        </div>
-                        <div className="info-row">
-                            <span className="label">Trạng thái:</span>
-                            <span className="value">
-                                {order.payment_status === 'paid' ? (
-                                    <span className="badge badge-success">Đã thanh toán</span>
-                                ) : (
-                                    <span className="badge badge-warning">Chưa thanh toán</span>
-                                )}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Shipping Info */}
-                <div className="detail-card">
-                    <div className="card-header">
-                        <Truck size={20} />
-                        <h3>Vận chuyển</h3>
-                    </div>
-                    <div className="card-body">
-                        <div className="info-row">
-                            <span className="label">Đơn vị:</span>
-                            <span className="value">{order.shipping_method || '-'}</span>
-                        </div>
-                        <div className="info-row">
-                            <span className="label">Phí ship:</span>
-                            <span className="value">
-                                {order.shipping_fee?.toLocaleString('vi-VN') || '0'} đ
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Order Items */}
-            <div className="detail-card full-width">
+            {/* SECTION 1: ITEMS TABLE */}
+            <div className="card section-items">
                 <div className="card-header">
-                    <Package size={20} />
-                    <h3>Sản phẩm</h3>
+                    <h3><Package size={16} /> Order Items</h3>
+                    <span className={`status-badge badge-${order.status}`}>
+                        {order.status_label || order.status}
+                    </span>
                 </div>
-                <div className="card-body">
+                <div className="table-responsive">
                     <table className="items-table">
                         <thead>
                             <tr>
-                                <th>Sản phẩm</th>
-                                <th>Đơn giá</th>
-                                <th>Số lượng</th>
-                                <th className="text-right">Thành tiền</th>
+                                <th style={{ width: '45%' }}>Product</th>
+                                <th style={{ width: '15%' }}>Price</th>
+                                <th style={{ width: '15%' }} className="text-center">Qty</th>
+                                <th style={{ width: '25%' }} className="text-right">Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {order.items?.map((item, index) => (
-                                <tr key={index}>
+                            {order.items?.map((item, idx) => (
+                                <tr key={item.uuid || idx}>
                                     <td>
-                                        <strong>{item.product_name || item.name}</strong>
-                                        {item.variant_name && (
-                                            <div className="variant-info">{item.variant_name}</div>
-                                        )}
+                                        <div className="product-cell">
+                                            <img 
+                                                src={item.image || 'https://placehold.co/48'} 
+                                                alt="" 
+                                                className="product-thumb"
+                                            />
+                                            <div className="product-info">
+                                                <div className="product-name">{item.product_name}</div>
+                                                <div className="product-attributes">
+                                                    {renderVariantAttributes(item.variant_text)}
+                                                </div>
+                                                {item.sku && (
+                                                    <div className="product-sku">SKU: {item.sku}</div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td>{item.unit_price_formatted || (item.unit_price?.toLocaleString('vi-VN') + ' đ')}</td>
-                                    <td>{item.quantity}</td>
-                                    <td className="text-right">
-                                        <strong>{item.subtotal_formatted || (item.subtotal?.toLocaleString('vi-VN') + ' đ')}</strong>
-                                    </td>
+                                    {/* API đã format sẵn tiền (VD: "19.160.000 VND"), hiển thị trực tiếp */}
+                                    <td className="text-price">{item.unit_price}</td>
+                                    <td className="text-center font-medium">x{item.quantity}</td>
+                                    <td className="text-right font-bold text-price-total">{item.total}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-
-                    {/* Summary */}
-                    <div className="order-summary">
+                </div>
+                
+                {/* SUMMARY SECTION */}
+                <div className="order-summary">
+                    <div className="summary-content">
                         <div className="summary-row">
-                            <span>Tạm tính:</span>
-                            <span>{order.total_formatted || (order.total_amount?.toLocaleString('vi-VN') + ' đ')}</span>
+                            <span>Subtotal</span> 
+                            <span>{amounts.subtotal}</span>
                         </div>
                         <div className="summary-row">
-                            <span>Phí vận chuyển:</span>
-                            <span>{order.shipping_fee?.toLocaleString('vi-VN') || '0'} đ</span>
+                            <span>Shipping Fee</span> 
+                            <span>{amounts.shipping_fee}</span>
                         </div>
-                        {order.voucher_discount > 0 && (
+                        {/* Kiểm tra voucher_discount khác "0 VND" hoặc logic số */}
+                        {amounts.voucher_discount && amounts.voucher_discount !== "0 VND" && (
                             <div className="summary-row discount">
-                                <span>Giảm giá:</span>
-                                <span>-{order.voucher_discount?.toLocaleString('vi-VN')} đ</span>
+                                <span>Discount</span> 
+                                <span>-{amounts.voucher_discount}</span>
                             </div>
                         )}
                         <div className="summary-row total">
-                            <span>Tổng cộng:</span>
-                            <span>{order.total_formatted || (order.total_amount?.toLocaleString('vi-VN') + ' đ')}</span>
+                            <span>Grand Total</span> 
+                            <span>{amounts.grand_total}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* SECTION 2: INFO GRID (3 COLUMNS) */}
+            <div className="info-grid">
+                {/* 1. Customer (Người mua) */}
+                <div className="card">
+                    <div className="card-header"><h3><User size={16} /> Customer (Buyer)</h3></div>
+                    <div className="card-body">
+                        <p className="info-name">{customer.name || 'N/A'}</p>
+                        <p className="info-text">{customer.email}</p>
+                        {/* API OrderResource không trả về phone customer trong object customer, 
+                            nhưng có thể lấy từ shipping_info nếu cần */}
+                    </div>
+                </div>
+
+                {/* 2. Shipping Address (Người nhận) */}
+                <div className="card">
+                    <div className="card-header"><h3><MapPin size={16} /> Shipping Address</h3></div>
+                    <div className="card-body">
+                        {/* Ưu tiên lấy tên người nhận thực tế */}
+                        <p className="info-name">
+                            {shipping.name || shipping.details?.full_name || customer.name}
+                        </p>
+                        <p className="info-text">
+                            {shipping.phone || shipping.details?.phone || 'No phone'}
+                        </p>
+                        <div className="address-box">
+                            {shipping.full_address}
+                        </div>
+                        
+                        {order.notes && (
+                            <div className="note-box mt-2">
+                                <strong>Note:</strong> {order.notes}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* 3. Payment & Shipping Status */}
+                <div className="card">
+                    <div className="card-header"><h3><CreditCard size={16} /> Status</h3></div>
+                    <div className="card-body">
+                        <div className="info-row">
+                            <span>Payment</span>
+                            <span className={`payment-badge ${order.payment_status}`}>
+                                {order.payment_status}
+                            </span>
+                        </div>
+                        <div className="info-row mt-2">
+                            <span>Shipping</span>
+                            <span className={`status-badge badge-${order.shipping_status}`}>
+                                {order.shipping_status}
+                            </span>
+                        </div>
+                        <div className="info-row mt-2">
+                            <span>Method</span>
+                            <span className="font-medium">COD</span>
+                        </div>
+                        <div className="info-row mt-2">
+                            <span>Currency</span>
+                            <span className="font-medium">{order.currency_code}</span>
                         </div>
                     </div>
                 </div>

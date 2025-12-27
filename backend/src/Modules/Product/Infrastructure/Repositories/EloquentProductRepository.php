@@ -9,6 +9,7 @@ use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Modules\Product\Domain\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Modules\Category\Domain\Models\Category;
 
 class EloquentProductRepository extends EloquentBaseRepository implements ProductRepositoryInterface 
 {
@@ -25,6 +26,8 @@ class EloquentProductRepository extends EloquentBaseRepository implements Produc
             ->with([
                 'category', 
                 'images', 
+                'brand',
+                'variants.stock',
                 // Load variants và attributes để Resource xử lý nhanh, tránh N+1
                 'variants.attributeValues.attribute', 
                 
@@ -53,6 +56,34 @@ class EloquentProductRepository extends EloquentBaseRepository implements Produc
             $query->whereHas('category', fn($c) => $c->where('uuid', $filters['category_uuid']));
         }
 
+        // DANH MỤC (Category SLUG - Dùng cho Frontend CategoryPage)
+        if (!empty($filters['category_slug'])) {
+            $slug = $filters['category_slug'];
+            $category = Category::where('slug', $slug)->first();
+            
+            if ($category) {
+                $catIds = $category->children()->pluck('id')->toArray();
+                $catIds[] = $category->id;
+                $query->whereIn('category_id', $catIds);
+            } else {
+                $query->where('id', -1);
+            }
+        } 
+        elseif (!empty($filters['category_uuid'])) {
+            $query->whereHas('category', fn($c) => $c->where('uuid', $filters['category_uuid']));
+        }
+        // THƯƠNG HIỆU (Brand)
+        if (!empty($filters['brand_slug'])) {
+            $query->whereHas('brand', fn($q) => $q->where('slug', $filters['brand_slug']));
+        }
+        elseif (!empty($filters['brand_uuid'])) {
+            $uuids = is_array($filters['brand_uuid']) 
+                ? $filters['brand_uuid'] 
+                : explode(',', (string)$filters['brand_uuid']);
+                
+            $query->whereHas('brand', fn($q) => $q->whereIn('uuid', $uuids));
+        }
+
         // 5. KHOẢNG GIÁ (Price Range)
         // Logic: Lấy sản phẩm có giá nằm trong khoảng (xét cả giá cha và giá con/variants)
         if (isset($filters['price_min'])) {
@@ -71,13 +102,9 @@ class EloquentProductRepository extends EloquentBaseRepository implements Produc
             });
         }
 
-        // 6. FLASH SALE FILTER (QUAN TRỌNG NHẤT)
-        // Yêu cầu: Nếu is_flash_sale=true -> CHỈ lấy sản phẩm đang có sale.
         if (!empty($filters['is_flash_sale']) && filter_var($filters['is_flash_sale'], FILTER_VALIDATE_BOOLEAN)) {
-            // Sử dụng whereHas để ép SQL phải tìm sản phẩm có quan hệ với promotions active.
-            // Những sản phẩm không có promotion active sẽ bị LOẠI BỎ khỏi danh sách.
             $query->whereHas('promotions', function ($q) {
-                $q->active(); // Scope active() nằm trong Model Promotion
+                $q->active(); 
             });
         }
 

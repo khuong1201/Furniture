@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Order\Domain\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Modules\Product\Domain\Models\ProductVariant;
@@ -28,18 +29,18 @@ class OrderItem extends Model
         'discount_amount' => 'integer',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
-        static::creating(fn($model) => $model->uuid = (string) Str::uuid());
+        static::creating(fn(OrderItem $model) => $model->uuid = (string) Str::uuid());
     }
 
-    public function variant()
+    public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
-    public function warehouse()
+    public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }

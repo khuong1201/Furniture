@@ -11,11 +11,16 @@ import '@fontsource/poppins/700.css';
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './hooks/AuthContext';
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
+  // <StrictMode>
+  //   <BrowserRouter>
+  //     <AuthProvider>
+  //       <App />
+  //     </AuthProvider>
+  //   </BrowserRouter>
+  // </StrictMode>,
+  <BrowserRouter>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </BrowserRouter>
 )

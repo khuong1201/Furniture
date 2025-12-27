@@ -17,7 +17,7 @@ function Header() {
 
   const handleSearch = () => {
     if (keyword.trim()) {
-      navigate(`/customer/product?search=${encodeURIComponent(keyword)}`);
+      navigate(`/product?search=${encodeURIComponent(keyword)}`);
     }
   };
 
@@ -32,7 +32,7 @@ function Header() {
       <div className={styles['header-top']}>
     
         <div className={`${styles['container']} ${styles['top-container']}`}>
-          <Link to='/customer'>
+          <Link to='/'>
             <div className={styles['header-logo']}>
               Aterlier
             </div>
@@ -53,29 +53,30 @@ function Header() {
           <div className={styles['header-actions']}>
             
             <div className={styles['action-item']}>
-              <Link to="/customer/notification">
+              <Link to="/notification">
                 <img src={bellIcon} alt="Bell" className={styles['svg-icon']}/>
               </Link>
             </div>
 
             <div className={styles['action-item']}>
-              <Link to="/customer/cart">
+              <Link to="/cart">
                 <img src={cartIcon} alt="Cart" className={styles['svg-icon']}/>
               </Link>
             </div>
 
             <div className={styles['action-item']}>
-              <img src={accountIcon} alt="User" className={styles['svg-icon']}/>
+              {/* 1. Icon: Logic điều hướng */}
+              <Link to={user ? "/me" : "/login"}>
+                 <img src={accountIcon} alt="User" className={styles['svg-icon']}/>
+              </Link>
+
+              {/* 2. Text: Logic hiển thị & điều hướng */}
               {user ? (
-                <span className={styles['auth-text']}>
+                <Link to="/me" className={styles['auth-text']}>
                   Xin chào, {user.name}
-                </span>
+                </Link>
               ) : (
-                <Link
-                  to="/customer/register"
-                  className={styles['auth-text']}
-                  
-                >
+                <Link to="/login" className={styles['auth-text']}>
                   Log In / Sign up
                 </Link>
               )}

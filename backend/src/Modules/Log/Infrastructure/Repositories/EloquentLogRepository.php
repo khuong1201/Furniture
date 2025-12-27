@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Log\Infrastructure\Repositories;
 
-use Modules\Shared\Repositories\EloquentBaseRepository;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Log\Domain\Models\Log;
 use Modules\Log\Domain\Repositories\LogRepositoryInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use Modules\Shared\Repositories\EloquentBaseRepository;
 
 class EloquentLogRepository extends EloquentBaseRepository implements LogRepositoryInterface
 {
@@ -19,41 +18,16 @@ class EloquentLogRepository extends EloquentBaseRepository implements LogReposit
 
     public function getLogsByFilters(array $filters, int $perPage = 20): LengthAwarePaginator
     {
-        $query = $this->query()->with('user:id,name,email');
-
-        $this->applyFilters($query, $filters);
-
-        return $query->orderByDesc('created_at')->paginate($perPage);
-    }
-
-    protected function applyFilters(Builder $query, array $filters): void
-    {
-        if (!empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
-        
-        if (!empty($filters['action'])) {
-            $query->where('action', $filters['action']);
-        }
-        
-        if (!empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        }
-        
-        if (!empty($filters['model'])) {
-            $query->where('model', $filters['model']);
-        }
-        
-        if (!empty($filters['model_uuid'])) {
-            $query->where('model_uuid', $filters['model_uuid']);
-        }
-
-        if (!empty($filters['date_from'])) {
-            $query->whereDate('created_at', '>=', $filters['date_from']);
-        }
-        
-        if (!empty($filters['date_to'])) {
-            $query->whereDate('created_at', '<=', $filters['date_to']);
-        }
+        return $this->model->query()
+            ->with('user:id,name,email') 
+            ->when($filters['type'] ?? null, fn ($q, $v) => $q->where('type', $v))
+            ->when($filters['action'] ?? null, fn ($q, $v) => $q->where('action', $v))
+            ->when($filters['user_id'] ?? null, fn ($q, $v) => $q->where('user_id', $v))
+            ->when($filters['model'] ?? null, fn ($q, $v) => $q->where('model', 'like', "%$v%"))
+            ->when($filters['model_uuid'] ?? null, fn ($q, $v) => $q->where('model_uuid', $v))
+            ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))
+            ->latest()
+            ->paginate($perPage);
     }
 }

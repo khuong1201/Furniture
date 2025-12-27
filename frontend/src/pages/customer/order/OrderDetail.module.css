@@ -411,13 +411,17 @@
 .summaryRow {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 20px;
     margin-bottom: 10px;
     color: #555;
     font-size: 14px;
 }
-.summaryRow span:first-child { width: 200px; text-align: right; }
-.summaryRow span:last-child { width: 150px; text-align: right; color: #333; }
+.summaryRow span:first-child { text-align: right; }
+.summaryRow span:last-child { text-align: right; color: #333; }
+
+/* .summaryRow span:first-child { width: 200px; text-align: right; }
+.summaryRow span:last-child { width: 150px; text-align: right; color: #333; } */
 
 .totalRow {
     margin-top: 20px;

@@ -4,34 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\Shared\Services;
 
+use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Contracts\Mail\Mailable;
-use Exception;
 
 class MailService
 {
-    public function send(mixed $to, Mailable $mailable): bool
+    public function sendQueue(string $to, Mailable $mailable): void
     {
-        $emailAddress = is_object($to) ? ($to->email ?? 'unknown') : $to;
-
-        try {
-            Mail::to($to)->queue($mailable);
-            
-            Log::info("Email queued successfully", [
-                'to' => $emailAddress,
-                'class' => get_class($mailable)
-            ]);
-            
-            return true;
-        } catch (Exception $e) {
-            Log::error("Failed to queue email", [
-                'to' => $emailAddress,
-                'class' => get_class($mailable),
-                'error' => $e->getMessage()
-            ]);
-            
-            return false;
-        }
+        Mail::to($to)->queue($mailable);
+        
+        Log::info("Mail queued", [
+            'to' => $to,
+            'mailable' => get_class($mailable)
+        ]);
     }
 }

@@ -1,0 +1,15 @@
+# .gitattributes
+# 1. Mặc định để Git tự quyết định (Auto)
+* text=auto
+
+# 2. BẮT BUỘC: File shell script (.sh) phải luôn luôn là LF (Linux format)
+# Dù người dùng Windows tải về, Git sẽ tự động ép nó thành LF
+*.sh text eol=lf
+
+# 3. File Docker cũng nên là LF
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# 4. Các file Windows batch thì giữ nguyên CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf

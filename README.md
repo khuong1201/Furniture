@@ -36,3 +36,8 @@ php artisan key:
 cd frontend
 npm install
 npm run dev
+
+#### 6 option nếu có docker
+- docker-compose up -d --build
+- docker exec -it laravel-app php artisan migrate:fresh --seed
+- docker exec -it laravel-app php artisan l5-swagger:generate 

@@ -1,0 +1,9 @@
+# Bỏ qua cái shortcut bị lỗi này
+backend/src/public/storage
+storage/logs
+# Bỏ qua luôn mấy cái nặng nề không cần copy (Docker sẽ tự cài lại)
+**/vendor
+**/node_modules
+.git
+.idea
+.vscode

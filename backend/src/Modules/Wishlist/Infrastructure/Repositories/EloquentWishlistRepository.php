@@ -19,7 +19,12 @@ class EloquentWishlistRepository extends EloquentBaseRepository implements Wishl
     public function getByUser(int $userId, int $perPage): LengthAwarePaginator
     {
         return $this->model
-            ->with(['product.images', 'product.category']) // Eager load product details
+            ->with([
+                'product.images' => function($q) {
+                    $q->where('is_primary', true);
+                },
+                'product.category:id,name,slug' 
+            ])
             ->where('user_id', $userId)
             ->latest()
             ->paginate($perPage);

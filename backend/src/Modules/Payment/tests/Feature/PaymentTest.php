@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Payment\Tests\Feature;
+namespace Modules\Payment\tests\Feature;
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;

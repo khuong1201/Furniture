@@ -42,7 +42,7 @@ function LoginForm() {
     const result = await login(formData.email, formData.password, formData.device_name);
 
     if (result.success) {
-        navigate('/customer'); 
+        navigate('/'); 
     } else {
         setLocalError(result.message || 'Đăng nhập thất bại'); 
     }
@@ -130,7 +130,7 @@ function LoginForm() {
         {/* Footer Login Link */}
         <p className={styles['footer-text']}>
           Don't have an account?{' '}
-          <Link to='/customer/register' className={styles['link-highlight']}>
+          <Link to='/register' className={styles['link-highlight']}>
             Sign up
           </Link>
         </p>

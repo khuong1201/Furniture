@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Shipping\Domain\Repositories;
 
-use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Shared\Contracts\BaseRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ShippingRepositoryInterface extends BaseRepositoryInterface 

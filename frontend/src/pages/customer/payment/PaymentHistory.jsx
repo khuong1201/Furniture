@@ -129,7 +129,7 @@ const PaymentHistory = () => {
                                             <Calendar size={12} /> {formatDate(payment.created_at)}
                                         </div>
                                         <div className={styles.orderRef}>
-                                            Đơn hàng: <Link to={`/customer/orders/${payment.order_uuid}`}>#{payment.order_uuid?.substring(0, 8)}</Link>
+                                            Đơn hàng: <Link to={`/orders/${payment.order_uuid}`}>#{payment.order_uuid?.substring(0, 8)}</Link>
                                         </div>
                                     </div>
                                 </div>
@@ -141,7 +141,7 @@ const PaymentHistory = () => {
                                     <div className={styles.statusArea}>
                                         {renderStatusBadge(payment.status)}
                                     </div>
-                                    <Link to={`/customer/orders/${payment.order_uuid}`} className={styles.btnDetail}>
+                                    <Link to={`/orders/${payment.order_uuid}`} className={styles.btnDetail}>
                                         Xem chi tiết <ArrowRight size={14} />
                                     </Link>
                                 </div>

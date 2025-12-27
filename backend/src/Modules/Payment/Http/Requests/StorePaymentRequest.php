@@ -14,7 +14,7 @@ class StorePaymentRequest extends FormRequest
     {
         return [
             'order_uuid' => 'required|exists:orders,uuid',
-            'method' => 'required|string|in:cod,vnpay,momo,stripe',
+            'method'     => 'required|string|in:cod,momo,vnpay', 
         ];
     }
 }

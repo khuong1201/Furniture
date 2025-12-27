@@ -5,7 +5,7 @@ class ReviewService {
 
   constructor() {
     // Lưu ý: baseUrl đã có dấu '/' ở cuối
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/';
+    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     this.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -55,7 +55,7 @@ class ReviewService {
         } catch (refreshError) {
           console.error('❌ Refresh thất bại, logout...', refreshError);
           AuthService.logout();
-          window.location.href = '/customer/login';
+          window.location.href = '/login';
           throw refreshError;
         }
       }
@@ -89,7 +89,7 @@ class ReviewService {
     if (sort_by) params.append('sort_by', sort_by);
 
     // Endpoint không có dấu '/' ở đầu để tránh double slash
-    return this._request(`public/reviews?${params.toString()}`, {
+    return this._request(`/public/reviews?${params.toString()}`, {
       method: 'GET',
     }, false, false); // requireAuth = false
   }
@@ -99,7 +99,7 @@ class ReviewService {
   async getReviewStats(product_uuid) {
     if (!product_uuid) throw new Error('Product UUID is required for stats');
     
-    return this._request(`public/reviews/stats?product_uuid=${product_uuid}`, {
+    return this._request(`/public/reviews/stats?product_uuid=${product_uuid}`, {
         method: 'GET'
     }, false, false);
   }
@@ -107,7 +107,7 @@ class ReviewService {
   // 3. Xem chi tiết 1 review (Nếu cần)
   // Route: GET api/public/reviews/{uuid}
   async getReviewDetail(uuid) {
-    return this._request(`public/reviews/${uuid}`, {
+    return this._request(`/public/reviews/${uuid}`, {
       method: 'GET',
     }, false, false);
   }
@@ -119,7 +119,7 @@ class ReviewService {
   // 4. Tạo đánh giá mới
   // Route: POST api/reviews
   async createReview(data) {
-    return this._request('reviews', {  // Lưu ý: 'reviews' chứ không phải '/reviews'
+    return this._request('/reviews', {  
       method: 'POST',
       body: JSON.stringify(data),
     }, false, true); // requireAuth = true
@@ -128,7 +128,7 @@ class ReviewService {
   // 5. Cập nhật đánh giá
   // Route: PUT api/reviews/{uuid}
   async updateReview(uuid, data) {
-    return this._request(`reviews/${uuid}`, {
+    return this._request(`/reviews/${uuid}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }, false, true);
@@ -137,7 +137,7 @@ class ReviewService {
   // 6. Xóa đánh giá
   // Route: DELETE api/reviews/{uuid}
   async deleteReview(uuid) {
-    return this._request(`reviews/${uuid}`, {
+    return this._request(`/reviews/${uuid}`, {
       method: 'DELETE',
     }, false, true);
   }

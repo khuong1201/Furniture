@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Modules\Shared\Services;
 
 use Throwable;
+use Modules\Shared\Exceptions\BusinessException;
 use Modules\Log\Events\SystemErrorLogged; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Illuminate\Support\Facades\Request;
 
 class ExceptionHandlerService
 {
@@ -33,7 +33,7 @@ class ExceptionHandlerService
 
         if (in_array($severity, ['critical', 'error']) && class_exists(SystemErrorLogged::class)) {
             $ip = request()?->ip() ?? 'CLI/Unknown';
-            
+
             event(new SystemErrorLogged(
                 $userId,
                 $e->getMessage(),
@@ -48,7 +48,7 @@ class ExceptionHandlerService
         return match (true) {
             $e instanceof ValidationException => 'info',
             $e instanceof ModelNotFoundException => 'warning',
-            $e instanceof BusinessException => 'warning', 
+            $e instanceof BusinessException => 'warning',
             $e instanceof HttpException && $e->getStatusCode() < 500 => 'warning',
             default => 'error',
         };
@@ -57,7 +57,7 @@ class ExceptionHandlerService
     protected static function getContext(Throwable $e): array
     {
         $request = request();
-        
+
         return [
             'exception' => get_class($e),
             'file' => $e->getFile(),
@@ -66,7 +66,9 @@ class ExceptionHandlerService
             'url' => $request?->fullUrl() ?? 'CLI',
             'method' => $request?->method() ?? 'CLI',
             'user_agent' => $request?->userAgent() ?? 'Unknown',
-            'trace' => collect($e->getTrace())->take(5)->toArray(),
+            'trace' => app()->environment('production')
+                ? collect($e->getTrace())->take(5)->toArray()
+                : $e->getTrace(),
         ];
     }
 }

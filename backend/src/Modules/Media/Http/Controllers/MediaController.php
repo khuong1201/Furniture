@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Media\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Modules\Shared\Http\Controllers\BaseController;
-use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Media\Http\Requests\StoreMediaRequest;
 use Modules\Media\Services\MediaService;
 use Modules\Media\Domain\Models\Media;
+use Modules\Shared\Http\Controllers\BaseController;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Media", description: "API quản lý File/Ảnh hệ thống")]
@@ -17,13 +16,13 @@ class MediaController extends BaseController
 {
     public function __construct(protected MediaService $mediaService)
     {
-        //
+        parent::__construct($mediaService);
     }
 
     #[OA\Post(
-        path: "/admin/media",
-        summary: "Upload file (Generic)",
-        description: "Upload file gắn vào User hiện tại (Ví dụ: Avatar tạm).",
+        path: "/api/admin/media",
+        summary: "Upload file",
+        description: "Upload file gắn vào User hiện tại (Mặc định).",
         security: [['bearerAuth' => []]],
         tags: ["Media"],
         requestBody: new OA\RequestBody(
@@ -35,29 +34,32 @@ class MediaController extends BaseController
                 ])
             )
         ),
-        responses: [new OA\Response(response: 201, description: "Uploaded")]
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Upload thành công",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "object")
+                ])
+            )
+        ]
     )]
-    public function store(Request $request): JsonResponse
+    public function store(StoreMediaRequest $request): JsonResponse
     {
-        $this->authorize('create', Media::class); 
+        $this->authorize('create', Media::class);
 
-        $request->validate([
-            'file' => 'required|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx', 
-            'collection' => 'nullable|string|max:50'
-        ]);
-
-        // Gọi method createMedia (vừa refactor) thay vì upload cũ
         $media = $this->mediaService->createMedia(
-            $request->user(), 
-            $request->file('file'), 
+            $request->user(),
+            $request->file('file'),
             $request->input('collection', 'default')
         );
 
-        return response()->json(ApiResponse::success($media, 'File uploaded successfully', 201), 201);
+        return $this->successResponse($media, 'File uploaded successfully', 201);
     }
 
     #[OA\Delete(
-        path: "/admin/media/{uuid}",
+        path: "/api/admin/media/{uuid}",
         summary: "Xóa file/ảnh",
         security: [['bearerAuth' => []]],
         tags: ["Media"],
@@ -69,10 +71,8 @@ class MediaController extends BaseController
         $media = $this->mediaService->findByUuidOrFail($uuid);
 
         $this->authorize('delete', $media);
-
-        // Gọi method deleteMedia (xóa cả DB và File)
         $this->mediaService->deleteMedia($uuid);
         
-        return response()->json(ApiResponse::success(null, 'File deleted successfully'));
+        return $this->successResponse(null, 'File deleted successfully');
     }
 }

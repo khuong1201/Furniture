@@ -1,228 +1,243 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Edit, Trash2, Eye, UserCircle } from 'lucide-react';
-import UserService from '@/services/admin/UserService';
+import {
+    Plus, Search, Edit, Trash2, Eye,
+    ChevronLeft, ChevronRight, RefreshCw, UserCircle
+} from 'lucide-react';
+import { useUser } from '@/hooks/admin/useUser';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './UserList.css';
 
 const UserList = () => {
     const navigate = useNavigate();
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [confirmDialog, setConfirmDialog] = useState({
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: null,
-        isLoading: false
+    const { users, pagination, loading, error, fetchUsers, deleteUser } = useUser();
+
+    // State quản lý filter
+    const [filters, setFilters] = useState({
+        search: '',
+        status: '' // '' = All, 'active', 'inactive'
     });
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all');
 
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false });
 
-            const params = {};
-            if (searchTerm) params.search = searchTerm;
-            if (filterStatus !== 'all') params.is_active = filterStatus === 'active';
+    // 1. Initial Load
+    useEffect(() => {
+        loadData(1);
+    }, []);
 
-            const response = await UserService.getUsers(params);
+    const loadData = (page = 1, currentFilters = filters) => {
+        const params = {
+            page,
+            per_page: 15,
+        };
 
-            if (response.success && response.data) {
-                // Check if response.data is paginated (has .data property) or is direct array
-                const usersData = Array.isArray(response.data) ? response.data : (response.data.data || []);
-                setUsers(usersData);
-            }
-        } catch (err) {
-            setError(err.message || 'Không thể tải danh sách người dùng');
-            console.error('Error fetching users:', err);
-        } finally {
-            setLoading(false);
+        if (currentFilters.search) params.q = currentFilters.search;
+        if (currentFilters.status && currentFilters.status !== '') {
+            params.is_active = currentFilters.status === 'active';
+        }
+
+        fetchUsers(params);
+    };
+
+    // 2. Handlers
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            loadData(1);
         }
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, [filterStatus]);
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchUsers();
+    const handleRefresh = () => {
+        const resetFilters = { search: '', status: '' };
+        setFilters(resetFilters);
+        loadData(1, resetFilters);
     };
 
-    const handleDelete = (uuid, name) => {
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= pagination.last_page) {
+            loadData(newPage);
+        }
+    };
+
+    const handleDeleteClick = (user) => {
         setConfirmDialog({
             isOpen: true,
-            title: 'Xóa người dùng',
-            message: `Bạn có chắc muốn xóa người dùng "${name}"? Hành động này không thể hoàn tác.`,
+            title: 'Delete User',
+            message: `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`,
             onConfirm: async () => {
-                setConfirmDialog(prev => ({ ...prev, isLoading: true }));
-                try {
-                    await UserService.deleteUser(uuid);
-                    setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-                    fetchUsers();
-                } catch (err) {
-                    setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-                    alert('Lỗi khi xóa người dùng: ' + err.message);
-                }
+                await deleteUser(user.uuid);
+                setConfirmDialog({ isOpen: false });
+                loadData(pagination.current_page);
             }
         });
     };
 
     return (
-        <div className="user_list">
-            <div className="page-header">
-                <div>
-                    <h1>Quản lý Người dùng</h1>
-                    <p className="page-subtitle">Danh sách tất cả người dùng trong hệ thống</p>
+        <div className="user-list-container">
+            {/* Page Header */}
+            <div className="user-page-header">
+                <div className="header-title">
+                    <UserCircle size={24} className="text-gold" />
+                    <div>
+                        <h1>User Management</h1>
+                        <p>Manage system access and roles</p>
+                    </div>
                 </div>
                 <button
-                    className="btn-primary-user"
+                    className="btn-primary-action"
                     onClick={() => navigate('/admin/users/create')}
                 >
-                    <Plus size={20} />
-                    Thêm người dùng
+                    <Plus size={18} /> Add User
                 </button>
             </div>
 
-            {/* Filters & Search */}
-            <div className="filters-bar">
-                <form onSubmit={handleSearch} className="search-form">
-                    <div className="search-input-group">
-                        <Search size={18} />
+            {/* Main Card Wrapper */}
+            <div className="user-list-wrapper">
+                {/* Filters Bar */}
+                <div className="user-filters">
+                    <div className="search-input-wrapper">
+                        <Search size={18} className="search-icon" />
                         <input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên hoặc email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search by name or email..."
+                            value={filters.search}
+                            onChange={(e) => setFilters(p => ({ ...p, search: e.target.value }))}
+                            onKeyDown={handleSearchKeyDown}
                         />
                     </div>
-                    <button type="submit" className="btn btn-secondary">
-                        Tìm kiếm
-                    </button>
-                </form>
 
-                <div className="filter-group">
-                    <Filter size={18} />
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="filter-select"
-                    >
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="active">Đang hoạt động</option>
-                        <option value="inactive">Đã khóa</option>
-                    </select>
+                    <div className="status-select-wrapper">
+                        <select
+                            className="status-select"
+                            value={filters.status}
+                            onChange={(e) => {
+                                const newFilters = { ...filters, status: e.target.value };
+                                setFilters(newFilters);
+                                loadData(1, newFilters);
+                            }}
+                        >
+                            <option value="">-- All Status --</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Blocked</option>
+                        </select>
+                    </div>
+
+                    <button className="btn-refresh" onClick={handleRefresh} title="Reset & Refresh">
+                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                </div>
+
+                {/* Table Section */}
+                <div className="user-table-container">
+                    <div className="table-scroll">
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '35%', textAlign: 'left' }}>User Info</th>
+                                    <th style={{ width: '25%', textAlign: 'left' }}>Roles</th>
+                                    <th style={{ width: '15%', textAlign: 'center' }}>Status</th>
+                                    <th style={{ width: '15%', textAlign: 'left' }}>Created At</th>
+                                    <th style={{ width: '10%', textAlign: 'right' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr><td colSpan="5" className="empty-state"><span className="animate-spin inline-block mr-2">⟳</span> Loading users...</td></tr>
+                                ) : error ? (
+                                    <tr><td colSpan="5" className="empty-state text-red-500">{error}</td></tr>
+                                ) : users.length > 0 ? (
+                                    users.map(user => (
+                                        <tr key={user.uuid}>
+                                            <td style={{ textAlign: 'left' }}>
+                                                <div className="user-cell">
+                                                    <div className="user-name">{user.name}</div>
+                                                    <div className="user-email">{user.email}</div>
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: 'left' }}>
+                                                <div className="roles-wrapper">
+                                                    {user.roles?.length > 0 ? (
+                                                        user.roles.map(role => (
+                                                            <span key={role.id} className="role-tag">
+                                                                {role.name}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="role-tag member">Member</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <span className={`status-badge ${user.is_active ? 'success' : 'danger'}`}>
+                                                    {user.is_active ? 'Active' : 'Blocked'}
+                                                </span>
+                                            </td>
+                                            <td style={{ textAlign: 'left' }}>
+                                                <span className="date-text">
+                                                    {user.created_at ? new Date(user.created_at).toLocaleDateString('en-GB') : '-'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="table-actions">
+                                                    <button
+                                                        className="table-action-btn"
+                                                        onClick={() => navigate(`/admin/users/${user.uuid}`)}
+                                                        title="View"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        className="table-action-btn"
+                                                        onClick={() => navigate(`/admin/users/${user.uuid}/edit`)}
+                                                        title="Edit"
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button
+                                                        className="table-action-btn danger"
+                                                        onClick={() => handleDeleteClick(user)}
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr><td colSpan="5" className="empty-state">No users found.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {pagination.last_page > 1 && (
+                        <div className="pagination-wrapper">
+                            <div className="pagination-info">
+                                Showing <b>{users.length}</b> of <b>{pagination.total}</b> users
+                            </div>
+                            <div className="pagination-actions">
+                                <button disabled={pagination.current_page === 1} onClick={() => handlePageChange(pagination.current_page - 1)}>
+                                    <ChevronLeft size={18} />
+                                </button>
+                                <span className="page-number">{pagination.current_page}</span>
+                                <button disabled={pagination.current_page === pagination.last_page} onClick={() => handlePageChange(pagination.current_page + 1)}>
+                                    <ChevronRight size={18} />
+                                </button>
+                            </div>
+                            <div className="pagination-spacer"></div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="table-container">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Đang tải dữ liệu...</p>
-                    </div>
-                ) : error ? (
-                    <div className="error-state">
-                        <p>{error}</p>
-                        <button onClick={fetchUsers} className="btn btn-secondary">
-                            Thử lại
-                        </button>
-                    </div>
-                ) : users.length === 0 ? (
-                    <div className="empty-state">
-                        <UserCircle size={48} color="#9ca3af" />
-                        <p>Không tìm thấy người dùng nào</p>
-                    </div>
-                ) : (
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Tên người dùng</th>
-                                <th>Email</th>
-                                <th>Số điện thoại</th>
-                                <th>Vai trò</th>
-                                <th>Trạng thái</th>
-                                <th>Ngày tạo</th>
-                                <th className="text-right">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user) => (
-                                <tr key={user.uuid}>
-                                    <td>
-                                        <strong>{user.name}</strong>
-                                    </td>
-                                    <td>{user.email}</td>
-                                    <td>{user.phone || '-'}</td>
-                                    <td>
-                                        {user.roles && user.roles.length > 0 ? (
-                                            user.roles.map(role => (
-                                                <span key={role.id} className="badge badge-info" style={{ marginRight: '4px' }}>
-                                                    {role.name}
-                                                </span>
-                                            ))
-                                        ) : (
-                                            <span className="badge badge-secondary">User</span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${user.is_active ? 'badge-success' : 'badge-danger'}`}>
-                                            {user.is_active ? 'Hoạt động' : 'Đã khóa'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {user.created_at
-                                            ? new Date(user.created_at).toLocaleDateString('vi-VN')
-                                            : '-'
-                                        }
-                                    </td>
-                                    <td className="text-right">
-                                        <div className="action-buttons">
-                                            <button
-                                                className="btn-icon"
-                                                onClick={() => navigate(`/admin/users/${user.uuid}`)}
-                                                title="Xem chi tiết"
-                                            >
-                                                <Eye size={16} />
-                                            </button>
-                                            <button
-                                                className="btn-icon"
-                                                onClick={() => navigate(`/admin/users/${user.uuid}/edit`)}
-                                                title="Chỉnh sửa"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button
-                                                className="btn-icon btn-danger"
-                                                onClick={() => handleDelete(user.uuid, user.name)}
-                                                title="Xóa"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-
-
             <ConfirmDialog
                 isOpen={confirmDialog.isOpen}
-                onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+                onClose={() => setConfirmDialog({ isOpen: false })}
                 onConfirm={confirmDialog.onConfirm}
                 title={confirmDialog.title}
                 message={confirmDialog.message}
-                isLoading={confirmDialog.isLoading}
             />
-        </div >
+        </div>
     );
 };
 

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Log\Services;
 
-use Modules\Shared\Services\BaseService;
 use Modules\Log\Domain\Repositories\LogRepositoryInterface;
+use Modules\Shared\Services\BaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class LogService extends BaseService
 {
-    public function __construct(LogRepositoryInterface $repository)
-    {
+    public function __construct(
+        LogRepositoryInterface $repository
+    ) {
         parent::__construct($repository);
     }
 
@@ -22,10 +23,10 @@ class LogService extends BaseService
 
     public function createLog(array $data): void
     {
-        if (isset($data['message']) && strlen($data['message']) > 60000) {
-            $data['message'] = substr($data['message'], 0, 60000) . '... (truncated)';
+        if (isset($data['message'])) {
+            $data['message'] = substr($data['message'], 0, 60000);
         }
 
-        $this->create($data);
+        $this->create($data); 
     }
 }

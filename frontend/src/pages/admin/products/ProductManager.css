@@ -1,0 +1,78 @@
+/* ProductManager.css */
+
+.product-manager-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: 'Inter', sans-serif;
+    color: #1f2937;
+}
+
+/* Header Section */
+.manager-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Căn trên cùng */
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-size: 24px; font-weight: 700; color: #111827; margin: 0;
+}
+.page-subtitle {
+    color: #6b7280; font-size: 14px; margin-top: 4px;
+}
+
+/* Button Global Style */
+.btn-primary-gradient {
+    background: #1e2532; color: #c5a47e; border: none;
+    padding: 10px 20px; border-radius: 6px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    transition: 0.2s;
+    height: 42px; /* Chiều cao cố định */
+}
+.btn-primary-gradient:hover { background: #2d3646; color: #fff; }
+
+/* Tabs Navigation */
+.manager-tabs-wrapper {
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+
+.manager-tabs {
+    display: flex; gap: 32px;
+}
+
+.tab-item {
+    position: relative;
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 4px;
+    background: transparent; border: none;
+    font-size: 14px; font-weight: 500; color: #6b7280;
+    cursor: pointer; transition: 0.2s;
+}
+
+.tab-item:hover { color: #1f2937; }
+
+.tab-item.active {
+    color: #1e2532; font-weight: 600;
+}
+
+.tab-icon { margin-bottom: 2px; }
+
+/* Active Line Indicator */
+.active-indicator {
+    position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px;
+    background-color: #c5a47e;
+    border-radius: 2px 2px 0 0;
+}
+
+/* Content Animation */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

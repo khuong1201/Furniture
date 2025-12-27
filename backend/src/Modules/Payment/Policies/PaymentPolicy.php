@@ -19,8 +19,6 @@ class PaymentPolicy
 
     public function view(User $user, Payment $payment): bool
     {
-        // Check thông qua Order relationship nếu payment ko có user_id trực tiếp
-        // (Trong migration tôi ko thấy user_id, nên check qua order)
         $ownerId = $payment->order->user_id;
         
         return $user->id === $ownerId || $user->hasPermissionTo('payment.view');

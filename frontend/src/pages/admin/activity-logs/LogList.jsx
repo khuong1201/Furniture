@@ -1,61 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Search,
-    Activity,
-    User,
-    Clock,
-    Eye,
-    ChevronLeft,
-    ChevronRight,
-    Loader,
-    AlertCircle
+    Search, Activity, User, Clock, Eye,
+    ChevronLeft, ChevronRight, Loader, AlertCircle
 } from 'lucide-react';
-import LogService from '@/services/admin/LogService';
+import { useLog } from '@/hooks/admin/useLog'; // Import hook mới
 import Modal from '@/components/admin/shared/Modal';
 import './LogList.css';
 
 const LogList = () => {
-    const [logs, setLogs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const { 
+        logs, 
+        selectedLog, 
+        meta, 
+        loading, 
+        error, 
+        fetchLogs, 
+        fetchLogById, 
+        setError,
+        setSelectedLog 
+    } = useLog();
+
+    // Local State cho UI/Filter
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-
-    const [selectedLog, setSelectedLog] = useState(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
+    // 1. Load Data khi page hoặc filter thay đổi
+    // Lưu ý: search term xử lý riêng ở onKeyDown để tránh spam API
     useEffect(() => {
-        fetchLogs();
-    }, [currentPage, filterType]);
+        loadData(1);
+    }, [filterType]);
 
-    const fetchLogs = async () => {
-        try {
-            setLoading(true);
-            const params = { page: currentPage };
-            if (filterType) params.type = filterType;
+    const loadData = (page = 1, search = searchTerm) => {
+        const params = { 
+            page, 
+            per_page: 20, // Số lượng item mỗi trang
+        };
+        
+        if (filterType) params.type = filterType;
+        if (search) params.q = search; // Gửi từ khóa tìm kiếm lên server
 
-            const response = await LogService.getAll(params);
-            setLogs(response.data || []);
-            setTotalPages(response.meta?.last_page || 1);
-        } catch (err) {
-            setError('Không thể tải nhật ký hoạt động');
-        } finally {
-            setLoading(false);
+        fetchLogs(params);
+    };
+
+    // 2. Handlers
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            loadData(1); // Reset về trang 1 khi tìm kiếm
+        }
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= meta.last_page) {
+            loadData(newPage);
         }
     };
 
     const handleViewDetail = async (log) => {
-        try {
-            const response = await LogService.getById(log.uuid);
-            setSelectedLog(response.data || log);
-        } catch (err) {
+        // Nếu log đã có đủ data thì set luôn, không thì fetch lại để lấy full properties
+        if (log.properties) {
             setSelectedLog(log);
+        } else {
+            await fetchLogById(log.uuid);
         }
         setIsDetailOpen(true);
     };
 
+    // Helpers UI
     const getActionColor = (action) => {
         const colors = {
             'create': 'success', 'update': 'warning',
@@ -69,16 +80,12 @@ const LogList = () => {
         return new Date(dateString).toLocaleString('vi-VN');
     };
 
-    const filteredLogs = logs.filter(log =>
-        log.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    // Loading State (chỉ hiện khi chưa có data lần đầu)
     if (loading && logs.length === 0) {
         return (
             <div className="log_loading-state">
                 <Loader className="spinner" size={40} />
-                <p>Đang tải...</p>
+                <p>Đang tải dữ liệu...</p>
             </div>
         );
     }
@@ -96,18 +103,20 @@ const LogList = () => {
                 <div className="error-alert">
                     <AlertCircle size={20} />
                     <span>{error}</span>
-                    <button onClick={() => setError('')}>×</button>
+                    <button onClick={() => setError(null)}>×</button>
                 </div>
             )}
 
+            {/* Filters Bar */}
             <div className="search-filters">
                 <div className="log_search-box">
                     <Search size={20} className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Tìm kiếm hoạt động..."
+                        placeholder="Tìm kiếm hoạt động (Enter)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearchKeyDown}
                     />
                 </div>
                 <select
@@ -123,12 +132,13 @@ const LogList = () => {
                 </select>
             </div>
 
+            {/* Table */}
             <div className="log-table-wrapper">
-                {filteredLogs.length === 0 ? (
+                {logs.length === 0 ? (
                     <div className="log_empty-state">
                         <Activity size={64} />
-                        <h3>Chưa có hoạt động nào</h3>
-                        <p>Nhật ký sẽ được ghi lại khi có hoạt động</p>
+                        <h3>Không tìm thấy hoạt động nào</h3>
+                        <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
                     </div>
                 ) : (
                     <table className="log-table">
@@ -142,7 +152,7 @@ const LogList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredLogs.map((log) => (
+                            {logs.map((log) => (
                                 <tr key={log.uuid || log.id}>
                                     <td>
                                         <div className="time-cell">
@@ -166,6 +176,7 @@ const LogList = () => {
                                         <button
                                             className="action-btn btn-view"
                                             onClick={() => handleViewDetail(log)}
+                                            title="Xem chi tiết"
                                         >
                                             <Eye size={16} />
                                         </button>
@@ -177,36 +188,62 @@ const LogList = () => {
                 )}
             </div>
 
-            {totalPages > 1 && (
+            {/* Pagination */}
+            {meta.last_page > 1 && (
                 <div className="log_pagination">
-                    <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                    <button 
+                        disabled={meta.current_page === 1} 
+                        onClick={() => handlePageChange(meta.current_page - 1)}
+                    >
                         <ChevronLeft size={18} />
                     </button>
-                    {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                        const pageNum = currentPage > 3 ? currentPage - 2 + i : i + 1;
-                        if (pageNum > totalPages) return null;
-                        return (
-                            <button key={pageNum} className={currentPage === pageNum ? 'active' : ''}
-                                onClick={() => setCurrentPage(pageNum)}>{pageNum}</button>
-                        );
-                    })}
-                    <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                    
+                    {/* Logic hiển thị số trang đơn giản */}
+                    <span className="page-info">
+                        Trang {meta.current_page} / {meta.last_page}
+                    </span>
+
+                    <button 
+                        disabled={meta.current_page === meta.last_page} 
+                        onClick={() => handlePageChange(meta.current_page + 1)}
+                    >
                         <ChevronRight size={18} />
                     </button>
                 </div>
             )}
 
-            <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title="Chi tiết hoạt động" size="md">
+            {/* Modal Chi Tiết */}
+            <Modal 
+                isOpen={isDetailOpen} 
+                onClose={() => setIsDetailOpen(false)} 
+                title="Chi tiết hoạt động" 
+                size="md"
+            >
                 {selectedLog && (
                     <div className="log-detail">
-                        <div className="detail-row"><label>Thời gian:</label><span>{formatDate(selectedLog.created_at)}</span></div>
-                        <div className="detail-row"><label>Người dùng:</label><span>{selectedLog.user?.name || 'System'}</span></div>
-                        <div className="detail-row"><label>Hành động:</label>
-                            <span className={`log_action-badge ${getActionColor(selectedLog.action)}`}>{selectedLog.action}</span>
+                        <div className="detail-row">
+                            <label>Thời gian:</label>
+                            <span>{formatDate(selectedLog.created_at)}</span>
                         </div>
-                        <div className="detail-row"><label>Mô tả:</label><span>{selectedLog.description}</span></div>
-                        {selectedLog.properties && (
-                            <div className="detail-row full"><label>Dữ liệu:</label>
+                        <div className="detail-row">
+                            <label>Người dùng:</label>
+                            <span>{selectedLog.user?.name || 'System'}</span>
+                        </div>
+                        <div className="detail-row">
+                            <label>Hành động:</label>
+                            <span className={`log_action-badge ${getActionColor(selectedLog.action || selectedLog.event)}`}>
+                                {selectedLog.action || selectedLog.event}
+                            </span>
+                        </div>
+                        <div className="detail-row">
+                            <label>Mô tả:</label>
+                            <span>{selectedLog.description}</span>
+                        </div>
+                        
+                        {/* Hiển thị Properties (Payload/Changes) */}
+                        {selectedLog.properties && Object.keys(selectedLog.properties).length > 0 && (
+                            <div className="detail-row full">
+                                <label>Dữ liệu chi tiết:</label>
                                 <pre>{JSON.stringify(selectedLog.properties, null, 2)}</pre>
                             </div>
                         )}

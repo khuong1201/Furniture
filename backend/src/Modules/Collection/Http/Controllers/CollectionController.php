@@ -7,7 +7,7 @@ namespace Modules\Collection\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
-use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Shared\Http\Traits\ApiResponseTrait;
 use Modules\Collection\Services\CollectionService;
 use Modules\Collection\Http\Requests\StoreCollectionRequest;
 use Modules\Collection\Http\Requests\UpdateCollectionRequest;
@@ -43,7 +43,7 @@ class CollectionController extends BaseController
         }
 
         $data = $this->service->paginate($request->integer('per_page', 10), $filters);
-        return response()->json(ApiResponse::paginated($data));
+        return $this->successResponse($data);
     }
 
     #[OA\Get(
@@ -68,7 +68,7 @@ class CollectionController extends BaseController
             }
         ]);
 
-        return response()->json(ApiResponse::success($collection));
+        return $this->successResponse($collection);
     }
 
     #[OA\Post(
@@ -98,7 +98,7 @@ class CollectionController extends BaseController
     {
         $this->authorize('create', Collection::class);
         $collection = $this->service->create($request->validated());
-        return response()->json(ApiResponse::success($collection, 'Collection created successfully', 201), 201);
+        return $this->successResponse($collection, 'Collection created successfully', 201);
     }
 
     #[OA\Post(
@@ -131,7 +131,7 @@ class CollectionController extends BaseController
         $collection = $this->service->findByUuidOrFail($uuid);
         $this->authorize('update', $collection);
         $updated = $this->service->update($uuid, $request->validated());
-        return response()->json(ApiResponse::success($updated, 'Collection updated successfully'));
+        return $this->successResponse($updated, 'Collection updated successfully');
     }
 
     #[OA\Delete(
@@ -149,6 +149,6 @@ class CollectionController extends BaseController
         $collection = $this->service->findByUuidOrFail($uuid);
         $this->authorize('delete', $collection);
         $this->service->delete($uuid);
-        return response()->json(ApiResponse::success(null, 'Collection deleted successfully'));
+        return $this->successResponse(null, 'Collection deleted successfully');
     }
 }

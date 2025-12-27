@@ -11,81 +11,79 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Modules\Auth\Events\UserRegistered;
 use Modules\User\Domain\Models\User;
-use Modules\Auth\Domain\Repositories\AuthRepositoryInterface;
+use Modules\User\Domain\Repositories\UserRepositoryInterface; 
 use Modules\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
 use Modules\Shared\Exceptions\BusinessException;
 use Modules\Role\Domain\Repositories\RoleRepositoryInterface;
+use Modules\Shared\Services\BaseService;
 
-class AuthService
+class AuthService extends BaseService
 {
     protected const REFRESH_TOKEN_TTL = 30; 
 
     public function __construct(
-        protected AuthRepositoryInterface $userRepo,
+        UserRepositoryInterface $userRepo,
         protected RefreshTokenRepositoryInterface $refreshTokenRepo,
         protected RoleRepositoryInterface $roleRepo
-    ) {}
-
-    public function login(array $credentials, string $deviceName = 'web'): array
-    {
-        if (!Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
-            throw new BusinessException('Thông tin đăng nhập không chính xác.', 401);
-        }
-
-        $user = Auth::user();
-
-        if (!$user->is_active) {
-            throw new BusinessException('Tài khoản đã bị khóa.', 403);
-        }
-
-        return $this->generateTokenPair($user, $deviceName);
+    ) {
+        parent::__construct($userRepo);
     }
 
-    public function register(array $data, string $deviceName = 'web'): array
+    public function login(string $email, string $password, string $deviceName, string $ip, string $userAgent): array
     {
-        $result = DB::transaction(function () use ($data, $deviceName) {
-            $userData = [
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'password' => Hash::make($data['password']),
-                'is_active' => true,
-            ];
-            
-            /** @var User $user */
-            $user = $this->userRepo->create($userData);
+        $user = $this->repository->findByEmail($email);
+
+        if (!$user || !Hash::check($password, $user->password)) {
+            throw new BusinessException(401020, 'Tài khoản hoặc mật khẩu không chính xác'); 
+        }
+
+        if (!$user->isActive()) { 
+            throw new BusinessException(423014); 
+        }
+        return $this->generateTokenPair($user, $deviceName, $ip, $userAgent);
+    }
+
+    public function register(array $data, string $deviceName, string $ip, string $userAgent): array
+    {
+        if ($this->repository->findByEmail($data['email'])) {
+            throw new BusinessException(409011);
+        }
+
+        $result = DB::transaction(function () use ($data, $deviceName, $ip, $userAgent) {
+            $user = $this->repository->create([
+                'name'      => $data['name'],
+                'email'     => $data['email'],
+                'password'  => Hash::make($data['password']),
+                'status'    => 'active',
+            ]);
 
             $defaultRole = $this->roleRepo->findByName('customer');
             if ($defaultRole) {
                 $user->roles()->attach($defaultRole->id);
-                $user->clearPermissionCache();
             }
 
-            $tokens = $this->generateTokenPair($user, $deviceName);
+            $tokens = $this->generateTokenPair($user, $deviceName, $ip, $userAgent);
 
             return ['user' => $user, 'tokens' => $tokens];
         });
 
-        $user = $result['user'];
-        $tokens = $result['tokens'];
+        event(new UserRegistered($result['user']));
 
-        event(new UserRegistered($user));
-
-        return $tokens;
+        return $result['tokens'];
     }
 
-    public function refreshToken(string $refreshTokenStr, string $deviceName = 'web'): array
+    public function refreshToken(string $tokenStr, string $deviceName, string $ip, string $userAgent): array
     {
-        $storedToken = $this->refreshTokenRepo->findByToken($refreshTokenStr);
-
+        $storedToken = $this->refreshTokenRepo->findByToken($tokenStr);
         if (!$storedToken || !$storedToken->isValid()) {
-            throw new BusinessException('Refresh token không hợp lệ hoặc đã hết hạn.', 401);
+            throw new BusinessException(401021, 'Refresh token không hợp lệ hoặc đã hết hạn');
         }
 
         $user = $storedToken->user;
 
         $storedToken->update(['is_revoked' => true]);
 
-        return $this->generateTokenPair($user, $deviceName);
+        return $this->generateTokenPair($user, $deviceName, $ip, $userAgent);
     }
 
     public function verifyEmail(int $userId, string $otp): void
@@ -93,13 +91,11 @@ class AuthService
         $cacheKey = "email_verification_otp_{$userId}";
         $cachedOtp = Cache::get($cacheKey);
 
-        // 1. Kiểm tra OTP có khớp không
-        if (!$cachedOtp || (string)$cachedOtp !== (string)$otp) {
-            throw new BusinessException('Mã xác thực không đúng hoặc đã hết hạn.', 400);
+        if (!$cachedOtp || (string)$cachedOtp !== $otp) {
+            throw new BusinessException(400991, 'Mã OTP không chính xác hoặc đã hết hạn');
         }
 
-        // 2. Cập nhật User
-        $user = $this->userRepo->findById($userId);
+        $user = $this->repository->findById($userId);
         
         if (!$user->hasVerifiedEmail()) {
             $user->update(['email_verified_at' => now()]);
@@ -110,12 +106,12 @@ class AuthService
 
     public function resendOtp(int $userId): void
     {
-        $user = $this->userRepo->findById($userId);
-        
+        $user = $this->repository->findById($userId);
+
         if ($user->hasVerifiedEmail()) {
-            throw new BusinessException('Tài khoản này đã được xác thực trước đó.', 400);
+            throw new BusinessException(400991, 'Tài khoản này đã được xác thực trước đó');
         }
-        
+
         event(new UserRegistered($user));
     }
 
@@ -123,47 +119,35 @@ class AuthService
     {
         $user->currentAccessToken()->delete();
     }
-    
-    public function logoutAll(User $user): void
-    {
-        $user->tokens()->delete();
-        $this->refreshTokenRepo->revokeAllForUser($user->id);
-    }
 
-    protected function generateTokenPair(User $user, string $deviceName): array
+    protected function generateTokenPair(User $user, string $deviceName, string $ip, string $userAgent): array
     {
         $accessToken = $user->createToken($deviceName)->plainTextToken;
 
         $refreshTokenStr = hash('sha256', Str::random(60));
-        
+
         $this->refreshTokenRepo->create([
-            'user_id' => $user->id,
-            'token' => $refreshTokenStr,
+            'user_id'     => $user->id,
+            'token'       => $refreshTokenStr,
             'device_name' => $deviceName,
-            'ip' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'expires_at' => now()->addDays(self::REFRESH_TOKEN_TTL),
-            'is_revoked' => false
+            'ip'          => $ip, 
+            'user_agent'  => substr($userAgent, 0, 255),
+            'expires_at'  => now()->addDays(self::REFRESH_TOKEN_TTL),
+            'is_revoked'  => false
         ]);
 
         return [
-            'access_token' => $accessToken,
+            'access_token'  => $accessToken,
             'refresh_token' => $refreshTokenStr,
-            'token_type' => 'Bearer',
-            'user' => $this->formatUserResponse($user),
-        ];
-    }
-
-    protected function formatUserResponse(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'uuid' => $user->uuid,
-            'name' => $user->name,
-            'email' => $user->email,
-            'avatar_url' => $user->avatar_url,
-            'roles' => $user->roles->pluck('name'),
-            'permissions' => $user->allPermissions()->pluck('name'),
+            'token_type'    => 'Bearer',
+            'expires_in'    => config('sanctum.expiration') * 60,
+            'user'          => [
+                'id'     => $user->id,
+                'name'   => $user->name,
+                'email'  => $user->email,
+                'avatar' => $user->getFirstMediaUrl('avatar'), 
+                'roles'  => $user->roles->pluck('name'),
+            ],
         ];
     }
 }

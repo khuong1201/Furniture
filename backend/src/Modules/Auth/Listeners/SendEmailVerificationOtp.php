@@ -13,7 +13,6 @@ use Modules\Auth\Mails\VerifyEmailMail;
 
 class SendEmailVerificationOtp implements ShouldQueue
 {
-    // Chạy queue riêng để không tắc nghẽn
     public $queue = 'notifications';
 
     public function __construct(protected MailService $mailService) {}
@@ -27,7 +26,10 @@ class SendEmailVerificationOtp implements ShouldQueue
         $cacheKey = "email_verification_otp_{$user->id}";
         Cache::put($cacheKey, $otp, 600);
 
-        $this->mailService->send($user, new VerifyEmailMail($user, $otp));
+        $this->mailService->sendQueue(
+            $user->email,
+            new VerifyEmailMail($user, $otp)
+        );
 
         Log::info("Generated OTP for User ID {$user->id}");
     }

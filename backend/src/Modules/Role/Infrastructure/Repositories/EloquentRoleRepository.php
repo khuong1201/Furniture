@@ -21,6 +21,11 @@ class EloquentRoleRepository extends EloquentBaseRepository implements RoleRepos
         return $this->model->where('name', $name)->first();
     }
 
+    public function findBySlug(string $slug): ?Role
+    {
+        return $this->model->where('slug', $slug)->first();
+    }
+
     public function search(array $filters, int $perPage = 15): LengthAwarePaginator
     {
         $query = $this->query();

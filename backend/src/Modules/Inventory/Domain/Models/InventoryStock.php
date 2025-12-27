@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Modules\Product\Domain\Models\ProductVariant;
 use Modules\Warehouse\Domain\Models\Warehouse;
 use Modules\Shared\Traits\Loggable;
+use Modules\Inventory\Enums\InventoryStatus; // Import Enum
+use Modules\Inventory\database\factories\InventoryStockFactory;
 
 class InventoryStock extends Model
 {
@@ -44,10 +46,19 @@ class InventoryStock extends Model
         return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
     
-    public function getStatusAttribute(): string
+    // FIX: Return Enum object instead of string
+    public function getStatusAttribute(): InventoryStatus
     {
-        if ($this->quantity <= 0) return 'out_of_stock';
-        if ($this->quantity <= $this->min_threshold) return 'low_stock';
-        return 'in_stock';
+        if ($this->quantity <= 0) return InventoryStatus::OUT_OF_STOCK;
+        
+        $threshold = $this->min_threshold ?? 0;
+        if ($this->quantity <= $threshold) return InventoryStatus::LOW_STOCK;
+        
+        return InventoryStatus::IN_STOCK;
+    }
+    
+    protected static function newFactory()
+    {
+        return InventoryStockFactory::new();
     }
 }

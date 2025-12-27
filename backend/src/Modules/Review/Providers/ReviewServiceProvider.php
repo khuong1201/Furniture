@@ -27,7 +27,6 @@ class ReviewServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Review::class, ReviewPolicy::class);
-        Review::observe(\Modules\Review\Observers\ReviewObserver::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

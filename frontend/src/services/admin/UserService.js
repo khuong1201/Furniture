@@ -1,12 +1,10 @@
-class UserService {
+import HttpService from './HttpService'; // Giả sử bạn lưu HttpService ở file này
+
+class UserService extends HttpService {
     static _instance = null;
 
     constructor() {
-        this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        this.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
+        super(); // Gọi constructor của HttpService để setup baseUrl và headers
     }
 
     static get instance() {
@@ -16,63 +14,30 @@ class UserService {
         return UserService._instance;
     }
 
-    setToken(token) {
-        if (token) {
-            this.headers['Authorization'] = `Bearer ${token}`;
-        } else {
-            delete this.headers['Authorization'];
-        }
-    }
-
-    async _request(endpoint, options = {}) {
-        try {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                this.setToken(token);
-            }
-
-            const url = `${this.baseUrl}${endpoint}`;
-            const config = {
-                ...options,
-                headers: {
-                    ...this.headers,
-                    ...options.headers,
-                },
-            };
-
-            const response = await fetch(url, config);
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || `API Error: ${response.status}`);
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`User Service Error (${endpoint}):`, error);
-            throw error;
-        }
-    }
+    /**
+     * Instance Methods
+     * Sử dụng this.request() từ HttpService
+     */
 
     // Get users list (admin)
+    // HttpService đã tự xử lý việc chuyển object params thành query string (?key=value)
     async getUsers(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/users${queryString ? `?${queryString}` : ''}`);
+        return this.request('/admin/users', { params });
     }
 
     // Get single user
     async getUser(uuid) {
-        return this._request(`/admin/users/${uuid}`);
+        return this.request(`/admin/users/${uuid}`);
     }
 
     // Get current user profile
     async getProfile() {
-        return this._request('/profile');
+        return this.request('/profile');
     }
 
     // Create user (admin)
     async createUser(data) {
-        return this._request('/admin/users', {
+        return this.request('/admin/users', {
             method: 'POST',
             body: JSON.stringify(data),
         });
@@ -80,7 +45,7 @@ class UserService {
 
     // Update user (admin)
     async updateUser(uuid, data) {
-        return this._request(`/admin/users/${uuid}`, {
+        return this.request(`/admin/users/${uuid}`, {
             method: 'PUT',
             body: JSON.stringify(data),
         });
@@ -88,12 +53,15 @@ class UserService {
 
     // Delete user (admin)
     async deleteUser(uuid) {
-        return this._request(`/admin/users/${uuid}`, {
+        return this.request(`/admin/users/${uuid}`, {
             method: 'DELETE',
         });
     }
 
-    // Static methods
+    /**
+     * Static Methods (Wrapper cho Singleton)
+     * Giữ nguyên để tương thích với code cũ
+     */
     static async getUsers(params) {
         return UserService.instance.getUsers(params);
     }

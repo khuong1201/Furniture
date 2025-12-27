@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Cart\Domain\Repositories;
 
-use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Shared\Contracts\BaseRepositoryInterface;
 use Modules\Cart\Domain\Models\Cart;
 
 interface CartRepositoryInterface extends BaseRepositoryInterface

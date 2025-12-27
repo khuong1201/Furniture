@@ -4,52 +4,91 @@ namespace Modules\Voucher\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Voucher\Domain\Models\Voucher;
+use Illuminate\Support\Str;
 
 class VoucherDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Voucher giảm số tiền cố định (Fixed)
-        // Value: 200,000 VND (Integer)
-        Voucher::firstOrCreate(['code' => 'WELCOME2025'], [
-            'name' => 'Chào thành viên mới',
-            'description' => 'Giảm ngay 200k cho đơn hàng đầu tiên',
-            'type' => 'fixed',
-            'value' => 200000, // 200k
-            'min_order_value' => 1000000,
-            'max_discount_amount' => null,
-            'quantity' => 1000,
-            'start_date' => now(),
-            'end_date' => now()->addYear(),
-            'is_active' => true
-        ]);
+        $vouchers = [
+            [
+                'code' => 'WELCOME50',
+                'name' => 'Chào bạn mới',
+                'type' => 'fixed',
+                'value' => 50000,
+                'min_order_value' => 200000,
+                'quantity' => 1000,
+                'limit_per_user' => 1,
+            ],
+            [
+                'code' => 'FREESHIP',
+                'name' => 'Miễn phí vận chuyển',
+                'type' => 'fixed',
+                'value' => 30000,
+                'min_order_value' => 300000,
+                'quantity' => 5000,
+                'limit_per_user' => 10,
+            ],
+            [
+                'code' => 'VIP10',
+                'name' => 'Giảm 10% tối đa 100k',
+                'type' => 'percentage',
+                'value' => 10,
+                'max_discount_amount' => 100000,
+                'min_order_value' => 500000,
+                'quantity' => 200,
+                'limit_per_user' => 1,
+            ],
+            [
+                'code' => 'SOFA500',
+                'name' => 'Giảm 500k cho Sofa',
+                'type' => 'fixed',
+                'value' => 500000,
+                'min_order_value' => 5000000,
+                'quantity' => 50,
+                'limit_per_user' => 1,
+            ],
+            [
+                'code' => 'TET2025',
+                'name' => 'Lì xì đầu năm',
+                'type' => 'fixed',
+                'value' => 68000,
+                'min_order_value' => 0,
+                'quantity' => 100,
+                'limit_per_user' => 1,
+                'start_date' => now()->addMonths(1),
+            ],
+            [
+                'code' => 'EXPIRED_CODE',
+                'name' => 'Mã đã hết hạn',
+                'type' => 'percentage',
+                'value' => 50,
+                'min_order_value' => 0,
+                'quantity' => 100,
+                'limit_per_user' => 1,
+                'start_date' => now()->subMonths(2),
+                'end_date' => now()->subMonths(1),
+            ],
+        ];
 
-        // 2. Voucher giảm phần trăm (Percentage)
-        // Value: 10 (nghĩa là 10%)
-        // Max Discount: 500,000 VND (Integer)
-        Voucher::firstOrCreate(['code' => 'VIPMEMBER'], [
-            'name' => 'Ưu đãi VIP',
-            'description' => 'Giảm 10% tối đa 500k',
-            'type' => 'percentage',
-            'value' => 10, // 10%
-            'min_order_value' => 2000000, // Đơn từ 2 triệu
-            'max_discount_amount' => 500000, // Tối đa 500k
-            'quantity' => 500,
-            'start_date' => now(),
-            'end_date' => now()->addMonth(),
-            'is_active' => true
-        ]);
-        
-        // 3. Voucher Free Ship (Logic giảm tiền ship, ở đây demo giảm thẳng vào đơn)
-        Voucher::firstOrCreate(['code' => 'FREESHIP'], [
-            'name' => 'Hỗ trợ phí vận chuyển',
-            'type' => 'fixed',
-            'value' => 50000, // 50k
-            'min_order_value' => 500000, 
-            'quantity' => 2000,
-            'start_date' => now(),
-            'end_date' => now()->addYear(),
-            'is_active' => true
-        ]);
+        foreach ($vouchers as $v) {
+            Voucher::firstOrCreate(['code' => $v['code']], [
+                'uuid' => (string) Str::uuid(),
+                'name' => $v['name'],
+                'type' => $v['type'],
+                'value' => $v['value'],
+                'min_order_value' => $v['min_order_value'],
+                'max_discount_amount' => $v['max_discount_amount'] ?? null,
+                'quantity' => $v['quantity'],
+                
+                // --- FIX LỖI Ở ĐÂY (Đổi used_quantity -> used_count) ---
+                'used_count' => rand(0, floor($v['quantity'] / 2)), 
+                
+                'limit_per_user' => $v['limit_per_user'],
+                'start_date' => $v['start_date'] ?? now(),
+                'end_date' => $v['end_date'] ?? now()->addMonths(3),
+                'is_active' => true
+            ]);
+        }
     }
 }

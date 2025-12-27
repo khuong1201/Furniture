@@ -18,7 +18,7 @@ class EloquentShippingRepository extends EloquentBaseRepository implements Shipp
 
     public function filter(array $filters): LengthAwarePaginator
     {
-        $query = $this->query()->with('order.user'); // Eager load User của Order
+        $query = $this->query()->with('order.user'); 
 
         if (!empty($filters['tracking_number'])) {
             $query->where('tracking_number', 'like', "%{$filters['tracking_number']}%");

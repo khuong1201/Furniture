@@ -41,6 +41,7 @@ class PermissionDatabaseSeeder extends Seeder
                 'Catalog (Products)' => [
                     'product.view', 'product.create', 'product.edit', 'product.delete',
                     'category.view', 'category.create', 'category.edit', 'category.delete',
+                    'brand.view', 'brand.create', 'brand.edit', 'brand.delete',
                     'attribute.view', 'attribute.create', 'attribute.edit', 'attribute.delete',
                     'collection.view', 'collection.create', 'collection.edit', 'collection.delete',
                     'media.create', 'media.delete',
@@ -128,7 +129,34 @@ class PermissionDatabaseSeeder extends Seeder
             
             $staffRole->permissions()->sync($staffPermissions);
 
-            // CUSTOMER: Permissions are handled via logic/policies, usually empty in DB.
+            // CUSTOMER: End User Permissions (CHI TIẾT MỚI)
+            $customerPermissions = Permission::whereIn('name', [
+                // 1. Catalog Read-only (Xem hàng hóa)
+                'product.view', 
+                'category.view', 
+                'brand.view', 
+                'attribute.view', 
+                'collection.view',
+                
+                // 2. Shopping Actions (Mua hàng)
+                'order.create', // Đặt hàng
+                'order.view',   // Xem đơn của mình
+                'order.cancel', // Hủy đơn của mình
+                'payment.view', // Xem lịch sử thanh toán
+                'shipping.view',// Xem phương thức ship
+                
+                // 3. Marketing Interactions
+                'promotion.view', // Xem khuyến mãi
+                'review.view_all', // Xem đánh giá của người khác
+                
+                // 4. Personal Data (Dữ liệu cá nhân)
+                'address.view', 
+                'address.edit', 
+                'address.delete',
+                'wishlist.view'
+            ])->pluck('id');
+
+            $customerRole->permissions()->sync($customerPermissions);
         });
     }
 }

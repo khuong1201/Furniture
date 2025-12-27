@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- LAYOUT CHUNG --- */
+.profile-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: 80vh;
+  display: flex;
+  gap: 40px;
+  font-family: 'Inter', sans-serif;
+  background-color: #fff;
+  color: #333;
+  /* ✅ FIX: Cần thiết để sticky sidebar hoạt động đúng */
+  align-items: flex-start; 
+  position: relative;
+}
+
+/* --- SIDEBAR --- */
+.profile-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  border-right: 1px solid #f0f0f0;
+  padding-right: 20px;
+  
+  /* ✅ FIX: Sticky Sidebar chuẩn */
+  position: sticky;
+  top: 20px; /* Cách mép trên window 20px */
+  
+  /* Cho phép sidebar tự cuộn nếu nội dung quá dài */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto; 
+}
+
+/* ... (Phần còn lại giữ nguyên code CSS cũ của bạn) ... */
+.user-brief { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; }
+.avatar-circle { width: 50px; height: 50px; border-radius: 50%; background-color: #c4a48c; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; }
+.user-names h4 { margin: 0; font-size: 16px; font-weight: 700; color: #333; }
+.user-names p { margin: 0; font-size: 13px; color: #888; }
+.sidebar-menu { display: flex; flex-direction: column; gap: 5px; }
+.menu-item { padding: 12px 15px; border-radius: 4px; cursor: pointer; font-size: 15px; color: #555; display: flex; align-items: center; gap: 12px; transition: all 0.2s; font-weight: 500; }
+.menu-item:hover, .menu-item.active { background-color: #fcf8f5; color: #c4a48c; }
+.menu-item.active { font-weight: 700; }
+.menu-item.logout { color: #d9534f; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; border-radius: 0; }
+.menu-item.logout:hover { background: none; color: #ff0000; }
+
+/* --- CONTENT AREA --- */
+.profile-content { 
+    flex: 1; 
+    /* ✅ FIX: KHÔNG được set overflow hidden/auto ở đây */
+    /* Để nội dung tràn tự nhiên giúp window scrollbar hoạt động với Infinite Scroll */
+    width: 100%; 
+}
+
+.section-title { font-size: 20px; font-weight: 700; color: #c4a48c; margin: 0 0 25px 0; padding-bottom: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.form-container { background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 4px; max-width: 600px; }
+.form-group { margin-bottom: 20px; }
+.label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #555; }
+.input { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 2px; font-size: 14px; outline: none; background: #fff; transition: all 0.2s; color: #333; box-sizing: border-box; }
+.input:focus { border-color: #c4a48c; box-shadow: 0 0 0 1px #c4a48c; }
+.input:disabled { background: #f9f9f9; color: #999; }
+.btn-primary { padding: 10px 25px; border-radius: 2px; border: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s; background: #c4a48c; color: #fff; box-shadow: 0 2px 4px rgba(196, 164, 140, 0.3); }
+.btn-primary:hover { background: #b08d74; }
+.btn-text { background: none; border: 1px solid #ddd; padding: 6px 12px; border-radius: 4px; cursor: pointer; color: #555; font-size: 12px; }
+.btn-text:hover { border-color: #c4a48c; color: #c4a48c; }
+
+@media (max-width: 900px) {
+  .profile-container { flex-direction: column; padding: 20px; align-items: stretch; }
+  .profile-sidebar { width: 100%; border-right: none; margin-bottom: 20px; position: static; height: auto; max-height: none; }
+  .sidebar-menu { flex-direction: row; overflow-x: auto; padding-bottom: 10px; }
+  .menu-item { white-space: nowrap; border: 1px solid #eee; }
+}

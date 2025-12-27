@@ -4,49 +4,44 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Modules\Shared\Services\BaseService;
+use Modules\Shared\Contracts\NotificationServiceInterface;
 use Modules\Notification\Domain\Repositories\NotificationRepositoryInterface;
 use Modules\Notification\Events\NotificationCreated;
-use Illuminate\Database\Eloquent\Model;
 
-class NotificationService extends BaseService
+class NotificationService extends BaseService implements NotificationServiceInterface
 {
-    public function __construct(NotificationRepositoryInterface $repository)
-    {
+    public function __construct(
+        NotificationRepositoryInterface $repository
+    ) {
         parent::__construct($repository);
     }
 
-    public function getMyNotifications(int $userId, int $perPage = 15): array
+    public function send(int|string $userId, string $title, string $content, string $type = 'info', array $data = []): void
     {
-        $notifications = $this->repository->getUserNotifications($userId, $perPage);
-        $unreadCount = $this->repository->getUnreadCount($userId);
-        
-        return [
-            'items' => $notifications,
-            'unread_count' => $unreadCount
-        ];
-    }
-
-    /**
-     * Tạo thông báo và bắn Real-time Event
-     */
-    public function send(int $userId, string $title, string $content, string $type = 'info', array $data = []): Model
-    {
-        // 1. Lưu vào Database (Persistent storage)
         $notification = $this->repository->create([
             'user_id' => $userId,
-            'title' => $title,
+            'title'   => $title,
             'content' => $content,
-            'type' => $type,
-            'data' => $data,
+            'type'    => $type,
+            'data'    => $data,
             'read_at' => null
         ]);
 
-        // 2. Bắn Event Real-time (Pusher/Reverb sẽ bắt event này)
-        // Frontend lắng nghe channel: App.Models.User.{id} -> event: notification.created
-        broadcast(new NotificationCreated($notification));
+        try {
+            broadcast(new NotificationCreated($notification));
+        } catch (Throwable $e) {
+            Log::error("Realtime Notification Failed: " . $e->getMessage(), ['code' => 500120]);
+        }
+    }
 
-        return $notification;
+    public function getNotificationsWithUnreadCount(int $userId, int $perPage = 15): array
+    {
+        return [
+            'paginator'    => $this->repository->getUserNotifications($userId, $perPage),
+            'unread_count' => $this->repository->getUnreadCount($userId),
+        ];
     }
 
     public function markAsRead(string $uuid): void

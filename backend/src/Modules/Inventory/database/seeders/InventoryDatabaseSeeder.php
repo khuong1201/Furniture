@@ -3,55 +3,76 @@
 namespace Modules\Inventory\database\seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Modules\Inventory\Domain\Models\InventoryStock;
+use Modules\Inventory\Domain\Models\InventoryLog;
 use Modules\Product\Domain\Models\ProductVariant;
 use Modules\Warehouse\Domain\Models\Warehouse;
-use Modules\Inventory\Domain\Models\InventoryStock;
 
 class InventoryDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Đảm bảo đã có kho
-        $warehouseHN = Warehouse::firstOrCreate(
-            ['name' => 'Kho Tổng Miền Bắc'],
-            ['location' => 'Hà Nội', 'is_active' => true]
-        );
-        
-        $warehouseHCM = Warehouse::firstOrCreate(
-            ['name' => 'Kho Tổng Miền Nam'],
-            ['location' => 'Hồ Chí Minh', 'is_active' => true]
-        );
-
+        $warehouses = Warehouse::all();
         $variants = ProductVariant::all();
 
-        if ($variants->isEmpty()) {
-            $this->command->info('No product variants found. Please run ProductDatabaseSeeder first.');
+        if ($warehouses->isEmpty() || $variants->isEmpty()) {
+            $this->command->warn("⚠️ Missing Warehouses or Variants.");
             return;
         }
 
+        // Reset dữ liệu cũ
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        InventoryLog::truncate();
+        InventoryStock::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        $initialDate = Carbon::create(2023, 1, 1);
+
+        $stocksData = [];
+        $logsData = [];
+
         foreach ($variants as $variant) {
-            // Random số lượng tồn kho
-            $qtyHN = rand(0, 50);
-            $qtyHCM = rand(0, 50);
+            foreach ($warehouses as $warehouse) {
+                
+                // 1. Dùng Factory để tạo data chuẩn (nhưng chưa lưu DB)
+                // Hàm make() chỉ tạo object trên RAM -> Rất nhanh
+                $stockModel = InventoryStock::factory()
+                    ->zero() // Gọi state zero để set quantity = 0
+                    ->make([
+                        'warehouse_id'       => $warehouse->id,
+                        'product_variant_id' => $variant->id,
+                        'created_at'         => $initialDate,
+                        'updated_at'         => $initialDate,
+                    ]);
 
-            // Nếu cả 2 kho đều = 0 thì set 1 kho có hàng để tránh hết hàng toàn bộ
-            if ($qtyHN == 0 && $qtyHCM == 0) $qtyHN = 10;
+                // Chuyển object thành mảng để chuẩn bị Bulk Insert
+                $stocksData[] = $stockModel->getAttributes();
 
-            // Kho HN
-            if ($qtyHN > 0) {
-                InventoryStock::updateOrCreate(
-                    ['warehouse_id' => $warehouseHN->id, 'product_variant_id' => $variant->id],
-                    ['quantity' => $qtyHN, 'min_threshold' => 5]
-                );
+                // 2. Chuẩn bị Log (Log ít field nên build tay cho nhanh, hoặc làm Factory tương tự)
+                $logsData[] = [
+                    'warehouse_id'       => $warehouse->id,
+                    'product_variant_id' => $variant->id,
+                    'user_id'            => 1,
+                    'previous_quantity'  => 0,
+                    'new_quantity'       => 0,
+                    'quantity_change'    => 0,
+                    'type'               => 'adjustment',
+                    'reason'             => 'System Initialization',
+                    'created_at'         => $initialDate,
+                    'updated_at'         => $initialDate,
+                ];
             }
+        }
 
-            // Kho HCM
-            if ($qtyHCM > 0) {
-                InventoryStock::updateOrCreate(
-                    ['warehouse_id' => $warehouseHCM->id, 'product_variant_id' => $variant->id],
-                    ['quantity' => $qtyHCM, 'min_threshold' => 5]
-                );
-            }
+        // Thực hiện Bulk Insert (Chia nhỏ mỗi lần 500 dòng)
+        foreach (array_chunk($stocksData, 500) as $chunk) {
+            InventoryStock::insert($chunk);
+        }
+        foreach (array_chunk($logsData, 500) as $chunk) {
+            InventoryLog::insert($chunk);
         }
     }
 }

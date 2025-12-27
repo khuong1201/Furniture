@@ -43,6 +43,6 @@ class Address extends Model
 
     protected static function newFactory()
     {
-        return \Modules\Address\Database\factories\AddressFactory::new();
+        return \Modules\Address\database\factories\AddressFactory::new();
     }
 }

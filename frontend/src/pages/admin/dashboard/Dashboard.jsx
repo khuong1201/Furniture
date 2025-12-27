@@ -1,305 +1,168 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef } from 'react';
+import { ShoppingCart, Users, Package, DollarSign, Calendar, Filter } from 'lucide-react';
 import {
-    TrendingUp,
-    ShoppingCart,
-    Users,
-    Package,
-    DollarSign,
-    ArrowUp,
-    ArrowDown,
-    Calendar,
-    PieChart as PieChartIcon,
-    BarChart as BarChartIcon
-} from 'lucide-react';
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    BarChart,
-    Bar,
-    Legend
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import DashboardService from '@/services/admin/DashboardService';
-import OrderService from '@/services/admin/OrderService';
-import ProductService from '@/services/customer/ProductService';
+import { useDashboard } from '@/hooks/admin/useDashboard';
 import './Dashboard.css';
 
-const COLORS = ['#CBA890', '#a78b6e', '#8a7159', '#e5d5c5', '#d4a574'];
+// Import assets
+import trendUpIcon from '@/assets/icons/assets_admin/iconamoon_trend-up.png';
+import trendDownIcon from '@/assets/icons/assets_admin/iconamoon_trend-down.png';
 
 const Dashboard = () => {
-    const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({
-        totalRevenue: 0,
-        totalOrders: 0,
-        totalUsers: 0,
-        totalProducts: 0,
-    });
-    const [revenueData, setRevenueData] = useState([]);
-    const [recentOrders, setRecentOrders] = useState([]);
-    const [topProducts, setTopProducts] = useState([]);
-    const [orderStatusData, setOrderStatusData] = useState([]);
-    const [categorySalesData, setCategorySalesData] = useState([]);
-    const [topCustomers, setTopCustomers] = useState([]);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const {
+        loading, stats, revenueData, bestSellers, recentOrders,
+        loadingOrders, loadMoreOrders, topCustomers,
+        filterType, setFilterType,
+        selectedMonth, setSelectedMonth,
+        selectedYear, setSelectedYear
+    } = useDashboard();
 
-    useEffect(() => {
-        fetchAllData();
-    }, [selectedYear]);
+    const tableContainerRef = useRef(null);
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-    const fetchAllData = async () => {
-        try {
-            setLoading(true);
-            const [summaryRes, ordersRes] = await Promise.all([
-                DashboardService.getSummary(),
-                OrderService.getOrders({ limit: 5 })
-            ]);
+    // Helpers Formatting
+    const formatDate = (dateString) => {
+        if (!dateString) return '---';
+        // Date format từ API là "YYYY-MM-DD HH:mm"
+        const date = new Date(dateString.replace(' ', 'T')); 
+        return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
 
-            // Process Summary
-            if (summaryRes.success && summaryRes.data) {
-                const data = summaryRes.data;
+    // FIX: Format tiền tệ chuẩn từ số hoặc chuỗi số
+    const formatCurrency = (value) => {
+        const num = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]+/g, "")) : value;
+        return new Intl.NumberFormat('vi-VN').format(num || 0) + ' VND';
+    };
 
-                // Stats Cards
-                if (data.cards) {
-                    setStats({
-                        totalRevenue: data.cards.total_revenue || 0,
-                        totalOrders: data.cards.total_orders || 0,
-                        totalUsers: data.cards.total_users || 0,
-                        totalProducts: data.cards.low_stock_variants || 0, // Using low_stock as placeholder or if available
-                    });
-                }
+    const getStatusColor = (status) => {
+        const s = status?.toLowerCase();
+        if (['delivered', 'completed', 'paid'].includes(s)) return 'success';
+        if (['cancelled', 'failed'].includes(s)) return 'danger';
+        if (['shipping', 'processing', 'shipped'].includes(s)) return 'info';
+        if (s === 'pending' || s === 'unpaid') return 'warning';
+        return 'secondary';
+    };
 
-                // Top Products (Best Sellers)
-                if (data.best_sellers) {
-                    setTopProducts(data.best_sellers);
-                }
-
-                // Top Customers (Top Spenders)
-                if (data.top_spenders) {
-                    setTopCustomers(data.top_spenders);
-                }
-
-                // Process Revenue Chart
-                if (data.revenue_chart) {
-                    // Map API data directly for the chart
-                    const chartData = data.revenue_chart.map(item => ({
-                        name: item.label || item.date, // Use label (Monday) or date
-                        value: parseFloat(item.value),
-                        date: item.date
-                    }));
-                    setRevenueData(chartData);
-                }
-            }
-
-            // Process Recent Orders
-            if (ordersRes.success && ordersRes.data) {
-                const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.data || []);
-                setRecentOrders(orders.slice(0, 5));
-            }
-
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-        } finally {
-            setLoading(false);
-        }
+    const handleScrollOrders = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop <= clientHeight + 50) loadMoreOrders();
     };
 
     const statCards = [
-        {
-            title: 'Doanh thu',
-            value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats.totalRevenue),
-            icon: DollarSign,
-            color: '#10b981',
-            trend: '+12.5%',
-            isUp: true,
-        },
-        {
-            title: 'Đơn hàng',
-            value: stats.totalOrders,
-            icon: ShoppingCart,
-            color: '#3b82f6',
-            trend: '+8.2%',
-            isUp: true,
-        },
-        {
-            title: 'Khách hàng',
-            value: stats.totalUsers,
-            icon: Users,
-            color: '#8b5cf6',
-            trend: '+15.3%',
-            isUp: true,
-        },
-        {
-            title: 'Sản phẩm',
-            value: stats.totalProducts, // Note: API returns low_stock_variants, not total products count in cards
-            icon: Package,
-            color: '#f59e0b',
-            trend: '+2.4%',
-            isUp: true,
-        },
+        { title: 'Total Revenue', value: formatCurrency(stats.totalRevenue), icon: DollarSign, color: '#10b981', trend: stats.revenueGrowth, isUp: stats.revenueGrowth >= 0 },
+        { title: 'Total Orders', value: stats.totalOrders, icon: ShoppingCart, color: '#3b82f6', trend: stats.orderGrowth, isUp: stats.orderGrowth >= 0 },
+        { title: 'New Users', value: stats.totalUsers, icon: Users, color: '#8b5cf6', trend: stats.newUsers, isUp: true },
+        { title: 'Low Stock', value: stats.lowStock, icon: Package, color: '#f59e0b', trend: null, isUp: false },
     ];
 
-    const getStatusBadge = (status) => {
-        const statusMap = {
-            'pending': { label: 'Chờ xử lý', class: 'badge-warning' },
-            'processing': { label: 'Đang xử lý', class: 'badge-info' },
-            'shipped': { label: 'Đang giao', class: 'badge-info' },
-            'delivered': { label: 'Hoàn thành', class: 'badge-success' },
-            'cancelled': { label: 'Đã hủy', class: 'badge-danger' },
-        };
-        const info = statusMap[status] || { label: status, class: 'badge-secondary' };
-        return <span className={`badge ${info.class}`}>{info.label}</span>;
-    };
-
-    if (loading) {
-        return (
-            <div className="dashboard-loading">
-                <div className="spinner"></div>
-                <p>Đang tải dữ liệu...</p>
-            </div>
-        );
-    }
+    if (loading && stats.totalRevenue === 0) return <div className="dashboard-loading"><div className="spinner"></div><span>Fetching data...</span></div>;
 
     return (
-        <div className="dashboard">
-            <div className="dashboard-header">
-                <h1>Dashboard</h1>
-                <p className="dashboard-subtitle">Tổng quan hoạt động kinh doanh</p>
-            </div>
+        <div className="dashboard-container">
+            {/* 1. HEADER & FILTER */}
+            <div className="dashboard-header-row">
+                <div>
+                    <h1 className="dashboard-title">Dashboard Overview</h1>
+                    <p className="dashboard-subtitle">Business real-time performance analytics</p>
+                </div>
+                
+                <div className="filter-group">
+                    <div className="filter-dropdown">
+                        <Filter size={16} className="text-secondary"/>
+                        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                            <option value="today">Today</option>
+                            <option value="week">Weekly</option>
+                            <option value="month">Monthly</option>
+                            <option value="year">Yearly</option>
+                        </select>
+                    </div>
 
-            {/* Stat Cards */}
-            <div className="stat-cards">
-                {statCards.map((card, index) => {
-                    const Icon = card.icon;
-                    return (
-                        <div key={index} className="stat-card">
-                            <div className="stat-card-header">
-                                <div className="stat-icon" style={{ background: `${card.color}15`, color: card.color }}>
-                                    <Icon size={24} />
-                                </div>
-                                <div className={`stat-trend ${card.isUp ? 'up' : 'down'}`}>
-                                    {card.isUp ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
-                                    <span>{card.trend}</span>
-                                </div>
-                            </div>
-                            <div className="stat-card-body">
-                                <h3 className="stat-title">{card.title}</h3>
-                                <p className="stat-value">{card.value}</p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Main Charts Row */}
-            <div className="dashboard-grid">
-                {/* Revenue Chart */}
-                <div className="chart-card revenue-chart">
-                    <div className="chart-header">
-                        <h3>Biểu đồ doanh thu</h3>
-                        <div className="chart-actions">
-                            <select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                className="chart-select"
-                            >
-                                <option value={2024}>2024</option>
-                                <option value={2025}>2025</option>
+                    {filterType === 'month' && (
+                        <div className="filter-dropdown">
+                            <Calendar size={16} className="text-secondary"/>
+                            <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}>
+                                {Array.from({length: 12}, (_, i) => (
+                                    <option key={i+1} value={i+1}>Month {i+1}</option>
+                                ))}
                             </select>
                         </div>
-                    </div>
-                    <div className="chart-content">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}>
-                                <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#d4af37" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis
-                                    dataKey="name"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#9ca3af', fontSize: 12 }}
-                                    dy={10}
-                                />
-                                <YAxis
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#9ca3af', fontSize: 12 }}
-                                    tickFormatter={(value) => `${value / 1000000}M`}
-                                />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: '#fff',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                                    }}
-                                    formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="#d4af37"
-                                    strokeWidth={3}
-                                    fillOpacity={1}
-                                    fill="url(#colorRevenue)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+                    )}
 
-                {/* Order Status Pie Chart - Placeholder or Hidden if no data */}
-                <div className="chart-card">
-                    <div className="chart-header">
-                        <h3>Trạng thái đơn hàng</h3>
-                    </div>
-                    <div className="chart-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                        <p>Chưa có dữ liệu</p>
-                    </div>
+                    {(filterType === 'month' || filterType === 'year') && (
+                        <div className="filter-dropdown">
+                            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
+                                {years.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Secondary Charts Row */}
-            <div className="dashboard-grid">
-                {/* Category Sales Bar Chart - Placeholder */}
-                <div className="chart-card">
-                    <div className="chart-header">
-                        <h3>Doanh thu theo danh mục</h3>
+            {/* 2. STATS CARDS */}
+            <div className="stats-grid">
+                {statCards.map((card, i) => (
+                    <div key={i} className="stat-card">
+                        <div className="stat-icon" style={{ color: card.color, background: `${card.color}15` }}>
+                            <card.icon size={24} />
+                        </div>
+                        <div className="stat-info">
+                            <span className="stat-label">{card.title}</span>
+                            <h3 className="stat-number">{card.value}</h3>
+                            {card.trend !== null && (
+                                <div className={`stat-trend ${card.isUp ? 'up' : 'down'}`}>
+                                    <img src={card.isUp ? trendUpIcon : trendDownIcon} alt="trend" className="trend-icon" />
+                                    <span>{Math.abs(card.trend)}%</span>
+                                    <span className="text-muted text-xs ml-1">{stats.compareLabel}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div className="chart-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                        <p>Chưa có dữ liệu</p>
+                ))}
+            </div>
+
+            {/* 3. CHARTS & BEST SELLERS */}
+            <div className="charts-section">
+                <div className="chart-box revenue-box">
+                    <div className="box-header"><h3>Revenue Trends</h3></div>
+                    <div className="chart-wrapper" style={{ height: 400, width: '100%' }}>
+                        {revenueData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#c5a47e" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#c5a47e" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(val) => `${(val / 1000000).toFixed(0)}M`} />
+                                    <Tooltip formatter={(val) => formatCurrency(val)} />
+                                    <Area type="monotone" dataKey="value" stroke="#c5a47e" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        ) : <div className="empty-state">No data</div>}
                     </div>
                 </div>
 
-                {/* Top Customers */}
-                <div className="chart-card">
-                    <div className="chart-header">
-                        <h3>Khách hàng tiêu biểu</h3>
-                    </div>
-                    <div className="top-products-list">
-                        {topCustomers.map((customer, index) => (
-                            <div key={index} className="top-product-item">
-                                <div className="product-rank">#{index + 1}</div>
-                                <div className="product-details">
-                                    <h4 className="product-name">{customer.user?.name || 'Unknown'}</h4>
-                                    <span className="product-sales">{customer.user?.email}</span>
+                <div className="chart-box lists-box">
+                    <div className="box-header"><h3>Top Selling Products</h3></div>
+                    <div className="list-content custom-scroll">
+                        {bestSellers.map((prod, i) => (
+                            <div key={i} className="product-list-item">
+                                <div className="prod-img-wrapper">
+                                    <img src={prod.image || 'https://placehold.co/50'} alt={prod.name} />
+                                    <div className={`rank-dot rank-${i+1}`}>{i+1}</div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="product-price">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(customer.total_spent)}
+                                <div className="prod-info">
+                                    <h4 className="prod-name">{prod.name}</h4>
+                                    <div className="prod-meta">
+                                        <span className="prod-sold">{prod.total_sold} sold</span>
+                                        <span className="prod-revenue">{formatCurrency(prod.total_revenue)}</span>
                                     </div>
-                                    {/* Removed order count as it is not in API response */}
                                 </div>
                             </div>
                         ))}
@@ -307,38 +170,33 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Recent Orders & Top Products */}
-            <div className="dashboard-grid">
-                <div className="chart-card recent-orders-card">
-                    <div className="chart-header">
-                        <h3>Đơn hàng gần đây</h3>
-                    </div>
-                    <div className="recent-orders">
-                        <table className="recent-orders-table">
+            {/* 4. ORDERS & VIP CUSTOMERS */}
+            <div className="bottom-section">
+                <div className="chart-box orders-box">
+                    <div className="box-header"><h3>Recent Orders</h3></div>
+                    <div className="table-wrapper custom-scroll" ref={tableContainerRef} onScroll={handleScrollOrders}>
+                        <table className="modern-table">
                             <thead>
-                                <tr>
-                                    <th>Mã đơn</th>
-                                    <th>Khách hàng</th>
-                                    <th>Tổng tiền</th>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày đặt</th>
-                                </tr>
+                                <tr><th>Order Code</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr>
                             </thead>
                             <tbody>
                                 {recentOrders.map((order) => (
                                     <tr key={order.uuid}>
-                                        <td><span className="order-id">#{order.code || order.uuid.substring(0, 8)}</span></td>
+                                        <td className="font-mono" style={{ color: '#c5a47e' }}>{order.code}</td>
                                         <td>
-                                            <div className="customer-info">
-                                                <span className="customer-name">{order.user?.name || 'Khách lẻ'}</span>
-                                                <span className="customer-email">{order.user?.email}</span>
-                                            </div>
+                                            <div className="fw-600">{order.customer?.name || 'Guest'}</div>
+                                            <div style={{ fontSize: '11px', color: '#9ca3af' }}>{order.customer?.email}</div>
                                         </td>
-                                        <td className="amount">
-                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_amount)}
+                                        {/* FIX TẠI ĐÂY: Truy cập vào object amounts */}
+                                        <td className="fw-bold">
+                                            {order.amounts?.grand_total || formatCurrency(order.grand_total)}
                                         </td>
-                                        <td>{getStatusBadge(order.status)}</td>
-                                        <td>{new Date(order.created_at).toLocaleDateString('vi-VN')}</td>
+                                        <td>
+                                            <span className={`status-badge ${getStatusColor(order.status)}`}>
+                                                {order.status_label || order.status}
+                                            </span>
+                                        </td>
+                                        <td className="text-muted">{formatDate(order.dates?.ordered_at)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -346,26 +204,17 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="chart-card">
-                    <div className="chart-header">
-                        <h3>Sản phẩm bán chạy</h3>
-                    </div>
-                    <div className="top-products-list">
-                        {topProducts.map((product, index) => (
-                            <div key={product.uuid} className="top-product-item">
-                                <div className="product-rank">#{index + 1}</div>
-                                <img
-                                    src={product.image_url || 'https://via.placeholder.com/48'}
-                                    alt={product.name}
-                                    className="product-image"
-                                />
-                                <div className="product-details">
-                                    <h4 className="product-name">{product.name}</h4>
-                                    <span className="product-price">
-                                        {/* Displaying Total Revenue as Price is not available in best_sellers API */}
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.total_revenue)}
-                                    </span>
+                <div className="chart-box lists-box">
+                    <div className="box-header"><h3>Top Spenders</h3></div>
+                    <div className="list-content custom-scroll">
+                        {topCustomers.map((c, i) => (
+                            <div key={i} className="list-item">
+                                <div className={`rank-badge rank-${i+1}`}>{i+1}</div>
+                                <div className="list-details">
+                                    <span className="list-title">{c.customer?.name || c.user?.name}</span>
+                                    <span className="list-subtitle">{c.customer?.email || c.user?.email}</span>
                                 </div>
+                                <div className="list-value">{formatCurrency(c.total_spent)}</div>
                             </div>
                         ))}
                     </div>

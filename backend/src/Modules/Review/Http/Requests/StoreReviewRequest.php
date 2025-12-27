@@ -13,11 +13,11 @@ class StoreReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_uuid' => 'required|exists:products,uuid', 
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
-            'images' => 'nullable|array',
-            'images.*' => 'string|url' // Validate image URL from Media Module
+            'product_uuid' => 'required|string|exists:products,uuid', 
+            'rating'       => 'required|integer|min:1|max:5',
+            'comment'      => 'nullable|string|max:1000',
+            'images'       => 'nullable|array|max:5', // Max 5 ảnh
+            'images.*'     => 'string|url'
         ];
     }
 }

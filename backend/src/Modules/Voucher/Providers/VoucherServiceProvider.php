@@ -12,6 +12,8 @@ use Modules\Voucher\Domain\Repositories\VoucherRepositoryInterface;
 use Modules\Voucher\Infrastructure\Repositories\EloquentVoucherRepository;
 use Modules\Voucher\Domain\Models\Voucher;
 use Modules\Voucher\Policies\VoucherPolicy;
+use Modules\Shared\Contracts\VoucherServiceInterface;
+use Modules\Voucher\Services\VoucherService;
 
 class VoucherServiceProvider extends ServiceProvider
 {
@@ -40,6 +42,7 @@ class VoucherServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(VoucherServiceInterface::class, VoucherService::class);
         $this->app->bind(VoucherRepositoryInterface::class, EloquentVoucherRepository::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);

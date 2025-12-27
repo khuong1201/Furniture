@@ -14,15 +14,10 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             
-            // Type: percentage (giảm %), fixed (giảm số tiền cố định)
             $table->enum('type', ['percentage', 'fixed'])->default('percentage'); 
             
-            // CHANGE: Decimal -> UnsignedBigInteger
-            // Lưu ý: Nếu type=percentage, value=10 nghĩa là 10%. 
-            // Nếu type=fixed, value=50000 nghĩa là 50,000 VND.
             $table->unsignedBigInteger('value'); 
             
-            // CHANGE: Decimal -> UnsignedBigInteger
             $table->unsignedBigInteger('min_order_value')->nullable()->comment('Giá trị đơn hàng tối thiểu'); 
             $table->unsignedBigInteger('max_discount_amount')->nullable()->comment('Giảm tối đa bao nhiêu (cho loại %)');
             
@@ -30,7 +25,6 @@ return new class extends Migration
             $table->integer('used_count')->default(0); 
             $table->integer('limit_per_user')->default(1); 
             
-            // Indexing for performance
             $table->timestamp('start_date')->nullable()->index();
             $table->timestamp('end_date')->nullable()->index();
             $table->boolean('is_active')->default(true)->index();
@@ -44,7 +38,6 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             
             $table->primary(['promotion_id', 'product_id']);
-            // Index ngược để tìm promotion từ product nhanh hơn
             $table->index('product_id'); 
             $table->timestamps();
             

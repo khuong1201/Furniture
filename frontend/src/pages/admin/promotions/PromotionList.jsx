@@ -2,74 +2,56 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, Edit, Trash2, Tag, Calendar, Percent,
-    AlertCircle, RefreshCw, ChevronLeft, ChevronRight
+    AlertCircle, RefreshCw, ChevronLeft, ChevronRight, Layers, DollarSign
 } from 'lucide-react';
-import PromotionService from '@/services/admin/PromotionService';
+import { usePromotion } from '@/hooks/admin/usePromotion';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
-import './PromotionManagement.css';
+import './PromotionList.css';
 
 const PromotionList = () => {
     const navigate = useNavigate();
-    const [promotions, setPromotions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { 
+        promotions, loading, error, pagination, 
+        fetchPromotions, deletePromotion 
+    } = usePromotion();
+
     const [search, setSearch] = useState('');
-    const [pagination, setPagination] = useState({
-        current_page: 1,
-        last_page: 1,
-        per_page: 20,
-        total: 0
-    });
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
-        fetchPromotions();
-    }, [pagination.current_page, search]);
+        // Load data on mount
+        loadData(1);
+    }, []);
 
-    const fetchPromotions = async () => {
-        try {
-            setLoading(true);
-            const response = await PromotionService.getAll({
-                page: pagination.current_page,
-                per_page: pagination.per_page,
-                search: search || undefined
-            });
-            setPromotions(response.data?.data || response.data || []);
-            if (response.data?.meta) {
-                setPagination(prev => ({
-                    ...prev,
-                    ...response.data.meta
-                }));
-            }
-        } catch (err) {
-            setError('Không thể tải danh sách khuyến mãi');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+    const loadData = (page) => {
+        fetchPromotions({
+            page: page,
+            per_page: pagination.per_page,
+            search: search || undefined
+        });
     };
+
+    // Handle Search Enter
+    const handleSearch = () => loadData(1);
 
     const handleDelete = async () => {
         if (!deleteConfirm.item) return;
-
         setDeleting(true);
         try {
-            await PromotionService.delete(deleteConfirm.item.uuid);
+            await deletePromotion(deleteConfirm.item.uuid);
             setDeleteConfirm({ show: false, item: null });
-            fetchPromotions();
         } catch (err) {
-            setError('Không thể xóa khuyến mãi');
+            // Error logged in hook
         } finally {
             setDeleting(false);
         }
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return '--';
         return new Date(dateString).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
+            day: '2-digit', month: '2-digit', year: 'numeric'
         });
     };
 
@@ -78,10 +60,10 @@ const PromotionList = () => {
         const start = new Date(promo.start_date);
         const end = new Date(promo.end_date);
 
-        if (!promo.status) return { label: 'Không hoạt động', color: 'inactive' };
+        if (!promo.is_active) return { label: 'Tạm dừng', color: 'inactive' };
         if (now < start) return { label: 'Sắp diễn ra', color: 'upcoming' };
         if (now > end) return { label: 'Đã kết thúc', color: 'expired' };
-        return { label: 'Đang hoạt động', color: 'active' };
+        return { label: 'Đang chạy', color: 'active' };
     };
 
     return (
@@ -89,15 +71,11 @@ const PromotionList = () => {
             {/* Header */}
             <div className="page-header">
                 <div className="header-content">
-                    <h1>
-                        <Tag size={28} />
-                        Quản lý khuyến mãi
-                    </h1>
+                    <h1><Tag size={28} /> Quản lý khuyến mãi</h1>
                     <p>{pagination.total} chương trình khuyến mãi</p>
                 </div>
                 <button onClick={() => navigate('/admin/promotions/create')} className="btn-primary-promotion">
-                    <Plus size={20} />
-                    Thêm khuyến mãi
+                    <Plus size={20} /> Thêm mới
                 </button>
             </div>
 
@@ -106,49 +84,38 @@ const PromotionList = () => {
                 <Search size={20} />
                 <input
                     type="text"
-                    placeholder="Tìm kiếm theo tên khuyến mãi..."
+                    placeholder="Tìm kiếm khuyến mãi..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
-                <button onClick={fetchPromotions} className="btn-refresh">
+                <button onClick={handleSearch} className="btn-refresh">
                     <RefreshCw size={18} />
                 </button>
             </div>
 
-            {error && (
-                <div className="alert alert-error">
-                    <AlertCircle size={20} />
-                    {error}
-                </div>
-            )}
+            {error && <div className="alert alert-error"><AlertCircle size={20} /> {error}</div>}
 
             {/* Table */}
             <div className="table-container">
                 {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Đang tải...</p>
-                    </div>
+                    <div className="loading-state"><div className="spinner"></div><p>Đang tải dữ liệu...</p></div>
                 ) : promotions.length === 0 ? (
                     <div className="empty-state">
                         <Tag size={48} />
-                        <h3>Chưa có khuyến mãi nào</h3>
-                        <p>Tạo khuyến mãi đầu tiên để bắt đầu</p>
-                        <button onClick={() => navigate('/admin/promotions/create')} className="btn btn-primary">
-                            <Plus size={16} />
-                            Tạo khuyến mãi
-                        </button>
+                        <h3>Chưa có dữ liệu</h3>
+                        <button onClick={() => navigate('/admin/promotions/create')} className="btn btn-primary mt-4"><Plus size={16} /> Tạo khuyến mãi đầu tiên</button>
                     </div>
                 ) : (
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Tên chương trình</th>
-                                <th>Loại</th>
-                                <th>Giá trị</th>
+                                <th>Chương trình</th>
+                                <th>Mức giảm</th>
                                 <th>Thời gian</th>
+                                <th>Số lượng</th>
                                 <th>Trạng thái</th>
-                                <th>Thao tác</th>
+                                <th className="text-right">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,50 +126,43 @@ const PromotionList = () => {
                                         <td>
                                             <div className="promo-name">
                                                 <strong>{promo.name}</strong>
-                                                {promo.description && (
-                                                    <span>{promo.description}</span>
-                                                )}
+                                                {promo.description && <span className="line-clamp-1">{promo.description}</span>}
                                             </div>
                                         </td>
                                         <td>
-                                            <span className="promo-type">
-                                                {promo.type === 'percentage' ? 'Phần trăm' : 'Cố định'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span className="promo-value">
-                                                {promo.type === 'percentage' ? (
-                                                    <><Percent size={14} /> {promo.value}%</>
-                                                ) : (
-                                                    <>{parseInt(promo.value).toLocaleString('vi-VN')} đ</>
-                                                )}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="promo-dates">
-                                                <Calendar size={14} />
-                                                <span>{formatDate(promo.start_date)} - {formatDate(promo.end_date)}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="promo-value">
+                                                    {promo.type === 'percentage' 
+                                                        ? <><Percent size={14} /> {promo.value}%</> 
+                                                        : <><DollarSign size={14} /> {parseInt(promo.value).toLocaleString()}đ</>
+                                                    }
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {promo.min_order_value > 0 ? `Đơn > ${parseInt(promo.min_order_value).toLocaleString()}đ` : 'Không GT tối thiểu'}
+                                                </span>
                                             </div>
                                         </td>
                                         <td>
-                                            <span className={`status-badge status-${status.color}`}>
-                                                {status.label}
-                                            </span>
+                                            <div className="promo-dates text-xs flex-col gap-1">
+                                                <span>{formatDate(promo.start_date)}</span>
+                                                <span>{formatDate(promo.end_date)}</span>
+                                            </div>
                                         </td>
                                         <td>
-                                            <div className="action-buttons">
-                                                <button
-                                                    onClick={() => navigate(`/admin/promotions/${promo.uuid}/edit`)}
-                                                    className="btn-icon btn-edit"
-                                                    title="Sửa"
-                                                >
+                                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                                                <Layers size={14}/> 
+                                                {promo.quantity === 0 ? '∞' : `${promo.used_count || 0} / ${promo.quantity}`}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`status-badge status-${status.color}`}>{status.label}</span>
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons justify-end">
+                                                <button onClick={() => navigate(`/admin/promotions/${promo.uuid}/edit`)} className="btn-icon btn-edit" title="Chỉnh sửa">
                                                     <Edit size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => setDeleteConfirm({ show: true, item: promo })}
-                                                    className="btn-icon btn-delete"
-                                                    title="Xóa"
-                                                >
+                                                <button onClick={() => setDeleteConfirm({ show: true, item: promo })} className="btn-icon btn-delete" title="Xóa">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -218,19 +178,17 @@ const PromotionList = () => {
             {/* Pagination */}
             {pagination.last_page > 1 && (
                 <div className="pagination">
-                    <button
-                        onClick={() => setPagination(prev => ({ ...prev, current_page: prev.current_page - 1 }))}
-                        disabled={pagination.current_page === 1}
+                    <button 
+                        onClick={() => loadData(pagination.current_page - 1)} 
+                        disabled={pagination.current_page === 1} 
                         className="btn-page"
                     >
                         <ChevronLeft size={18} />
                     </button>
-                    <span className="page-info">
-                        Trang {pagination.current_page} / {pagination.last_page}
-                    </span>
-                    <button
-                        onClick={() => setPagination(prev => ({ ...prev, current_page: prev.current_page + 1 }))}
-                        disabled={pagination.current_page === pagination.last_page}
+                    <span className="page-info">Trang {pagination.current_page} / {pagination.last_page}</span>
+                    <button 
+                        onClick={() => loadData(pagination.current_page + 1)} 
+                        disabled={pagination.current_page === pagination.last_page} 
                         className="btn-page"
                     >
                         <ChevronRight size={18} />
@@ -238,14 +196,13 @@ const PromotionList = () => {
                 </div>
             )}
 
-            {/* Delete Confirmation */}
             <ConfirmDialog
                 isOpen={deleteConfirm.show}
                 onClose={() => setDeleteConfirm({ show: false, item: null })}
                 onConfirm={handleDelete}
                 title="Xác nhận xóa"
-                message={`Bạn có chắc muốn xóa khuyến mãi "${deleteConfirm.item?.name}"?`}
-                confirmText="Xóa"
+                message={`Bạn có chắc muốn xóa khuyến mãi "${deleteConfirm.item?.name}" không? Hành động này không thể hoàn tác.`}
+                confirmText="Xóa bỏ"
                 type="danger"
                 loading={deleting}
             />

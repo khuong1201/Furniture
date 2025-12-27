@@ -1,417 +1,205 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-    ArrowLeft,
-    Save,
-    Upload,
-    Eye,
-    EyeOff,
-    Link,
-    Layers,
-    Hash,
-    Info,
-    CheckCircle,
-    Settings
-} from 'lucide-react';
+import { ArrowLeft, Save, Loader2, AlertCircle, X, Image as ImageIcon, Layers } from 'lucide-react';
 import CategoryService from '@/services/admin/CategoryService';
+import CategoryTreeSelect from '@/components/admin/shared/CategoryTreeSelect';
+import ImageUpload from '@/components/admin/shared/ImageUploader';
 import './CategoryForm.css';
 
 const CategoryForm = () => {
     const navigate = useNavigate();
     const { uuid } = useParams();
-    const isEditMode = !!uuid;
+    const isEdit = !!uuid;
 
-    const [formData, setFormData] = useState({
-        name: '',
-        slug: '',
-        parent_id: '',
-        description: '',
-        is_active: true,
-        meta_title: '',
-        meta_description: '',
-        meta_keywords: ''
-    });
-
-    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [slugModified, setSlugModified] = useState(false);
+    const [treeData, setTreeData] = useState([]);
+    
+    const [formData, setFormData] = useState({
+        id: null, name: '', slug: '', parent_id: '',
+        description: '', is_active: true, image: null
+    });
 
     useEffect(() => {
-        fetchCategories();
-        if (isEditMode) {
-            fetchCategoryDetail();
-        }
-    }, [uuid]);
-
-    const fetchCategories = async () => {
-        try {
-            const response = await CategoryService.getCategoryTree();
-            if (response.success && response.data) {
-                const flattenCategories = (cats, depth = 0) => {
-                    return cats.reduce((acc, cat) => {
-                        if (isEditMode && cat.uuid === uuid) return acc;
-                        acc.push({ ...cat, depth });
-                        if (cat.all_children && cat.all_children.length > 0) {
-                            acc.push(...flattenCategories(cat.all_children, depth + 1));
-                        }
-                        return acc;
-                    }, []);
-                };
-                setCategories(flattenCategories(response.data));
-            }
-        } catch (err) {
-            console.error('Error fetching categories:', err);
-        }
-    };
-
-    const fetchCategoryDetail = async () => {
-        try {
+        const init = async () => {
             setLoading(true);
-            const response = await CategoryService.getCategory(uuid);
-            if (response.success && response.data) {
-                const category = response.data;
-                setFormData({
-                    name: category.name || '',
-                    slug: category.slug || '',
-                    parent_id: category.parent_id || '',
-                    description: category.description || '',
-                    is_active: category.is_active ?? true,
-                    meta_title: category.meta_title || '',
-                    meta_description: category.meta_description || '',
-                    meta_keywords: category.meta_keywords || ''
-                });
-                setSlugModified(true);
+            try {
+                const treeRes = await CategoryService.getCategoryTree();
+                setTreeData(treeRes.data || []);
+                if (isEdit) {
+                    const res = await CategoryService.getCategory(uuid);
+                    const cat = res.data;
+                    setFormData({
+                        id: cat.id, name: cat.name, slug: cat.slug,
+                        parent_id: cat.parent_id || '', description: cat.description || '',
+                        is_active: cat.is_active, image: cat.image
+                    });
+                }
+            } catch (err) {
+                setError(err.response?.data?.message || "Failed to load data");
+            } finally {
+                setLoading(false);
             }
-        } catch (err) {
-            setError('Không thể tải thông tin danh mục');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-
-        if (name === 'name' && !slugModified && !isEditMode) {
-            const generatedSlug = generateSlug(value);
-            setFormData(prev => ({ ...prev, slug: generatedSlug }));
-        }
-    };
-
-    const handleSlugChange = (e) => {
-        setFormData(prev => ({ ...prev, slug: generateSlug(e.target.value) }));
-        setSlugModified(true);
-    };
-
-    const generateSlug = (text) => {
-        return text
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-+|-+$/g, '');
-    };
+        };
+        init();
+    }, [uuid, isEdit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
-        setError(null);
-        setSuccess(false);
-
         try {
-            if (isEditMode) {
-                await CategoryService.updateCategory(uuid, formData);
-            } else {
-                await CategoryService.createCategory(formData);
-            }
+            const payload = new FormData();
+            payload.append('name', formData.name);
+            if (formData.slug) payload.append('slug', formData.slug);
+            if (formData.parent_id) payload.append('parent_id', formData.parent_id);
+            if (formData.description) payload.append('description', formData.description);
+            payload.append('is_active', formData.is_active ? '1' : '0');
+            if (formData.image instanceof File) payload.append('image', formData.image);
 
-            setSuccess(true);
-            setTimeout(() => {
-                navigate('/admin/categories');
-            }, 1500);
+            if (isEdit) {
+                payload.append('_method', 'PUT');
+                await CategoryService.instance._request(`/admin/categories/${uuid}`, {
+                    method: 'POST', body: payload, headers: { 'Content-Type': undefined }
+                });
+            } else {
+                await CategoryService.createCategory(payload);
+            }
+            navigate('/admin/product-manager?tab=categories');
         } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Có lỗi xảy ra');
+            setError(err.response?.data?.message || "An error occurred.");
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="loading-state">
-                <div className="spinner-gold"></div>
-                <p>Đang tải thông tin...</p>
-            </div>
-        );
-    }
+    if (loading) return <div className="loading-container"><Loader2 className="spinner-gold" /></div>;
 
     return (
-        <div className="category-form-container">
-            {/* Header */}
-            <div className="form-header">
-                <button onClick={() => navigate('/admin/categories')} className="back-btn">
-                    <ArrowLeft size={20} />
-                    Quay lại
+        <div className="category-form-page">
+            <div className="form-header-section">
+                <button type="button" onClick={() => navigate('/admin/product-manager?tab=categories')} className="btn-back">
+                    <ArrowLeft size={18} /> Back
                 </button>
-                <div className="header-content">
-                    <h1>
-                        {isEditMode ? 'Chỉnh sửa Danh mục' : 'Thêm Danh mục mới'}
-                    </h1>
-                    <p className="form-subtitle">
-                        {isEditMode ? 'Cập nhật thông tin danh mục của bạn' : 'Tạo danh mục mới cho sản phẩm'}
-                    </p>
+                <h1>{isEdit ? 'Update Category' : 'Create Category'}</h1>
+            </div>
+
+            {error && <div className="error-alert"><AlertCircle size={20} /><span>{error}</span></div>}
+
+            <form onSubmit={handleSubmit} className="main-form">
+                <div className="form-layout">
+                    
+                    {/* === CỘT TRÁI: Main Info === */}
+                    <div className="form-column main">
+                        <div className="form-card">
+                            <div className="card-header">
+                                <h3><Layers size={18} /> Basic Information</h3>
+                            </div>
+                            <div className="card-body">
+                                {/* Name */}
+                                <div className="form-group">
+                                    <label className="form-label required">Category Name</label>
+                                    <input 
+                                        className="form-input" required
+                                        value={formData.name}
+                                        onChange={e => setFormData({...formData, name: e.target.value})}
+                                        placeholder="e.g., Living Room"
+                                    />
+                                </div>
+
+                                {/* Parent Category (Đã chuyển vào đây) */}
+                                <CategoryTreeSelect 
+                                    treeData={treeData}
+                                    value={formData.parent_id}
+                                    onChange={val => setFormData({...formData, parent_id: val})}
+                                    currentId={formData.id}
+                                />
+
+                                {/* Slug */}
+                                <div className="form-group">
+                                    <label className="form-label">Slug</label>
+                                    <input 
+                                        className="form-input"
+                                        value={formData.slug}
+                                        onChange={e => setFormData({...formData, slug: e.target.value})}
+                                        placeholder="Auto-generated if empty"
+                                    />
+                                </div>
+
+                                {/* Description */}
+                                <div className="form-group">
+                                    <label className="form-label">Description</label>
+                                    <textarea 
+                                        className="form-textarea"
+                                        value={formData.description}
+                                        onChange={e => setFormData({...formData, description: e.target.value})}
+                                        rows={6} placeholder="Enter description..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* === CỘT PHẢI: Settings & Media === */}
+                    <div className="form-column sidebar">
+                        
+                        {/* 1. Status */}
+                        <div className="form-card">
+                            <div className="card-header">
+                                <h3>Status</h3>
+                            </div>
+                            <div className="card-body">
+                                <div className="status-toggle-row">
+                                    <span className="status-label">Availability</span>
+                                    <div 
+                                        className={`toggle-switch ${formData.is_active ? 'on' : 'off'}`}
+                                        onClick={() => setFormData({...formData, is_active: !formData.is_active})}
+                                    >
+                                        <div className="toggle-knob"></div>
+                                    </div>
+                                </div>
+                                <p className={`status-helper ${formData.is_active ? 'active' : ''}`}>
+                                    {formData.is_active ? 'Visible on store' : 'Hidden from store'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 2. Media */}
+                        <div className="form-card">
+                            <div className="card-header">
+                                <h3><ImageIcon size={18} /> Media</h3>
+                            </div>
+                            <div className="card-body">
+                                <ImageUpload 
+                                    initialImage={formData.image}
+                                    onChange={file => setFormData({...formData, image: file})}
+                                />
+                            </div>
+                        </div>
+
+                        {/* 3. Actions */}
+                        <div className="sidebar-actions">
+                            <button 
+                                type="submit" 
+                                className="btn-primary-gradient full-width" 
+                                disabled={submitting}
+                            >
+                                {submitting ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                                <span>{isEdit ? 'Save Changes' : 'Create Category'}</span>
+                            </button>
+                            
+                            <button 
+                                type="button" 
+                                className="btn-secondary full-width" 
+                                onClick={() => navigate('/admin/product-manager?tab=categories')}
+                            >
+                                <X size={18}/> Cancel
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
-            </div>
-
-            {/* Main Form */}
-            <div className="form-wrapper">
-                {success && (
-                    <div className="success-alert">
-                        <CheckCircle size={20} />
-                        <span>Danh mục đã được {isEditMode ? 'cập nhật' : 'tạo'} thành công!</span>
-                    </div>
-                )}
-
-                {error && (
-                    <div className="error-alert">
-                        <Info size={20} />
-                        <span>{error}</span>
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="category-form">
-                    <div className="form-grid">
-                        {/* Left Column - Basic Info */}
-                        <div className="form-column">
-                            <div className="form-card">
-                                <div className="card-header">
-                                    <h3>
-                                        <Layers size={20} />
-                                        Thông tin cơ bản
-                                    </h3>
-                                </div>
-                                <div className="card-body">
-                                    <div className="form-group">
-                                        <label className="form-label required">
-                                            Tên danh mục
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            required
-                                            className="form-input"
-                                            placeholder="Ví dụ: Sofa phòng khách"
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label required">
-                                            <Link size={16} />
-                                            Slug (URL)
-                                        </label>
-                                        <div className="input-with-prefix">
-                                            <span className="input-prefix">/categories/</span>
-                                            <input
-                                                type="text"
-                                                name="slug"
-                                                value={formData.slug}
-                                                onChange={handleSlugChange}
-                                                required
-                                                className="form-input"
-                                                placeholder="sofa-phong-khach"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label">
-                                            <Layers size={16} />
-                                            Danh mục cha
-                                        </label>
-                                        <select
-                                            name="parent_id"
-                                            value={formData.parent_id}
-                                            onChange={handleChange}
-                                            className="form-input"
-                                        >
-                                            <option value="">-- Không có (Danh mục gốc) --</option>
-                                            {categories.map(cat => (
-                                                <option key={cat.id} value={cat.id}>
-                                                    {Array(cat.depth).fill('\u00A0\u00A0').join('')}
-                                                    {cat.depth > 0 ? '├─ ' : ''}
-                                                    {cat.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label">
-                                            <Info size={16} />
-                                            Mô tả
-                                        </label>
-                                        <textarea
-                                            name="description"
-                                            value={formData.description}
-                                            onChange={handleChange}
-                                            className="form-textarea"
-                                            rows="4"
-                                            placeholder="Mô tả chi tiết về danh mục này..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right Column - Settings & SEO */}
-                        <div className="form-column">
-                            <div className="form-card">
-                                <div className="card-header">
-                                    <h3>
-                                        <Settings size={20} />
-                                        Cài đặt & SEO
-                                    </h3>
-                                </div>
-                                <div className="card-body">
-                                    <div className="form-group">
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                name="is_active"
-                                                checked={formData.is_active}
-                                                onChange={handleChange}
-                                                className="checkbox-input"
-                                            />
-                                            <span className="checkbox-custom"></span>
-                                            <span className="checkbox-text">
-                                                {formData.is_active ? (
-                                                    <>
-                                                        <Eye size={16} />
-                                                        __Đang hiển thị__
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <EyeOff size={16} />
-                                                        __Đang ẩn__
-                                                    </>
-                                                )}
-                                            </span>
-                                        </label>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label">
-                                            <Hash size={16} />
-                                            Meta Title
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="meta_title"
-                                            value={formData.meta_title}
-                                            onChange={handleChange}
-                                            className="form-input"
-                                            placeholder="Tối ưu hóa SEO"
-                                            maxLength="60"
-                                        />
-                                        <div className="input-counter">
-                                            {formData.meta_title.length}/60
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label">
-                                            <Info size={16} />
-                                            Meta Description
-                                        </label>
-                                        <textarea
-                                            name="meta_description"
-                                            value={formData.meta_description}
-                                            onChange={handleChange}
-                                            className="form-textarea"
-                                            rows="3"
-                                            placeholder="Mô tả ngắn cho SEO..."
-                                            maxLength="160"
-                                        />
-                                        <div className="input-counter">
-                                            {formData.meta_description.length}/160
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label">
-                                            <Hash size={16} />
-                                            Meta Keywords
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="meta_keywords"
-                                            value={formData.meta_keywords}
-                                            onChange={handleChange}
-                                            className="form-input"
-                                            placeholder="Từ khóa SEO, phân cách bằng dấu phẩy"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Form Actions */}
-                            <div className="form-actions-card">
-                                <div className="form-actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/admin/categories')}
-                                        className="btn btn-secondary"
-                                        disabled={submitting}
-                                    >
-                                        Hủy bỏ
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                        disabled={submitting || success}
-                                    >
-                                        {submitting ? (
-                                            <>
-                                                <div className="spinner-small"></div>
-                                                Đang xử lý...
-                                            </>
-                                        ) : success ? (
-                                            <>
-                                                <CheckCircle size={18} />
-                                                Thành công!
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Save size={18} />
-                                                {isEditMode ? 'Cập nhật' : 'Tạo mới'}
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-
-                                {isEditMode && (
-                                    <div className="form-info">
-                                        <Info size={16} />
-                                        <p>Được cập nhật lần cuối: {formData.updated_at}</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     );
 };

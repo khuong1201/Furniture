@@ -2,7 +2,7 @@ class CategoryService {
   static _instance = null;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/public';
+    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     this.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -41,14 +41,13 @@ class CategoryService {
   }
 
   async getCategories(params = {}) {
-    // Lọc bỏ các params null/undefined/rỗng
     const validParams = Object.fromEntries(
       Object.entries(params).filter(([_, v]) => v != null && v !== '')
     );
 
     const queryString = new URLSearchParams(validParams).toString();
 
-    return this._request(`/categories?${queryString}`, { method: 'GET' });
+    return this._request(`/public/categories?${queryString}`, { method: 'GET' });
   }
 
   async getCategoryTree() {

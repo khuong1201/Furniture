@@ -4,40 +4,74 @@ declare(strict_types=1);
 
 namespace Modules\Permission\Services;
 
-use Illuminate\Support\Collection;
-use Modules\Shared\Services\BaseService;
-use Modules\Shared\Services\CacheService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache; 
 use Modules\Permission\Domain\Repositories\PermissionRepositoryInterface;
+use Modules\Shared\Exceptions\BusinessException;
+use Modules\Shared\Services\BaseService;
 
 class PermissionService extends BaseService
 {
-    protected const CACHE_TTL = 86400; 
+    protected const CACHE_TTL = 86400;
 
-    public function __construct(
-        PermissionRepositoryInterface $repo,
-        protected CacheService $cacheService
-    ) {
-        parent::__construct($repo);
+    public function __construct(PermissionRepositoryInterface $repository)
+    {
+        parent::__construct($repository);
+    }
+
+    public function create(array $data): Model
+    {
+        if ($this->repository->findByName($data['name'])) {
+            throw new BusinessException(409151, "Permission '{$data['name']}' already exists");
+        }
+
+        return parent::create($data);
+    }
+
+    public function update(string $uuid, array $data): Model
+    {
+        $permission = $this->findByUuidOrFail($uuid);
+
+        if (isset($data['name'])) {
+            $existing = $this->repository->findByName($data['name']);
+            if ($existing && $existing->id !== $permission->id) {
+                throw new BusinessException(409151);
+            }
+        }
+
+        $updated = parent::update($uuid, $data);
+        
+        return $updated;
+    }
+
+    public function delete(string $uuid): bool
+    {
+        $permission = $this->findByUuidOrFail($uuid);
+
+        if ($permission->roles()->exists()) {
+            throw new BusinessException(403152);
+        }
+
+        return parent::delete($uuid);
+    }
+
+    public function clearUserPermissionCache(int $userId): void
+    {
+        Cache::forget("user_permissions_{$userId}");
     }
 
     public function getUserPermissions(int $userId): array
     {
         $cacheKey = "user_permissions_{$userId}";
 
-        $result = $this->cacheService->remember($cacheKey, function () use ($userId) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($userId) {
             return $this->repository->getPermissionsByUserId($userId);
-        }, self::CACHE_TTL);
-        
-        if ($result instanceof Collection) {
-            return $result->toArray();
-        }
-
-        return (array) $result;
+        });
     }
 
-    public function hasPermission(int $userId, string $permission): bool
+    public function hasPermission(int $userId, string $permissionName): bool
     {
         $permissions = $this->getUserPermissions($userId);
-        return in_array($permission, $permissions, true);
+        return in_array($permissionName, $permissions, true);
     }
 }

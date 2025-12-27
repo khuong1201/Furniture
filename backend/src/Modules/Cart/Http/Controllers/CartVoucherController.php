@@ -6,48 +6,92 @@ namespace Modules\Cart\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
-use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Shared\Http\Controllers\BaseController;
 use Modules\Cart\Services\CartService;
+use Modules\Shared\Http\Traits\ApiResponseTrait;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(name: "Cart", description: "API Giỏ hàng")]
-class CartVoucherController extends Controller
+#[OA\Tag(name: "Cart Voucher", description: "Quản lý mã giảm giá trong giỏ hàng")]
+class CartVoucherController extends BaseController
 {
-    public function __construct(protected CartService $cartService) {}
+    public function __construct(protected CartService $cartService)
+    {
+        parent::__construct($cartService);
+    }
 
     #[OA\Post(
-        path: "/carts/apply-coupon",
+        path: "/api/carts/apply-coupon",
         summary: "Áp dụng mã giảm giá",
+        description: "Kiểm tra mã voucher và áp dụng vào giỏ hàng hiện tại.",
         security: [['bearerAuth' => []]],
-        tags: ["Cart"],
-        requestBody: new OA\RequestBody(content: new OA\JsonContent(
-            required: ["code"],
-            properties: [new OA\Property(property: "code", type: "string", example: "SALE50")]
-        )),
-        responses: [new OA\Response(response: 200, description: "Applied")]
+        tags: ["Cart Voucher"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["code"],
+                properties: [
+                    new OA\Property(property: "code", type: "string", example: "SUMMER2025", description: "Mã voucher")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200, 
+                description: "Áp dụng thành công",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "object", description: "Object Giỏ hàng mới nhất sau khi giảm giá")
+                ])
+            ),
+            new OA\Response(
+                response: 404, 
+                description: "Giỏ hàng trống hoặc Không tìm thấy Voucher (404210)",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: false),
+                    new OA\Property(property: "error_code", type: "integer", example: 404210),
+                    new OA\Property(property: "message", type: "string", example: "Voucher not found")
+                ])
+            ),
+            new OA\Response(
+                response: 400, 
+                description: "Voucher hết hạn hoặc không đủ điều kiện (400211)",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: false),
+                    new OA\Property(property: "error_code", type: "integer", example: 400211),
+                    new OA\Property(property: "message", type: "string", example: "Voucher expired")
+                ])
+            )
+        ]
     )]
     public function apply(Request $request): JsonResponse
     {
-        $request->validate(['code' => 'required|string']);
+        $request->validate(['code' => 'required|string|max:50']);
         
-        // Logic này cần tích hợp Module Voucher. Tạm thời giả lập để code chạy.
-        // Nếu đã có Module Voucher, uncomment dòng dưới:
-        // $result = app(\Modules\Voucher\Services\VoucherService::class)->applyVoucher(...);
+        // Gọi Service xử lý logic check voucher
+        $cart = $this->cartService->applyVoucher($request->user()->id, $request->input('code'));
         
-        return response()->json(ApiResponse::error('Voucher System Integration Pending', 501), 501);
+        return $this->successResponse($cart, 'Áp dụng mã giảm giá thành công');
     }
 
-    #[OA\Delete(path: "/carts/remove-coupon", summary: "Gỡ mã giảm giá", security: [['bearerAuth' => []]], tags: ["Cart"], responses: [new OA\Response(response: 200, description: "Removed")])]
+    #[OA\Delete(
+        path: "/api/carts/remove-coupon",
+        summary: "Gỡ mã giảm giá",
+        security: [['bearerAuth' => []]],
+        tags: ["Cart Voucher"],
+        responses: [
+            new OA\Response(
+                response: 200, 
+                description: "Gỡ thành công",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "object", description: "Giỏ hàng sau khi gỡ voucher")
+                ])
+            )
+        ]
+    )]
     public function remove(Request $request): JsonResponse
     {
-        $cart = $this->cartService->getRepository()->findByUser($request->user()->id);
-        if ($cart) {
-            $cart->update([
-                'voucher_code' => null,
-                'voucher_discount' => 0
-            ]);
-        }
-        return response()->json(ApiResponse::success(null, 'Voucher removed'));
+        $cart = $this->cartService->removeVoucher($request->user()->id);
+        return $this->successResponse($cart, 'Đã gỡ mã giảm giá');
     }
 }

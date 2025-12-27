@@ -18,6 +18,6 @@ class SendNewProductEmail implements ShouldQueue
         $product = $event->product;
         $adminEmail = 'admin@system.com';
 
-        $this->mailService->send($adminEmail, new NewProductMail($product));
+        $this->mailService->sendQueue($adminEmail, new NewProductMail($product));
     }
 }

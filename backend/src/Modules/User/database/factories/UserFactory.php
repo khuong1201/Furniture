@@ -9,26 +9,22 @@ use Modules\User\Domain\Models\User;
 
 class UserFactory extends Factory
 {
+    // Chỉ định Model tương ứng
     protected $model = User::class;
+
+    // Biến tĩnh để lưu hash password (tối ưu hiệu năng)
+    protected static ?string $password;
 
     public function definition(): array
     {
         return [
-            'uuid' => Str::uuid(),
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber(),
+            'uuid'              => (string) Str::uuid(),
+            'name'              => $this->faker->name(),
+            'email'             => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make('password'), 
-            'is_active' => true,
-            'avatar_url' => $this->faker->imageUrl(200, 200, 'people'),
+            // Hash 1 lần dùng cho toàn bộ, thay vì hash 20 lần
+            'password'          => static::$password ??= Hash::make('password'),
+            'is_active'         => true,
         ];
-    }
-    
-    public function admin()
-    {
-        return $this->state(fn (array $attributes) => [
-            'email' => 'admin@system.com',
-        ]);
     }
 }

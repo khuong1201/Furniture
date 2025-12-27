@@ -12,10 +12,15 @@ class UpdateReviewRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'rating' => 'sometimes|integer|min:1|max:5',
+        $rules = [
+            'rating'  => 'sometimes|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
-            'is_approved' => 'sometimes|boolean',
         ];
+
+        if ($this->user() && $this->user()->hasRole('admin')) {
+            $rules['is_approved'] = 'sometimes|boolean';
+        }
+
+        return $rules;
     }
 }

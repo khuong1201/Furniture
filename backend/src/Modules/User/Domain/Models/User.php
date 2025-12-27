@@ -23,7 +23,16 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes, Loggable;
 
     protected $fillable = [
-        'uuid', 'name', 'email', 'phone', 'password', 'avatar_url', 'is_active',
+        'uuid', 
+        'name', 
+        'email', 
+        'phone', 
+        'password', 
+        'avatar_url', 
+        'is_active',
+        'verification_code',
+        'verification_expires_at',
+        'email_verified_at'
     ];
 
     protected $hidden = [
@@ -45,6 +54,16 @@ class User extends Authenticatable
         });
     }
 
+    public function isActive(): bool
+    {
+        return (bool) $this->is_active;
+    }
+
+    public function getFirstMediaUrl(string $collectionName = 'default'): ?string
+    {
+        return $this->avatar_url ?? null;
+    }
+    
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id')
@@ -105,6 +124,6 @@ class User extends Authenticatable
 
     protected static function newFactory()
     {
-        return \Modules\User\Database\factories\UserFactory::new();
+        return \Modules\User\database\factories\UserFactory::new();
     }
 }

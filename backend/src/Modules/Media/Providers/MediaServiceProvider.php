@@ -10,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Media\Domain\Models\Media;
 use Modules\Media\Policies\MediaPolicy;
+use Modules\Media\Domain\Repositories\MediaRepositoryInterface;
+use Modules\Media\Infrastructure\Repositories\EloquentMediaRepository;
 
 class MediaServiceProvider extends ServiceProvider
 {
@@ -39,9 +41,14 @@ class MediaServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \Modules\Shared\Contracts\MediaServiceInterface::class,
-            \Modules\Media\Services\MediaService::class
+            MediaRepositoryInterface::class,
+            EloquentMediaRepository::class
         );
+
+        // $this->app->bind(
+        //     \Modules\Shared\Contracts\StorageServiceInterface::class,
+        //     \Modules\Media\Services\MediaService::class
+        // );
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }

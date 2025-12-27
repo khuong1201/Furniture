@@ -6,7 +6,7 @@ namespace Modules\Collection\Services;
 
 use Modules\Shared\Services\BaseService;
 use Modules\Collection\Domain\Repositories\CollectionRepositoryInterface;
-use Modules\Shared\Contracts\MediaServiceInterface; // Inject Media để upload banner
+use Modules\Shared\Contracts\StorageServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,7 +14,7 @@ class CollectionService extends BaseService
 {
     public function __construct(
         CollectionRepositoryInterface $repository,
-        protected MediaServiceInterface $mediaService 
+        protected StorageServiceInterface $storageService
     ) {
         parent::__construct($repository);
     }
@@ -30,7 +30,7 @@ class CollectionService extends BaseService
         return DB::transaction(function () use ($data) {
             // Handle Banner Image Upload
             if (isset($data['banner_image']) && $data['banner_image'] instanceof \Illuminate\Http\UploadedFile) {
-                $upload = $this->mediaService->upload($data['banner_image'], 'collections');
+                $upload = $this->storageService->upload($data['banner_image'], 'collections');
                 $data['banner_image'] = $upload['url'];
             }
 
@@ -52,7 +52,7 @@ class CollectionService extends BaseService
             // Handle Banner Image Update
             if (isset($data['banner_image']) && $data['banner_image'] instanceof \Illuminate\Http\UploadedFile) {
                 // Optional: Delete old image logic here if needed
-                $upload = $this->mediaService->upload($data['banner_image'], 'collections');
+                $upload = $this->storageService->upload($data['banner_image'], 'collections');
                 $data['banner_image'] = $upload['url'];
             }
             

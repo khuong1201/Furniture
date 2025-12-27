@@ -1,83 +1,77 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Package, Search, Warehouse } from 'lucide-react';
+import { Edit, Trash2, Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import WarehouseService from '@/services/admin/WarehouseService';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
 import './WarehouseList.css';
 
-const WarehouseList = () => {
+const WarehouseList = ({ isManagerMode = false }) => {
     const navigate = useNavigate();
     const [warehouses, setWarehouses] = useState([]);
+    const [pagination, setPagination] = useState({});
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [deleteDialog, setDeleteDialog] = useState({ open: false, warehouse: null });
+    const [deleteDialog, setDeleteDialog] = useState({
+        isOpen: false, item: null, isDeleting: false
+    });
 
-    const fetchWarehouses = async () => {
+    const fetchWarehouses = async (page = 1) => {
         try {
             setLoading(true);
-            setError(null);
-
-            const params = {};
-            if (searchTerm) params.search = searchTerm;
-
-            const response = await WarehouseService.getWarehouses(params);
-
-            if (response.success && response.data) {
-                const warehouseList = Array.isArray(response.data)
-                    ? response.data
-                    : response.data.data || [];
-                setWarehouses(warehouseList);
-            }
+            const response = await WarehouseService.getWarehouses({
+                page, per_page: 15, search: searchTerm
+            });
+            const data = response.data || [];
+            setWarehouses(Array.isArray(data) ? data : data.data || []);
+            setPagination(response.meta || {});
         } catch (err) {
-            setError(err.message || 'Không thể tải danh sách kho hàng');
-            console.error('Error fetching warehouses:', err);
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchWarehouses();
+        const t = setTimeout(() => fetchWarehouses(1), 500);
+        return () => clearTimeout(t);
     }, [searchTerm]);
 
     const handleDelete = async () => {
-        if (!deleteDialog.warehouse) return;
-
+        if (!deleteDialog.item) return;
+        setDeleteDialog(prev => ({ ...prev, isDeleting: true }));
         try {
-            await WarehouseService.deleteWarehouse(deleteDialog.warehouse.uuid);
-            alert('Xóa kho hàng thành công!');
-            fetchWarehouses();
-        } catch (error) {
-            console.error('Error deleting warehouse:', error);
-            alert(error.message || 'Có lỗi xảy ra khi xóa kho hàng');
-        } finally {
-            setDeleteDialog({ open: false, warehouse: null });
+            await WarehouseService.deleteWarehouse(deleteDialog.item.uuid);
+            setDeleteDialog({ isOpen: false, item: null, isDeleting: false });
+            fetchWarehouses(pagination.current_page || 1);
+        } catch (err) {
+            alert(err.message || 'Cannot delete warehouse');
+            setDeleteDialog(prev => ({ ...prev, isDeleting: false }));
         }
     };
 
     return (
         <div className="warehouse_list">
-            <div className="page-header">
-                <div>
-                    <h1><Warehouse size={24} /> Quản lý Kho hàng</h1>
-                    <p className="page-subtitle">Danh sách tất cả kho hàng trong hệ thống</p>
+            {!isManagerMode && (
+                <div className="page-header">
+                    <div className="header-left">
+                        <h1>Warehouse Management</h1>
+                        <p>Manage storage locations and stock distribution</p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/admin/warehouses/create')}
+                        className="btn-primary-action"
+                    >
+                        <Plus size={18} /> Add New Warehouse
+                    </button>
                 </div>
-                <button
-                    className="btn-primary-warehouse"
-                    onClick={() => navigate('/admin/warehouses/create')}
-                >
-                    <Plus size={20} />
-                    Thêm kho hàng
-                </button>
-            </div>
+            )}
 
             <div className="filters-section">
                 <div className="search-box">
-                    <Search size={20} />
+                    <Search className="search-icon" size={18} />
                     <input
                         type="text"
-                        placeholder="Tìm theo tên kho hoặc địa điểm..."
+                        placeholder="Search by name or location..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -85,84 +79,98 @@ const WarehouseList = () => {
             </div>
 
             <div className="table-container">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Đang tải dữ liệu...</p>
-                    </div>
-                ) : error ? (
-                    <div className="error-state">
-                        <p>{error}</p>
-                        <button onClick={fetchWarehouses} className="btn btn-secondary">
-                            Thử lại
-                        </button>
-                    </div>
-                ) : warehouses.length === 0 ? (
-                    <div className="empty-state">
-                        <Package size={48} color="#9ca3af" />
-                        <p>Chưa có kho hàng nào</p>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => navigate('/admin/warehouses/create')}
-                        >
-                            <Plus size={20} />
-                            Thêm kho hàng đầu tiên
-                        </button>
-                    </div>
-                ) : (
+                <div className="overflow-auto">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Tên kho</th>
-                                <th>Địa điểm</th>
-                                <th>Ngày tạo</th>
-                                <th className="text-right">Thao tác</th>
+                                <th>Warehouse Name</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th style={{ textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {warehouses.map((warehouse) => (
-                                <tr key={warehouse.uuid}>
-                                    <td>
-                                        <strong>{warehouse.name}</strong>
-                                    </td>
-                                    <td>{warehouse.location || '-'}</td>
-                                    <td>
-                                        {warehouse.created_at
-                                            ? new Date(warehouse.created_at).toLocaleDateString('vi-VN')
-                                            : '-'
-                                        }
-                                    </td>
-                                    <td className="text-right">
-                                        <div className="action-buttons">
-                                            <button
-                                                className="btn-icon"
-                                                onClick={() => navigate(`/admin/warehouses/${warehouse.uuid}/edit`)}
-                                                title="Chỉnh sửa"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button
-                                                className="btn-icon btn-danger"
-                                                onClick={() => setDeleteDialog({ open: true, warehouse })}
-                                                title="Xóa"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="4" className="text-center p-8">
+                                        Loading data...
                                     </td>
                                 </tr>
-                            ))}
+                            ) : warehouses.length > 0 ? (
+                                warehouses.map(wh => (
+                                    <tr key={wh.uuid}>
+                                        <td className="cell-name">{wh.name}</td>
+                                        <td>{wh.location}</td>
+                                        <td>
+                                            <span className={`status-badge ${wh.is_active ? 'status-active' : 'status-inactive'}`}>
+                                                {wh.is_active ? 'Active' : 'Hidden'}
+                                            </span>
+                                        </td>
+                                        {/* FIXED ACTIONS */}
+                                        <td>
+                                            <div className="table-actions">
+                                                <button
+                                                    className="table-action-btn"
+                                                    onClick={() => navigate(`/admin/warehouses/${wh.uuid}/edit`)}
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    className="table-action-btn delete"
+                                                    onClick={() => setDeleteDialog({ isOpen: true, item: wh })}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="text-center p-8 italic">
+                                        No warehouses found.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
+                </div>
+
+                {pagination.last_page > 1 && (
+                    <div className="pagination-fixed">
+                        <div className="page-info">
+                            Page <strong>{pagination.current_page}</strong> / {pagination.last_page}
+                        </div>
+                        <div className="page-controls">
+                            <button
+                                className="page-btn"
+                                disabled={pagination.current_page === 1}
+                                onClick={() => fetchWarehouses(pagination.current_page - 1)}
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span className="page-current">{pagination.current_page}</span>
+                            <button
+                                className="page-btn"
+                                disabled={pagination.current_page === pagination.last_page}
+                                onClick={() => fetchWarehouses(pagination.current_page + 1)}
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                        <div className="pagination-spacer"></div>
+                    </div>
                 )}
             </div>
 
             <ConfirmDialog
-                isOpen={deleteDialog.open}
-                title="Xác nhận xóa"
-                message={`Bạn có chắc chắn muốn xóa kho "${deleteDialog.warehouse?.name}"? Hành động này không thể hoàn tác.`}
+                isOpen={deleteDialog.isOpen}
+                onClose={() => setDeleteDialog({ isOpen: false, item: null })}
                 onConfirm={handleDelete}
-                onCancel={() => setDeleteDialog({ open: false, warehouse: null })}
+                title="Delete Warehouse"
+                message={`Are you sure you want to delete "${deleteDialog.item?.name}"?`}
+                type="danger"
+                isLoading={deleteDialog.isDeleting}
             />
         </div>
     );

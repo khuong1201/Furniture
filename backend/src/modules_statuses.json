@@ -22,5 +22,6 @@
     "Voucher": true,
     "Wishlist": true,
     "Media": true,
-    "Currency": true
+    "Currency": true,
+    "Brand": true
 }

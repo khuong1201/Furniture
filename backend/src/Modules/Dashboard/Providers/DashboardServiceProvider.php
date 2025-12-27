@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Modules\Dashboard\Policies\DashboardPolicy;
+use Illuminate\Support\Facades\Gate;
 
 class DashboardServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,7 @@ class DashboardServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy('dashboard', DashboardPolicy::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();

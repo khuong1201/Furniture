@@ -1,90 +1,44 @@
-class OrderService {
-    static _instance = null;
+import HttpService from './HttpService';
 
-    constructor() {
-        this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        this.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
-    }
+class OrderService extends HttpService {
+    static _instance = null;
+    constructor() { super(); }
 
     static get instance() {
-        if (!OrderService._instance) {
-            OrderService._instance = new OrderService();
-        }
+        if (!OrderService._instance) OrderService._instance = new OrderService();
         return OrderService._instance;
     }
 
-    setToken(token) {
-        if (token) {
-            this.headers['Authorization'] = `Bearer ${token}`;
-        } else {
-            delete this.headers['Authorization'];
-        }
-    }
+    // --- Admin Methods ---
 
-    async _request(endpoint, options = {}) {
-        try {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                this.setToken(token);
-            }
-
-            const url = `${this.baseUrl}${endpoint}`;
-            const config = {
-                ...options,
-                headers: {
-                    ...this.headers,
-                    ...options.headers,
-                },
-            };
-
-            const response = await fetch(url, config);
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || `API Error: ${response.status}`);
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`Order Service Error (${endpoint}):`, error);
-            throw error;
-        }
-    }
-
-    // Get all orders (admin)
     async getOrders(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this._request(`/orders${queryString ? `?${queryString}` : ''}`);
+        // Axios hoặc fetch wrapper thường tự xử lý params trong object config
+        return this.request('/admin/orders', { method: 'GET', params });
     }
 
-    // Get single order (admin)
     async getOrder(uuid) {
-        return this._request(`/orders/${uuid}`);
+        return this.request(`/admin/orders/${uuid}`, { method: 'GET' });
     }
 
-    // Update order status
-    async updateOrderStatus(uuid, status) {
-        return this._request(`/orders/${uuid}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status }),
+    async createOrder(data) {
+        return this.request('/admin/orders/create', {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
     }
 
-    // Static methods
-    static async getOrders(params) {
-        return OrderService.instance.getOrders(params);
+    async updateStatus(uuid, status) {
+        return this.request(`/admin/orders/${uuid}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
     }
 
-    static async getOrder(uuid) {
-        return OrderService.instance.getOrder(uuid);
-    }
-
-    static async updateOrderStatus(uuid, status) {
-        return OrderService.instance.updateOrderStatus(uuid, status);
-    }
+    // Static Helpers
+    static getOrders(params) { return OrderService.instance.getOrders(params); }
+    static getOrder(uuid) { return OrderService.instance.getOrder(uuid); }
+    static createOrder(data) { return OrderService.instance.createOrder(data); }
+    static updateStatus(uuid, status) { return OrderService.instance.updateStatus(uuid, status); }
 }
 
 export default OrderService;

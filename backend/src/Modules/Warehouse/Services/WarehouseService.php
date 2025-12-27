@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Warehouse\Services;
 
+use Illuminate\Database\Eloquent\Model;
+use Modules\Shared\Exceptions\BusinessException;
 use Modules\Shared\Services\BaseService;
 use Modules\Warehouse\Domain\Repositories\WarehouseRepositoryInterface;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class WarehouseService extends BaseService
 {
@@ -17,19 +16,49 @@ class WarehouseService extends BaseService
         parent::__construct($repository);
     }
 
-    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    public function create(array $data): Model
+    {
+        if ($this->repository->findByName($data['name'])) {
+            throw new BusinessException(409221);
+        }
+
+        return parent::create($data);
+    }
+
+    public function update(string $uuid, array $data): Model
+    {
+        $warehouse = $this->findByUuidOrFail($uuid);
+
+        if (isset($data['name'])) {
+            $existing = $this->repository->findByName($data['name']);
+            if ($existing && $existing->id !== $warehouse->id) {
+                throw new BusinessException(409221);
+            }
+        }
+
+        return parent::update($uuid, $data);
+    }
+
+    public function delete(string $uuid): bool
+    {
+        $warehouse = $this->findByUuidOrFail($uuid);
+
+        if ($this->repository->hasStock($warehouse->id)) {
+            throw new BusinessException(409222); 
+        }
+
+        return parent::delete($uuid);
+    }
+
+    public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $filters['per_page'] = $perPage;
         return $this->repository->filter($filters);
     }
 
-    protected function beforeDelete(Model $model): void
+    public function getWarehouseStats(string $uuid): array
     {
-        // Check tồn kho trước khi xóa
-        if ($this->repository->hasStock($model->id)) {
-            throw ValidationException::withMessages([
-                'warehouse' => ['Không thể xóa kho đang chứa hàng tồn (Quantity > 0). Vui lòng chuyển kho hoặc xuất hết hàng trước.']
-            ]);
-        }
+        return $this->repository->getDashboardStats($uuid);
     }
+    
 }

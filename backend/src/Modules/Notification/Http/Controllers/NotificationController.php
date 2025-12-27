@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Modules\Shared\Http\Controllers\BaseController;
-use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Notification\Services\NotificationService;
+use Modules\Notification\Domain\Models\Notification;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Notifications", description: "API quản lý thông báo cá nhân")]
 class NotificationController extends BaseController
 {
-    public function __construct(NotificationService $service)
+    public function __construct(protected NotificationService $notificationService)
     {
-        parent::__construct($service);
+        parent::__construct($notificationService);
     }
 
     #[OA\Get(
-        path: "/notifications",
+        path: "/api/notifications",
         summary: "Lấy danh sách thông báo",
         security: [['bearerAuth' => []]],
         tags: ["Notifications"],
@@ -28,62 +28,78 @@ class NotificationController extends BaseController
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
         ],
-        responses: [new OA\Response(response: 200, description: "Success")]
+        responses: [
+            new OA\Response(
+                response: 200, 
+                description: "Success",
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "array", items: new OA\Items()),
+                    new OA\Property(property: "meta", type: "object", properties: [
+                        new OA\Property(property: "unread_count", type: "integer", example: 5)
+                    ])
+                ])
+            )
+        ]
     )]
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
-        $result = $this->service->getMyNotifications($userId, $request->integer('per_page', 15));
+        $result = $this->notificationService->getNotificationsWithUnreadCount(
+            $request->user()->id, 
+            $request->integer('per_page', 15)
+        );
 
-        // Trả về structure chuẩn JSON
+        // Custom response: Kết hợp Paginator chuẩn + unread_count
+        // Ta lấy data từ Paginator ra để wrap lại
+        $paginator = $result['paginator'];
+        
         return response()->json([
             'success' => true,
-            'message' => 'Success',
-            'data' => $result['items']->items(),
-            'meta' => [
-                'current_page' => $result['items']->currentPage(),
-                'last_page' => $result['items']->lastPage(),
-                'total' => $result['items']->total(),
-                'per_page' => $result['items']->perPage(),
-                'unread_count' => $result['unread_count'] // Frontend dùng số này để hiện chấm đỏ
+            'message' => 'Lấy danh sách thông báo thành công',
+            'data'    => $paginator->items(),
+            'meta'    => [
+                'current_page' => $paginator->currentPage(),
+                'last_page'    => $paginator->lastPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'unread_count' => $result['unread_count'] // <--- Extra field quan trọng
             ]
         ]);
     }
 
     #[OA\Patch(
-        path: "/notifications/{uuid}/read",
+        path: "/api/notifications/{uuid}/read",
         summary: "Đánh dấu đã đọc 1 thông báo",
         security: [['bearerAuth' => []]],
         tags: ["Notifications"],
         parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string"))],
-        responses: [new OA\Response(response: 200, description: "Marked as read")]
+        responses: [new OA\Response(response: 200, description: "Success")]
     )]
     public function read(string $uuid): JsonResponse
     {
-        $notification = $this->service->findByUuidOrFail($uuid);
-        $this->authorize('update', $notification);
+        $notification = $this->notificationService->findByUuidOrFail($uuid);
+        $this->authorize('update', $notification); // Policy check: User sở hữu noti này
 
-        $this->service->markAsRead($uuid);
+        $this->notificationService->markAsRead($uuid);
         
-        return response()->json(ApiResponse::success(null, 'Marked as read'));
+        return $this->successResponse(null, 'Đã đánh dấu đã đọc');
     }
 
     #[OA\Post(
-        path: "/notifications/read-all",
+        path: "/api/notifications/read-all",
         summary: "Đánh dấu đã đọc tất cả",
         security: [['bearerAuth' => []]],
         tags: ["Notifications"],
-        responses: [new OA\Response(response: 200, description: "All read")]
+        responses: [new OA\Response(response: 200, description: "Success")]
     )]
     public function readAll(Request $request): JsonResponse
     {
-        $this->service->markAllAsRead($request->user()->id);
-        
-        return response()->json(ApiResponse::success(null, 'All marked as read'));
+        $this->notificationService->markAllAsRead($request->user()->id);
+        return $this->successResponse(null, 'Đã đánh dấu tất cả là đã đọc');
     }
 
     #[OA\Delete(
-        path: "/notifications/{uuid}",
+        path: "/api/notifications/{uuid}",
         summary: "Xóa thông báo",
         security: [['bearerAuth' => []]],
         tags: ["Notifications"],
@@ -92,11 +108,10 @@ class NotificationController extends BaseController
     )]
     public function destroy(string $uuid): JsonResponse
     {
-        $notification = $this->service->findByUuidOrFail($uuid);
+        $notification = $this->notificationService->findByUuidOrFail($uuid);
         $this->authorize('delete', $notification);
         
-        $this->service->delete($uuid);
-        
-        return response()->json(ApiResponse::success(null, 'Deleted successfully'));
+        $this->notificationService->delete($uuid);
+        return $this->successResponse(null, 'Xóa thông báo thành công');
     }
 }

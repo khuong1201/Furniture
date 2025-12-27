@@ -12,6 +12,8 @@ Route::prefix('public/products')->group(function () {
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::get('products', [ProductController::class, 'adminIndex']);
     Route::post('products', [ProductController::class, 'store']);
+    Route::get('products/{uuid}', [ProductController::class, 'show']);
+    Route::post('products/generate-ai-description', [ProductController::class, 'generateDescription']);
     Route::put('products/{uuid}', [ProductController::class, 'update']);
     Route::delete('products/{uuid}', [ProductController::class, 'destroy']);
     

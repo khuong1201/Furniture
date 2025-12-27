@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Voucher\Domain\Repositories;
 
-use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Shared\Contracts\BaseRepositoryInterface;
 use Modules\Voucher\Domain\Models\Voucher;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

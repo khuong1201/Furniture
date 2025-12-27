@@ -1,51 +1,39 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Modules\Shipping\Domain\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Modules\Order\Domain\Models\Order;
-use Modules\Shared\Traits\Loggable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Shipping extends Model
 {
-    use HasFactory, SoftDeletes, Loggable;
+    use SoftDeletes;
 
     protected $fillable = [
-        'uuid', 
-        'order_id', 
-        'provider', 
-        'tracking_number', 
-        'status', 
-        'fee',      
-        'shipped_at', 
-        'delivered_at',
+        'uuid', 'order_id', 'tracking_number', 'provider', 
+        'status', 'fee', 'consignee_name', 'consignee_phone', 
+        'address', 'city', 'district', 'ward', 
+        'shipped_at', 'delivered_at'
     ];
 
     protected $casts = [
-        'shipped_at' => 'datetime',
+        'fee'          => 'float',
+        'shipped_at'   => 'datetime',
         'delivered_at' => 'datetime',
-        'fee' => 'decimal:2',
     ];
 
-    protected static function boot(): void
+    // Accessor: Gộp địa chỉ hiển thị (dùng trong Resource)
+    public function getAddressFullAttribute()
     {
-        parent::boot();
-        static::creating(fn(Shipping $model) => $model->uuid = (string) Str::uuid());
+        return collect([$this->address, $this->ward, $this->district, $this->city])
+            ->filter()
+            ->implode(', ');
     }
 
-    public function order(): BelongsTo
+    // Relation
+    public function order()
     {
         return $this->belongsTo(Order::class);
-    }
-
-    protected static function newFactory()
-    {
-        return \Modules\Shipping\Database\factories\ShippingFactory::new();
     }
 }

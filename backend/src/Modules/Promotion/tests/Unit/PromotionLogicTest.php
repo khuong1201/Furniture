@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Promotion\Tests\Unit;
+namespace Modules\Promotion\tests\Unit;
 
 use Tests\TestCase;
 use Modules\Promotion\Services\PromotionService;

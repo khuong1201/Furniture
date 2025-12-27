@@ -3,52 +3,84 @@
 namespace Modules\Promotion\database\seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Promotion\Domain\Models\Promotion;
 use Modules\Product\Domain\Models\Product;
+use Modules\Promotion\Domain\Models\Promotion;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 class PromotionDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Kiểm tra Product
-        if (Product::count() === 0) {
-            $this->command->warn('⚠ Chưa có Product nào. Hãy chạy ProductDatabaseSeeder trước!');
-            return;
-        }
+        // Tạo các chiến dịch khuyến mãi theo mùa/sự kiện
+        $campaigns = [
+            [
+                'name' => 'Flash Sale Cuối Tuần',
+                'description' => 'Giảm giá cực sốc chỉ trong 48h',
+                'type' => 'percentage',
+                'value' => 20, // Giảm 20%
+                'start_date' => now()->subDays(1),
+                'end_date' => now()->addDays(2), // Đang diễn ra
+                'product_count' => 10, // Áp dụng cho 10 sp
+            ],
+            [
+                'name' => 'Xả Kho Đón Tết',
+                'description' => 'Dọn kho giá rẻ như cho',
+                'type' => 'percentage',
+                'value' => 50, // Giảm 50%
+                'start_date' => now()->subMonths(1),
+                'end_date' => now()->subDays(10), // Đã kết thúc
+                'product_count' => 20,
+            ],
+            [
+                'name' => 'Combo Phòng Ngủ',
+                'description' => 'Mua giường tặng đệm',
+                'type' => 'fixed',
+                'value' => 500000, // Giảm thẳng 500k
+                'start_date' => now(),
+                'end_date' => now()->addMonths(1), // Sắp tới/Đang diễn ra
+                'product_count' => 15,
+            ],
+            [
+                'name' => 'Black Friday Sớm',
+                'description' => 'Săn sale sớm nhận quà to',
+                'type' => 'percentage',
+                'value' => 15,
+                'start_date' => now()->addDays(5),
+                'end_date' => now()->addDays(10), // Sắp diễn ra
+                'product_count' => 30,
+            ],
+            [
+                'name' => 'Ưu Đãi Ghế Văn Phòng',
+                'description' => 'Giảm giá đặc biệt cho doanh nghiệp',
+                'type' => 'percentage',
+                'value' => 10,
+                'start_date' => now()->subDays(5),
+                'end_date' => now()->addMonths(2), // Đang diễn ra dài hạn
+                'product_count' => 12,
+            ]
+        ];
 
-        // 2. CLEANUP: Xóa các Promotion test cũ để tránh rác DB
-        Promotion::where('name', 'SIÊU SALE GIẢM 50%')->delete();
+        $allProducts = Product::all();
+        if ($allProducts->isEmpty()) return;
 
-        // 3. TẠO FLASH SALE MỚI
-        $flashSale = Promotion::create([
-            'uuid' => (string) Str::uuid(),
-            'name' => 'SIÊU SALE GIẢM 50%',
-            'type' => 'percentage',
-            'value' => 50, // Giảm 50%
-            'start_date' => now()->subDay(), // Bắt đầu từ hôm qua
-            'end_date' => now()->addDays(7), // Kết thúc sau 7 ngày
-            'is_active' => true,
-            'quantity' => 0, // Không giới hạn
-            'max_discount_amount' => 500000,
-        ]);
+        foreach ($campaigns as $camp) {
+            $promotion = Promotion::firstOrCreate(['name' => $camp['name']], [
+                'uuid' => (string) Str::uuid(),
+                'description' => $camp['description'],
+                'type' => $camp['type'],
+                'value' => $camp['value'],
+                'start_date' => $camp['start_date'],
+                'end_date' => $camp['end_date'],
+                'is_active' => true,
+            ]);
 
-        // 4. LẤY 5 SẢN PHẨM & GẮN VÀO
-        $randomProducts = Product::inRandomOrder()->limit(5)->get();
-        
-        foreach ($randomProducts as $product) {
-            // Quan trọng: Gỡ bỏ các promotion cũ của sp này (nếu có) để tránh xung đột
-            $product->promotions()->detach();
+            // Random sản phẩm để gắn vào khuyến mãi
+            // take() và shuffle() để lấy ngẫu nhiên ko trùng lặp trong 1 campaign
+            $randomProducts = $allProducts->shuffle()->take($camp['product_count']);
             
-            // Gắn vào Flash Sale mới
-            $product->promotions()->attach($flashSale->id);
+            // Sync sản phẩm vào promotion (quan hệ n-n)
+            // Giả sử relation tên là 'products'
+            $promotion->products()->syncWithoutDetaching($randomProducts->pluck('id'));
         }
-
-        $this->command->info("✅ Đã tạo Flash Sale 50% và gắn vào " . $randomProducts->count() . " sản phẩm.");
-        $this->command->info("👉 UUID các sản phẩm có Sale: " . $randomProducts->pluck('uuid')->join(', '));
-
-        // 5. Tạo thêm data rác (Optional)
-        // Promotion::factory()->count(2)->create(); 
     }
 }

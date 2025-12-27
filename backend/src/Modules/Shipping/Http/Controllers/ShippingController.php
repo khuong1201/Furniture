@@ -7,14 +7,14 @@ namespace Modules\Shipping\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Modules\Shared\Http\Controllers\BaseController;
-use Modules\Shared\Http\Resources\ApiResponse;
 use Modules\Shipping\Services\ShippingService;
-use Modules\Shipping\Domain\Models\Shipping;
+use Modules\Shipping\Domain\Models\Snipping;
 use Modules\Shipping\Http\Requests\StoreShippingRequest;
 use Modules\Shipping\Http\Requests\UpdateShippingRequest;
+use Modules\Shipping\Http\Resources\ShippingResource;
 use OpenApi\Attributes as OA;
 
-#[OA\Tag(name: "Shipping", description: "API quản lý Vận chuyển (Admin/Shipper)")]
+#[OA\Tag(name: "Shipping", description: "API quản lý Vận chuyển")]
 class ShippingController extends BaseController
 {
     public function __construct(ShippingService $service)
@@ -23,35 +23,45 @@ class ShippingController extends BaseController
     }
 
     #[OA\Get(
-        path: "/admin/shippings",
+        path: "/api/admin/shippings",
         summary: "Xem danh sách vận đơn",
         security: [['bearerAuth' => []]],
         tags: ["Shipping"],
         parameters: [
-            new OA\Parameter(name: "tracking_number", in: "query", schema: new OA\Schema(type: "string")),
-            new OA\Parameter(name: "order_uuid", in: "query", schema: new OA\Schema(type: "string", format: "uuid")),
-            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string", enum: ["pending", "shipped", "delivered", "returned"])),
             new OA\Parameter(name: "page", in: "query", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "tracking_number", in: "query", schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "status", in: "query", schema: new OA\Schema(type: "string")),
         ],
-        responses: [ 
-            new OA\Response(response: 200, description: "Success"),
-            new OA\Response(response: 403, description: "Forbidden")
+        responses: [
+            new OA\Response(
+                response: 200, 
+                description: "Success",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "success", type: "boolean", example: true),
+                        new OA\Property(
+                            property: "data", 
+                            type: "array", 
+                            items: new OA\Items(ref: "#/components/schemas/ShippingResource") // Refer to Resource Schema
+                        ),
+                        new OA\Property(property: "meta", type: "object")
+                    ]
+                )
+            )
         ]
     )]
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Shipping::class);
-
-        $filters = $request->all();
-
-        $data = $this->service->paginate($request->integer('per_page', 15), $filters);
-        return response()->json(ApiResponse::paginated($data));
+        // $this->authorize('viewAny', Shipping::class);
+        $data = $this->service->paginate($request->integer('per_page', 15), $request->all());
+        
+        // Dùng Resource Collection
+        return $this->successResponse(ShippingResource::collection($data));
     }
 
     #[OA\Post(
-        path: "/admin/shippings",
-        summary: "Tạo vận đơn mới (Ship hàng)",
+        path: "/api/admin/shippings",
+        summary: "Tạo vận đơn mới",
         security: [['bearerAuth' => []]],
         tags: ["Shipping"],
         requestBody: new OA\RequestBody(
@@ -61,47 +71,53 @@ class ShippingController extends BaseController
                 properties: [
                     new OA\Property(property: "order_uuid", type: "string", format: "uuid"),
                     new OA\Property(property: "provider", type: "string", example: "GHTK"),
-                    new OA\Property(property: "tracking_number", type: "string", example: "S123456789"),
-                    new OA\Property(property: "fee", type: "number", nullable: true, description: "Phí ship thực tế (nếu có)"),
+                    new OA\Property(property: "tracking_number", type: "string", example: "S88888888"),
+                    new OA\Property(property: "fee", type: "number", example: 30000),
                 ]
             )
         ),
-        responses: [ new OA\Response(response: 201, description: "Created") ]
+        responses: [
+            new OA\Response(
+                response: 201, 
+                description: "Created",
+                content: new OA\JsonContent(ref: "#/components/schemas/ShippingResource")
+            )
+        ]
     )]
     public function store(StoreShippingRequest $request): JsonResponse
     {
-        $this->authorize('create', Shipping::class);
-        
+        // $this->authorize('create', Shipping::class);
         $shipping = $this->service->create($request->validated());
-        
-        return response()->json(ApiResponse::success($shipping, 'Shipping created', 201), 201);
+        return $this->successResponse(new ShippingResource($shipping), 'Created', 201);
     }
 
     #[OA\Get(
-        path: "/admin/shippings/{uuid}",
-        summary: "Xem chi tiết vận đơn",
+        path: "/api/admin/shippings/{uuid}",
+        summary: "Xem chi tiết",
         security: [['bearerAuth' => []]],
         tags: ["Shipping"],
-        parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))],
-        responses: [ new OA\Response(response: 200, description: "Success") ]
+        parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string"))],
+        responses: [
+            new OA\Response(
+                response: 200, 
+                description: "Success",
+                content: new OA\JsonContent(ref: "#/components/schemas/ShippingResource")
+            )
+        ]
     )]
     public function show(string $uuid): JsonResponse
     {
         $shipping = $this->service->findByUuidOrFail($uuid);
-
-        $this->authorize('view', $shipping);
-
-        $shipping->load('order.user'); 
-
-        return response()->json(ApiResponse::success($shipping));
+        $shipping->load('order'); 
+        return $this->successResponse(new ShippingResource($shipping));
     }
 
     #[OA\Put(
-        path: "/admin/shippings/{uuid}",
-        summary: "Cập nhật trạng thái vận đơn",
+        path: "/api/admin/shippings/{uuid}",
+        summary: "Cập nhật trạng thái",
         security: [['bearerAuth' => []]],
         tags: ["Shipping"],
-        parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))],
+        parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string"))],
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
@@ -110,35 +126,25 @@ class ShippingController extends BaseController
                 ]
             )
         ),
-        responses: [ new OA\Response(response: 200, description: "Updated") ]
+        responses: [new OA\Response(response: 200, description: "Updated")]
     )]
     public function update(UpdateShippingRequest $request, string $uuid): JsonResponse
     {
-        $shipping = $this->service->findByUuidOrFail($uuid);
-
-        $this->authorize('update', $shipping);
-        
         $shipping = $this->service->update($uuid, $request->validated());
-        
-        return response()->json(ApiResponse::success($shipping, 'Shipping updated'));
+        return $this->successResponse(new ShippingResource($shipping->refresh()));
     }
 
     #[OA\Delete(
-        path: "/admin/shippings/{uuid}",
+        path: "/api/admin/shippings/{uuid}",
         summary: "Xóa vận đơn",
         security: [['bearerAuth' => []]],
         tags: ["Shipping"],
-        parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string", format: "uuid"))],
-        responses: [ new OA\Response(response: 200, description: "Deleted") ]
+        parameters: [new OA\Parameter(name: "uuid", in: "path", required: true, schema: new OA\Schema(type: "string"))],
+        responses: [new OA\Response(response: 200, description: "Deleted")]
     )]
     public function destroy(string $uuid): JsonResponse
     {
-        $shipping = $this->service->findByUuidOrFail($uuid);
-
-        $this->authorize('delete', $shipping);
-
         $this->service->delete($uuid);
-
-        return response()->json(ApiResponse::success(null, 'Shipping deleted'));
+        return $this->successResponse(null, 'Deleted successfully');
     }
 }

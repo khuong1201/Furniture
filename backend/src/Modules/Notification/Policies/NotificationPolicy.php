@@ -12,11 +12,6 @@ class NotificationPolicy
 {
     use HandlesAuthorization;
 
-    public function view(User $user, Notification $notification): bool
-    {
-        return $user->id === $notification->user_id;
-    }
-
     public function update(User $user, Notification $notification): bool
     {
         return $user->id === $notification->user_id;

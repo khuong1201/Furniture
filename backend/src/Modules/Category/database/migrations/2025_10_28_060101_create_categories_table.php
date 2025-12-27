@@ -13,6 +13,7 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->string('name', 100);
             $table->string('slug', 150)->unique()->index();
+            $table->string('image')->nullable()->comment('URL ảnh hoặc icon class');
             $table->text('description')->nullable();
             
             $table->foreignId('parent_id')

@@ -1,19 +1,27 @@
 <?php
 
 namespace Modules\Category\database\factories;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\Category\Domain\Models\Category;
 use Illuminate\Support\Str;
-class CategoryFactory extends Factory {
+use Modules\Category\Domain\Models\Category;
+
+class CategoryFactory extends Factory
+{
     protected $model = Category::class;
-    public function definition(): array {
-        $name = ucfirst($this->faker->words(3, true));
+
+    public function definition(): array
+    {
+        // [FIX LỖI] Thay 'department' bằng 'word' và viết hoa chữ cái đầu
+        $name = ucfirst($this->faker->word); 
+
         return [
-            'uuid' => $this->faker->uuid(),
-            'name' =>  $name,
-            'slug' => Str::slug($name),
-            'description' => $this->faker->sentence(),
+            'uuid'      => (string) Str::uuid(),
+            'name'      => $name,
+            'slug'      => Str::slug($name),
+            'is_active' => true,
             'parent_id' => null,
+            'image'     => "https://placehold.co/300x300?text=" . urlencode($name),
         ];
     }
 }

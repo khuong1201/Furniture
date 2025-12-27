@@ -4,80 +4,75 @@ declare(strict_types=1);
 
 namespace Modules\Review\Services;
 
-use Modules\Shared\Services\BaseService;
-use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
-use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Validation\ValidationException;
-use Modules\Review\Events\ReviewPosted;
+use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
+use Modules\Review\Domain\Models\Review;
+use Modules\Review\Domain\Repositories\ReviewRepositoryInterface;
 use Modules\Review\Events\ReviewApproved;
+use Modules\Review\Events\ReviewPosted;
+use Modules\Shared\Exceptions\BusinessException;
+use Modules\Shared\Services\BaseService;
 
 class ReviewService extends BaseService
 {
     public function __construct(
-        ReviewRepositoryInterface $repository,
+        ReviewRepositoryInterface $repository, 
         protected ProductRepositoryInterface $productRepo
     ) {
         parent::__construct($repository);
     }
 
-    /**
-     * [FIX QUAN TRỌNG] Override hàm paginate của BaseService 
-     * để đảm bảo Admin gọi hàm này vẫn chạy qua logic filter() của Repository
-     */
-    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    public function listReviewsForProduct(string $productUuid, array $filters): LengthAwarePaginator
     {
-        return $this->repository->filter($filters + ['per_page' => $perPage]);
+        $filters['product_uuid'] = $productUuid;
+
+        return $this->repository->filter($filters);
     }
 
-    /**
-     * Hàm dùng cho trang chi tiết sản phẩm (Client)
-     */
-    public function listReviewsForProduct(string $productUuid, array $params): LengthAwarePaginator
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
-        $params['product_uuid'] = $productUuid;
-        
-        // Mặc định chỉ lấy review đã duyệt nếu không chỉ định rõ
-        if (!isset($params['is_approved'])) {
-            $params['is_approved'] = true;
-        }
-
-        return $this->repository->filter($params);
+        $filters['per_page'] = $perPage;
+        return $this->repository->filter($filters);
     }
 
     public function create(array $data): Model
     {
+        $userId = auth()->id();
         $product = $this->productRepo->findByUuid($data['product_uuid']);
+
         if (!$product) {
-            throw ValidationException::withMessages(['product_uuid' => 'Product not found']);
+            throw new BusinessException(404160); 
         }
 
-        // Check unique: 1 user - 1 review - 1 product
         $exists = $this->repository->query()
-            ->where('user_id', auth()->id())
+            ->where('user_id', $userId)
             ->where('product_id', $product->id)
             ->exists();
 
         if ($exists) {
-            throw ValidationException::withMessages(['product_uuid' => 'You have already reviewed this product.']);
+            throw new BusinessException(409181, 'Bạn đã đánh giá sản phẩm này rồi.');
         }
 
-        $reviewData = [
-            'product_id' => $product->id,
-            'user_id' => auth()->id(),
-            'rating' => $data['rating'],
-            'comment' => $data['comment'] ?? null,
-            'images' => $data['images'] ?? [],
-            'is_approved' => true
-        ];
+        $orderItem = \Modules\Order\Domain\Models\OrderItem::whereHas('order', function ($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->where('status', 'delivered'); 
+            })
+            ->whereHas('variant', fn($q) => $q->where('product_id', $product->id))
+            ->latest()
+            ->first();
 
-        $review = $this->repository->create($reviewData);
-        
-        // Clear cache stats
-        $this->clearStatsCache($product->id);
-        
+        $review = $this->repository->create([
+            'product_id'  => $product->id,
+            'user_id'     => $userId,
+            'order_id'    => $orderItem?->order_id, 
+            'rating'      => $data['rating'],
+            'comment'     => $data['comment'] ?? null,
+            'images'      => $data['images'] ?? [],
+            'is_approved' => false 
+        ]);
+
         event(new ReviewPosted($review));
 
         return $review;
@@ -85,20 +80,21 @@ class ReviewService extends BaseService
 
     public function update(string $uuid, array $data): Model
     {
-        $review = $this->repository->findByUuidOrFail($uuid);
-
+        $review = $this->findByUuidOrFail($uuid);
+        
         if (!auth()->user()->hasRole('admin')) {
             unset($data['is_approved']);
         }
 
         $oldStatus = $review->is_approved;
+        $oldRating = $review->rating;
         
         $this->repository->update($review, $data);
-        
-        if (isset($data['rating']) || ($data['is_approved'] ?? false) !== $oldStatus) {
-             $this->clearStatsCache($review->product_id);
+
+        if ($oldRating != $data['rating'] || ($data['is_approved'] ?? $oldStatus) !== $oldStatus) {
+             $this->recalculateStats($review->product_id);
         }
-        
+
         if (!$oldStatus && ($data['is_approved'] ?? false)) {
              event(new ReviewApproved($review));
         }
@@ -108,16 +104,31 @@ class ReviewService extends BaseService
     
     public function delete(string $uuid): bool
     {
-        $review = $this->repository->findByUuidOrFail($uuid);
+        $review = $this->findByUuidOrFail($uuid);
         $productId = $review->product_id;
         
-        $result = $this->repository->delete($review);
+        $result = parent::delete($uuid);
         
         if ($result) {
-             $this->clearStatsCache($productId);
+             $this->recalculateStats($productId);
         }
         
         return $result;
+    }
+
+    public function recalculateStats(int $productId): void
+    {
+        $product = $this->productRepo->findById($productId);
+        if ($product) {
+            Cache::forget("review_stats_{$product->uuid}");
+        }
+
+        $stats = $this->repository->getStats($productId);
+        
+        $this->productRepo->update($product, [
+            'rating_avg' => $stats['avg_rating'],
+            'rating_count' => $stats['count_rating']
+        ]);
     }
 
     public function getReviewStats(string $productUuid): array
@@ -126,9 +137,7 @@ class ReviewService extends BaseService
 
         return Cache::remember($cacheKey, 3600, function () use ($productUuid) {
             $product = $this->productRepo->findByUuid($productUuid);
-            if (!$product) {
-                return $this->getEmptyStats();
-            }
+            if (!$product) return $this->getEmptyStats();
 
             $counts = $this->repository->getRatingCounts($product->id);
             $totalReviews = array_sum($counts);
@@ -143,7 +152,7 @@ class ReviewService extends BaseService
             $distribution = [];
             for ($i = 5; $i >= 1; $i--) {
                 $count = $counts[$i] ?? 0;
-                $percent = $totalReviews > 0 ? round(($count / $totalReviews) * 100, 1) : 0;
+                $percent = $totalReviews > 0 ? round(($count / $totalReviews) * 100) : 0;
                 
                 $distribution[] = [
                     'star' => $i,
@@ -162,18 +171,14 @@ class ReviewService extends BaseService
 
     private function getEmptyStats(): array
     {
+        $distribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $distribution[] = ['star' => $i, 'count' => 0, 'percent' => 0];
+        }
         return [
             'total_reviews' => 0,
             'average_rating' => 0,
-            'distribution' => array_map(fn($i) => ['star' => $i, 'count' => 0, 'percent' => 0], range(5, 1, -1))
+            'distribution' => $distribution
         ];
-    }
-
-    public function clearStatsCache(int $productId): void
-    {
-        $product = $this->productRepo->findById($productId);
-        if ($product) {
-            Cache::forget("review_stats_{$product->uuid}");
-        }
     }
 }

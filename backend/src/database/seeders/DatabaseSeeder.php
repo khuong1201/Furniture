@@ -4,34 +4,50 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-// Import Modules Seeders
-use Modules\Permission\Database\Seeders\PermissionDatabaseSeeder;
-use Modules\User\Database\Seeders\UserDatabaseSeeder;
-use Modules\Category\Database\Seeders\CategoryDatabaseSeeder; // Phòng/Loại
-use Modules\Product\Database\Seeders\ProductDatabaseSeeder;   // Sofa, Giường...
-use Modules\Warehouse\Database\Seeders\WarehouseDatabaseSeeder;
-use Modules\Inventory\Database\Seeders\InventoryDatabaseSeeder; // Nhập kho
-use Modules\Voucher\Database\Seeders\VoucherDatabaseSeeder;
-// use Modules\Order\Database\Seeders\OrderDatabaseSeeder; // Optional, chạy sau cùng nếu cần đơn mẫu
-use Modules\Review\Database\Seeders\ReviewDatabaseSeeder;
-use Modules\Currency\Database\Seeders\CurrencyDatabaseSeeder;
-use Modules\Promotion\Database\Seeders\PromotionDatabaseSeeder;
-
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         $this->call([
-            PermissionDatabaseSeeder::class,
-            UserDatabaseSeeder::class,
-            WarehouseDatabaseSeeder::class,
-            CurrencyDatabaseSeeder::class, // Tạo kho trước
-            CategoryDatabaseSeeder::class,  // Tạo danh mục nội thất
-            ProductDatabaseSeeder::class,   // Tạo sp nội thất + variants
-            InventoryDatabaseSeeder::class, // Nhập kho cho variants vừa tạo
-            VoucherDatabaseSeeder::class,
-            PromotionDatabaseSeeder::class,
-            ReviewDatabaseSeeder::class,
+            // --- 1. SYSTEM & CONFIG (Nền tảng) ---
+            \Modules\Permission\database\seeders\PermissionDatabaseSeeder::class,
+            \Modules\Role\database\seeders\RoleDatabaseSeeder::class,
+            \Modules\Currency\database\seeders\CurrencyDatabaseSeeder::class,
+
+            // --- 2. USERS & LOCATIONS (Con người & Địa điểm) ---
+            // User phải có trước Address
+            \Modules\User\database\seeders\UserDatabaseSeeder::class,
+            \Modules\Address\database\seeders\AddressDatabaseSeeder::class,
+            
+            // Warehouse cần có trước Product để setup tồn kho
+            \Modules\Warehouse\database\seeders\WarehouseDatabaseSeeder::class,
+
+            // --- 3. CATALOG (Hàng hóa) ---
+            \Modules\Category\database\seeders\CategoryDatabaseSeeder::class,
+            \Modules\Brand\database\seeders\BrandDatabaseSeeder::class,
+            \Modules\Product\database\seeders\AttributeDatabaseSeeder::class,
+            
+            // ProductSeeder tạo sản phẩm + biến thể
+            \Modules\Product\database\seeders\ProductDatabaseSeeder::class,
+            \Modules\Collection\database\seeders\CollectionDatabaseSeeder::class,
+
+            // --- 4. OPERATIONS (Vận hành) ---
+            // Khởi tạo tồn kho (Zero hoặc số lượng đầu kỳ)
+            \Modules\Inventory\database\seeders\InventoryDatabaseSeeder::class,
+
+            // --- 5. MARKETING ---
+            \Modules\Voucher\database\seeders\VoucherDatabaseSeeder::class,
+            \Modules\Promotion\database\seeders\PromotionDatabaseSeeder::class,
+
+            // --- 6. TRANSACTIONS (Giao dịch) ---
+            // Quan trọng: OrderSeeder (bản mới) sẽ tự động tạo luôn Shipping bên trong nó
+            // để đảm bảo logic thời gian và trạng thái khớp nhau.
+            \Modules\Order\database\seeders\OrderDatabaseSeeder::class,
+            
+            // --- 7. POST-SALES (Sau bán hàng) ---
+            // \Modules\Payment\database\seeders\PaymentDatabaseSeeder::class,
+            \Modules\Review\database\seeders\ReviewDatabaseSeeder::class,
+            \Modules\Wishlist\database\seeders\WishlistDatabaseSeeder::class,
         ]);
     }
 }

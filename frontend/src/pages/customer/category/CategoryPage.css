@@ -1,0 +1,189 @@
+/* =========================================
+   1. CẤU TRÚC CHUNG (LAYOUT)
+   ========================================= */
+
+.category-page-container {
+  max-width: 1440px; 
+  margin: 0 auto;
+  padding: 20px 40px;
+  min-height: 80vh;
+  background-color: #fff;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* --- Breadcrumb --- */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: #646261;
+  margin-bottom: 24px;
+  padding: 10px 0;
+}
+.breadcrumb a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #646261;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.breadcrumb a:hover { color: #CBA890; }
+.breadcrumb span { color: #ccc; }
+.breadcrumb span:last-child { color: #2D2A29; font-weight: 700; text-transform: capitalize; }
+
+/* --- Header --- */
+.category-header {
+  margin-bottom: 40px; 
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+.category-header h2 {
+  font-size: 40px;
+  font-weight: 700;
+  color: #2D2A29;
+  text-transform: capitalize;
+  margin: 0;
+}
+
+/* =========================================
+   2. DANH MỤC CON (STYLE GIỐNG HOME PAGE)
+   ========================================= */
+
+.sub-categories-section {
+  width: 100%;
+  margin-bottom: 50px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Container danh sách icon */
+.category-page-container .category-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  
+  /* CANH GIỮA & RESET MARGIN */
+  justify-content: center; 
+  margin: 0 auto !important; /* Quan trọng: Xóa margin 144px của Home để không bị lệch */
+  width: 100%;
+  padding: 0;
+  
+  gap: 40px; /* Khoảng cách rộng thoáng giống Home */
+}
+
+/* Item Wrapper */
+.cat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px; 
+  cursor: pointer;
+  text-decoration: none; 
+  transition: all 0.2s ease;
+}
+
+/* Icon Box (Size 60px) */
+.cat-icon-box {
+  width: 60px;  
+  height: 60px;
+  background-color: #EFDECD; 
+  border-radius: 16px;      
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+/* Ảnh Icon */
+.cat-img-svg {
+  width: 24px; 
+  height: 24px;
+  object-fit: contain;
+  filter: opacity(0.6); /* Icon màu xám nhẹ */
+  transition: filter 0.2s ease;
+}
+
+/* Tên danh mục (Size 28px - To giống Home) */
+.cat-item span {
+  font-size: 28px; 
+  font-weight: 600;
+  color: #2D2A29;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* --- Hover Effects --- */
+.cat-item:hover .cat-icon-box {
+  transform: translateY(-5px); 
+  background-color: #e6cfbd;  
+}
+
+.cat-item:hover .cat-img-svg {
+  filter: brightness(0) saturate(100%) opacity(1); /* Hover thì đậm lên */
+}
+
+/* =========================================
+   3. LƯỚI SẢN PHẨM & TRẠNG THÁI
+   ========================================= */
+
+.product-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  width: 100%;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+}
+.spin { font-size: 40px; color: #CBA890; animation: spin 1s infinite linear; }
+
+/* Empty State */
+.empty-state {
+  text-align: center; padding: 50px; color: #999;
+}
+.empty-state a {
+  display: inline-block; margin-top: 10px; padding: 10px 20px;
+  background: #2D2A29; color: #fff; text-decoration: none; border-radius: 8px;
+}
+.empty-state a:hover { background: #CBA890; transform: translateY(-2px); }
+
+/* Error State */
+.error-box {
+  text-align: center; padding: 40px; color: #646261;
+}
+.error-box svg { font-size: 50px; color: #ccc; margin-bottom: 15px; }
+
+/* Animation Keyframes */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================
+   4. RESPONSIVE (MOBILE)
+   ========================================= */
+
+@media (max-width: 768px) {
+  .category-page-container { padding: 16px; }
+  .category-header h2 { font-size: 28px; }
+  
+  /* Mobile: Giảm khoảng cách icon cho gọn */
+  .category-page-container .category-list {
+    gap: 20px; 
+  }
+  
+  /* Mobile: Giảm size chữ danh mục xuống (28px quá to trên đt) */
+  .cat-item span {
+    font-size: 14px; 
+  }
+  
+  /* Mobile: Grid sản phẩm 2 cột */
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}

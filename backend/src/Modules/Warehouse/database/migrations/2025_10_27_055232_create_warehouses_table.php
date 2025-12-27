@@ -14,6 +14,9 @@ return new class extends Migration
             $table->string('name', 150)->unique(); // Name should be unique
             $table->string('location', 255)->nullable();
             
+            $table->string('contact_email')->nullable();
+            $table->string('contact_phone', 20)->nullable();
+            
             // Manager có thể null (kho chưa có quản lý)
             $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
             

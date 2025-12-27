@@ -13,10 +13,21 @@ use Modules\Inventory\Domain\Models\InventoryStock;
 
 class ProductVariant extends Model 
 {
-    protected $fillable = ['uuid', 'product_id', 'sku', 'price', 'weight', 'image_url', 'sold_count'];
+    // FIX: Thêm 'name' vào đây
+    protected $fillable = [
+        'uuid', 
+        'product_id', 
+        'sku', 
+        'name', 
+        'price', 
+        'weight', 
+        'image_url', 
+        'sold_count'
+    ];
 
     protected $casts = [
-        'price' => 'integer', // [CHANGE] Cast to integer
+        'price' => 'integer',
+        'weight' => 'decimal:2',
     ];
 
     protected static function boot(): void 

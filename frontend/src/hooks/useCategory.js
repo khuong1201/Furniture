@@ -16,12 +16,14 @@ export const useCategory = () => {
       
       if (Array.isArray(data)) {
         setCategories(data);
+      } else if (data?.data && Array.isArray(data.data)) {
+        setCategories(data.data);
       } else {
         setCategories([]);
       }
     } catch (err) {
-      console.error(err);
-      setError(err.message || 'Không thể tải danh mục sản phẩm');
+      console.error('Category Fetch Error:', err);
+      setError(err.message || 'Failed to load categories'); 
       setCategories([]);
     } finally {
       setLoading(false);

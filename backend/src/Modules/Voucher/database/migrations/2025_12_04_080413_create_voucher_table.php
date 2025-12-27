@@ -42,7 +42,6 @@ return new class extends Migration
             $table->unsignedBigInteger('discount_amount');
             $table->timestamp('used_at')->useCurrent();
             
-            // Index để query lịch sử dùng của user nhanh
             $table->index(['user_id', 'voucher_id']);
         });
     }

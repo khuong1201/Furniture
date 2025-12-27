@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Address\Services;
 
-use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
-use Modules\Shared\Services\BaseService;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Modules\Address\Domain\Repositories\AddressRepositoryInterface;
+use Modules\Shared\Exceptions\BusinessException;
+use Modules\Shared\Services\BaseService;
 
 class AddressService extends BaseService
 {
@@ -27,13 +28,17 @@ class AddressService extends BaseService
         return DB::transaction(function () use ($data) {
             $userId = $data['user_id'];
 
-            if (!empty($data['is_default']) && $data['is_default'] === true) {
-                $this->repository->resetDefault($userId);
-            }
-            
             $count = $this->repository->getAllByUser($userId)->count();
             if ($count === 0) {
                 $data['is_default'] = true;
+            }
+
+            if ($count >= 10) {
+                throw new BusinessException(400033);
+            }
+
+            if (!empty($data['is_default']) && $data['is_default'] === true) {
+                $this->repository->resetDefault($userId);
             }
 
             return parent::create($data);
@@ -45,12 +50,34 @@ class AddressService extends BaseService
         $address = $this->findByUuidOrFail($uuid);
 
         return DB::transaction(function () use ($address, $data) {
+
             if (!empty($data['is_default']) && $data['is_default'] === true) {
                 $this->repository->resetDefault($address->user_id);
+            } 
+
+            elseif (isset($data['is_default']) && $data['is_default'] === false && $address->is_default) {
+
+                 unset($data['is_default']);
             }
-            
+
             $address->update($data);
             return $address;
         });
+    }
+
+    public function delete(string $uuid): bool
+    {
+        $address = $this->findByUuidOrFail($uuid);
+
+
+        if ($address->is_default) {
+
+            $count = $this->repository->getAllByUser($address->user_id)->count();
+            if ($count > 1) {
+                throw new BusinessException(403032); 
+            }
+        }
+
+        return parent::delete($uuid);
     }
 }

@@ -1,13 +1,7 @@
-class InventoryService {
-    static _instance = null;
+import HttpService from './HttpService'; 
 
-    constructor() {
-        this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        this.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
-    }
+class InventoryService extends HttpService {
+    static _instance = null;
 
     static get instance() {
         if (!InventoryService._instance) {
@@ -16,79 +10,50 @@ class InventoryService {
         return InventoryService._instance;
     }
 
-    setToken(token) {
-        if (token) {
-            this.headers['Authorization'] = `Bearer ${token}`;
-        } else {
-            delete this.headers['Authorization'];
-        }
-    }
-
-    async _request(endpoint, options = {}) {
-        try {
-            // Auto-set token from localStorage
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                this.setToken(token);
-            }
-
-            const url = `${this.baseUrl}${endpoint}`;
-            const config = {
-                ...options,
-                headers: {
-                    ...this.headers,
-                    ...options.headers,
-                },
-            };
-
-            const response = await fetch(url, config);
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || `API Error: ${response.status}`);
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`Inventory Service Error (${endpoint}):`, error);
-            throw error;
-        }
-    }
-
-    // Get inventory list (admin)
+    // 1. Lấy danh sách
     async getInventories(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/inventories${queryString ? `?${queryString}` : ''}`);
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/admin/inventories?${query}`);
     }
 
-    // Adjust inventory stock
+    // 2. Lấy chi tiết
+    async getInventory(uuid) {
+        return this.request(`/admin/inventories/${uuid}`);
+    }
+
+    // 3. Dashboard: Stats Cards
+    async getDashboardStats(warehouseUuid) {
+        const params = new URLSearchParams();
+        if (warehouseUuid) params.append('warehouse_uuid', warehouseUuid);
+        return this.request(`/admin/inventories/dashboard-stats?${params.toString()}`);
+    }
+
+    // 4. Dashboard: Chart Data
+    async getMovementChart(warehouseUuid, period = 'week', month = null, year = null) {
+        const params = new URLSearchParams();
+        if (warehouseUuid) params.append('warehouse_uuid', warehouseUuid);
+        if (period) params.append('period', period);
+        if (month) params.append('month', month);
+        if (year) params.append('year', year);
+        
+        return this.request(`/admin/inventories/movements-chart?${params.toString()}`);
+    }
+
+    // 5. Điều chỉnh kho (+/-)
     async adjustStock(data) {
-        return this._request('/admin/inventories/adjust', {
+        return this.request('/admin/inventories/adjust', {
             method: 'POST',
             body: JSON.stringify(data),
         });
     }
 
-    // Upsert inventory stock
+    // 6. Kiểm kê (Set cứng)
     async upsertStock(data) {
-        return this._request('/admin/inventories/upsert', {
+        return this.request('/admin/inventories/upsert', {
             method: 'POST',
             body: JSON.stringify(data),
         });
-    }
-
-    // Static methods
-    static async getInventories(params) {
-        return InventoryService.instance.getInventories(params);
-    }
-
-    static async adjustStock(data) {
-        return InventoryService.instance.adjustStock(data);
-    }
-
-    static async upsertStock(data) {
-        return InventoryService.instance.upsertStock(data);
     }
 }
 
-export default InventoryService;
+export default InventoryService.instance;

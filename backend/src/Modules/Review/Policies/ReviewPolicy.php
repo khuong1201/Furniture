@@ -19,28 +19,28 @@ class ReviewPolicy
 
     public function view(?User $user, Review $review): bool
     {
-        if ($review->is_approved) {
-            return true;
-        }
+        if ($review->is_approved) return true;
 
-        if (!$user) {
-            return false;
-        }
+        if (!$user) return false;
+        
         return $user->id === $review->user_id || $user->hasPermissionTo('review.view_all');
     }
 
     public function create(User $user): bool
     {
-        return true; 
+        return $user->is_active; 
     }
 
     public function update(User $user, Review $review): bool
     {
-        return $user->id === $review->user_id || $user->hasPermissionTo('review.edit');
+        if ($user->hasPermissionTo('review.edit')) return true;
+
+        return $user->id === $review->user_id;
     }
 
     public function delete(User $user, Review $review): bool
     {
-        return $user->id === $review->user_id || $user->hasPermissionTo('review.delete');
+        if ($user->hasPermissionTo('review.delete')) return true;
+        return $user->id === $review->user_id;
     }
 }

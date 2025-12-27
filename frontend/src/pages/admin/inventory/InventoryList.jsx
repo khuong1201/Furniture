@@ -1,146 +1,191 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Package, AlertTriangle, CheckCircle, XCircle, Warehouse } from 'lucide-react';
-import InventoryService from '@/services/admin/InventoryService';
+import { useNavigate } from 'react-router-dom';
+import { Search, ArrowRightLeft, RefreshCw, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'; // Xóa Box import
+import { useInventory } from '@/hooks/admin/useInventory';
+import { useWarehouse } from '@/hooks/admin/useWarehouse';
 import './InventoryList.css';
 
 const InventoryList = () => {
-    const [inventories, setInventories] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [warehouseFilter, setWarehouseFilter] = useState('');
+    const navigate = useNavigate();
+    const { stocks, meta, loading, fetchStocks } = useInventory();
+    const { warehouses, fetchWarehouses } = useWarehouse();
+    
+    const [filters, setFilters] = useState({ 
+        warehouse_uuid: '', 
+        search: '',
+        status: '' 
+    });
 
-    const fetchInventories = async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    // 1. Initial Load
+    useEffect(() => {
+        fetchWarehouses({ per_page: 100, is_active: 1 });
+        fetchStocks({ page: 1, per_page: 20 });
+    }, []);
 
-            const params = {};
-            if (searchTerm) params.search = searchTerm;
-            if (warehouseFilter) params.warehouse_uuid = warehouseFilter;
+    // 2. Handle Filter Change
+    const handleWarehouseChange = (uuid) => {
+        const newFilters = { ...filters, warehouse_uuid: uuid };
+        setFilters(newFilters);
+        fetchStocks({ ...newFilters, page: 1 });
+    };
 
-            const response = await InventoryService.getInventories(params);
-
-            if (response.success && response.data) {
-                // Handle both paginated and direct array response
-                const inventoryList = Array.isArray(response.data)
-                    ? response.data
-                    : response.data.data || [];
-                setInventories(inventoryList);
-            }
-        } catch (err) {
-            setError(err.message || 'Không thể tải danh sách tồn kho');
-            console.error('Error fetching inventories:', err);
-        } finally {
-            setLoading(false);
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            fetchStocks({ ...filters, page: 1 });
         }
     };
 
-    useEffect(() => {
-        fetchInventories();
-    }, [searchTerm, warehouseFilter]);
+    const handleRefresh = () => {
+        const resetFilters = { warehouse_uuid: '', search: '' };
+        setFilters(resetFilters);
+        fetchStocks({ page: 1, per_page: 20, ...resetFilters });
+    };
 
-    const getStatusBadge = (stock) => {
-        if (!stock.quantity || stock.quantity <= 0) {
-            return (
-                <span className="badge badge-danger">
-                    <XCircle size={14} /> Hết hàng
-                </span>
-            );
-        }
-        if (stock.quantity <= stock.min_threshold) {
-            return (
-                <span className="badge badge-warning">
-                    <AlertTriangle size={14} /> Sắp hết
-                </span>
-            );
-        }
-        return (
-            <span className="badge badge-success">
-                <CheckCircle size={14} /> Còn hàng
-            </span>
-        );
+    const handlePageChange = (newPage) => {
+        fetchStocks({ ...filters, page: newPage });
     };
 
     return (
-        <div className="inventory_list">
-            <div className="page-header">
-                <div>
-                    <h1><Warehouse size={24} /> Quản lý Tồn kho</h1>
-                    <p className="page-subtitle">Theo dõi số lượng tồn kho theo kho hàng</p>
-                </div>
-            </div>
-
-            <div className="filters-section">
-                <div className="search-box">
-                    <Search size={20} />
+        <div className="inventory-list-wrapper">
+            {/* Filters */}
+            <div className="inventory-filters">
+                <div className="search-input-wrapper">
+                    <Search size={18} className="search-icon" />
                     <input
-                        type="text"
-                        placeholder="Tìm theo tên sản phẩm hoặc SKU..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search SKU or Product Name..."
+                        value={filters.search}
+                        onChange={(e) => setFilters(p => ({ ...p, search: e.target.value }))}
+                        onKeyDown={handleSearchKeyDown}
                     />
                 </div>
+
+                <div className="warehouse-select-wrapper">
+                    <select
+                        className="warehouse-select"
+                        value={filters.warehouse_uuid}
+                        onChange={(e) => handleWarehouseChange(e.target.value)}
+                    >
+                        <option value="">-- All Warehouses --</option>
+                        {warehouses.map(wh => (
+                            <option key={wh.uuid} value={wh.uuid}>{wh.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="status-select-wrapper">
+                    <select
+                        className="status-select"
+                        value={filters.status}
+                        onChange={(e) => {
+                            const newFilters = { ...filters, status: e.target.value };
+                            setFilters(newFilters);
+                            fetchStocks({ ...newFilters, page: 1 });
+                        }}
+                    >
+                        <option value="">-- All Status --</option>
+                        <option value="in_stock">In Stock</option>
+                        <option value="low_stock">Low Stock</option>
+                        <option value="out_of_stock">Out of Stock</option>
+                        <option value="old_stock">Old Stock</option>
+                    </select>
+                </div>
+
+                <button className="btn-refresh" onClick={handleRefresh} title="Reset & Refresh">
+                    <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                </button>
             </div>
 
-            <div className="table-container">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Đang tải dữ liệu...</p>
-                    </div>
-                ) : error ? (
-                    <div className="error-state">
-                        <p>{error}</p>
-                        <button onClick={fetchInventories} className="btn btn-secondary">
-                            Thử lại
-                        </button>
-                    </div>
-                ) : inventories.length === 0 ? (
-                    <div className="empty-state">
-                        <Package size={48} color="#9ca3af" />
-                        <p>Chưa có dữ liệu tồn kho</p>
-                    </div>
-                ) : (
-                    <table className="data-table">
+            {/* Table */}
+            <div className="inventory-table-container">
+                <div className="table-scroll">
+                    <table className="modern-table">
                         <thead>
                             <tr>
-                                <th>SKU</th>
-                                <th>Sản phẩm</th>
-                                <th>Kho hàng</th>
-                                <th>Số lượng</th>
-                                <th>Ngưỡng tối thiểu</th>
-                                <th>Trạng thái</th>
+                                {/* Thêm text-align left rõ ràng */}
+                                <th style={{ width: '40%', textAlign: 'left' }}>Product / SKU</th>
+                                <th style={{ width: '20%', textAlign: 'left' }}>Warehouse</th>
+                                <th className="text-center" style={{ width: '15%' }}>Quantity</th>
+                                <th style={{ width: '15%' }}>Status</th>
+                                <th style={{ textAlign: 'right', width: '10%' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {inventories.map((stock) => (
-                                <tr key={stock.uuid || stock.id}>
-                                    <td>
-                                        <code>{stock.variant?.sku || '-'}</code>
-                                    </td>
-                                    <td>
-                                        <div className="product-info">
-                                            <strong>{stock.variant?.product?.name || 'N/A'}</strong>
-                                            {stock.variant?.attribute_values && stock.variant.attribute_values.length > 0 && (
-                                                <span className="variant-info">
-                                                    {stock.variant.attribute_values.map(av => av.value).join(' / ')}
+                            {loading ? (
+                                <tr><td colSpan="5" className="empty-state"><span className="animate-spin inline-block mr-2">⟳</span> Loading inventory...</td></tr>
+                            ) : stocks.length > 0 ? (
+                                stocks.map(item => {
+                                    const productName = item.variant?.product?.name || item.variant?.name || 'Unnamed Product';
+                                    const variantLabel = (item.variant?.product?.name && item.variant?.name && item.variant.name !== item.variant.product.name) 
+                                        ? `(${item.variant.name})` 
+                                        : '';
+                                    const sku = item.variant?.sku || 'N/A';
+                                    const warehouseName = item.warehouse?.name || 'Unknown Warehouse';
+
+                                    return (
+                                        <tr key={item.uuid}>
+                                            <td style={{ textAlign: 'left' }}>
+                                                <div className="product-cell">
+                                                    <div className="product-name">
+                                                        {productName} <span className="text-gray-400 text-xs font-normal">{variantLabel}</span>
+                                                    </div>
+                                                    <div className="product-sku">
+                                                        <span className="sku-tag">{sku}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            {/* Cột Warehouse: Đã xóa icon Box */}
+                                            <td style={{ textAlign: 'left' }}>
+                                                <div className="text-sm text-gray-700 font-medium">
+                                                    {warehouseName}
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <span className={`qty-badge ${item.status === 'low_stock' ? 'low' : ''}`}>
+                                                    {item.quantity}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td>{stock.warehouse?.name || '-'}</td>
-                                    <td>
-                                        <strong className={stock.quantity <= stock.min_threshold ? 'text-warning' : ''}>
-                                            {stock.quantity || 0}
-                                        </strong>
-                                    </td>
-                                    <td>{stock.min_threshold || 0}</td>
-                                    <td>{getStatusBadge(stock)}</td>
-                                </tr>
-                            ))}
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge ${item.status_color}`}>
+                                                    {item.status_label}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="table-actions">
+                                                    <button 
+                                                        className="table-action-btn" 
+                                                        title="Adjust Stock"
+                                                        onClick={() => navigate(`/admin/inventories/${item.uuid}/adjust`)}
+                                                    >
+                                                        <ArrowRightLeft size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr><td colSpan="5" className="empty-state">No inventory records found.</td></tr>
+                            )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination */}
+                {meta.last_page > 1 && (
+                    <div className="pagination-wrapper">
+                        <div className="pagination-info">
+                            Showing <b>{stocks.length}</b> of <b>{meta.total}</b> items
+                        </div>
+                        <div className="pagination-actions">
+                            <button disabled={meta.current_page === 1} onClick={() => handlePageChange(meta.current_page - 1)}>
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span className="page-number">{meta.current_page}</span>
+                            <button disabled={meta.current_page === meta.last_page} onClick={() => handlePageChange(meta.current_page + 1)}>
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                        <div className="pagination-spacer"></div>
+                    </div>
                 )}
             </div>
         </div>

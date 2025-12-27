@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --gold-primary: #c5a47e;
+    --navy-primary: #1e2532;
+    --bg-light: #f9fafb;
+    --border-color: #e5e7eb;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+}
+
+/* --- Layout Wrapper --- */
+.inventory-manager-wrapper {
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    height: calc(100vh - 80px); /* Adjust based on your topbar height */
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 1. Header Section --- */
+.manager-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin: 0;
+    color: var(--navy-primary);
+}
+
+.page-subtitle {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* --- Button Styles --- */
+.btn-primary-gradient {
+    background: var(--navy-primary);
+    color: var(--gold-primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 42px;
+}
+
+.btn-primary-gradient:hover {
+    background: #2d3646;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 37, 50, 0.15);
+}
+
+/* --- 2. Tabs Navigation --- */
+.manager-tabs-wrapper {
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 24px;
+    flex-shrink: 0;
+}
+
+.manager-tabs {
+    display: flex;
+    gap: 32px;
+}
+
+.tab-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 4px;
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.tab-item:hover {
+    color: var(--navy-primary);
+}
+
+.tab-item.active {
+    color: var(--navy-primary);
+    font-weight: 700;
+}
+
+.tab-icon {
+    margin-bottom: 2px;
+}
+
+/* Active Line Indicator */
+.active-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--gold-primary);
+    border-radius: 3px 3px 0 0;
+}
+
+/* --- 3. Content Area --- */
+.manager-content-area {
+    flex: 1;
+    min-height: 0; /* Important for nested scrolling */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Animation */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

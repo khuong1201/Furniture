@@ -12,7 +12,8 @@ use Modules\Notification\Domain\Repositories\NotificationRepositoryInterface;
 use Modules\Notification\Infrastructure\Repositories\EloquentNotificationRepository;
 use Modules\Notification\Domain\Models\Notification;
 use Modules\Notification\Policies\NotificationPolicy;
-
+use Modules\Shared\Contracts\NotificationServiceInterface; 
+use Modules\Notification\Services\NotificationService;
 class NotificationServiceProvider extends ServiceProvider
 {
     use PathNamespace;
@@ -41,7 +42,7 @@ class NotificationServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(NotificationRepositoryInterface::class, EloquentNotificationRepository::class);
-
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
     }

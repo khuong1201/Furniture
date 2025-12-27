@@ -1,158 +1,133 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import OrderService from '@/services/customer/OrderService';
 
 export const useOrder = () => {
-  const [orders, setOrders] = useState([]);         
-  const [pagination, setPagination] = useState(null);
-  const [orderDetail, setOrderDetail] = useState(null); 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+    const [orders, setOrders] = useState([]);        
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        last_page: 1,
+        total: 0,
+        per_page: 10
+    });
+    const [orderDetail, setOrderDetail] = useState(null); 
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  // --- 1. TẠO ĐƠN THỦ CÔNG ---
-  const createOrder = useCallback(async (payload) => {
-    console.log('🚀 [useOrder] createOrder called:', payload);
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await OrderService.createOrder(payload);
-      console.log('✅ [useOrder] createOrder success:', data);
-      return data;
-    } catch (err) {
-      console.error('❌ [useOrder] createOrder failed:', err);
-      setError(err.message || 'Tạo đơn hàng thất bại');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    // Dùng để hủy request cũ nếu user switch tab liên tục
+    const abortControllerRef = useRef(null);
 
-  // --- 2. LẤY DANH SÁCH ĐƠN HÀNG ---
-  const getMyOrders = useCallback(async (params = {}) => {
-    console.log('🚀 [useOrder] getMyOrders called with params:', params);
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await OrderService.getMyOrders(params);
-      console.log('✅ [useOrder] getMyOrders response:', response);
+    // --- 1. GET ORDERS (Fix Race Condition & Append Logic) ---
+    const getOrders = useCallback(async (params = {}) => {
+        const isLoadMore = params.page > 1;
 
-      // Xử lý phân trang
-      if (response && Array.isArray(response.data)) {
-        setOrders(response.data); 
-        setPagination({
-            currentPage: response.current_page || response.meta?.current_page,
-            lastPage: response.last_page || response.meta?.last_page,
-            total: response.total || response.meta?.total,
-            perPage: response.per_page || response.meta?.per_page
-        });
-      } 
-      // Trường hợp trả về mảng trực tiếp
-      else if (Array.isArray(response)) {
-        setOrders(response);
-        setPagination(null);
-      } 
-      else {
-        setOrders([]);
-      }
-      
-    } catch (err) {
-      console.error('❌ [useOrder] getMyOrders failed:', err);
-      setError(err.message || 'Lỗi tải danh sách đơn hàng');
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        // Nếu load trang 1 (hoặc filter mới), hủy request cũ đang chạy
+        if (!isLoadMore && abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
 
-  // --- 3. CHECKOUT (TỪ GIỎ HÀNG) ---
-  // ⚠️ QUAN TRỌNG: Đã sửa tham số thành 'payload' để nhận object đầy đủ
-  const checkout = useCallback(async (payload) => {
-    console.log('🚀 [useOrder] checkout called with payload:', payload);
-    setLoading(true);
-    setError(null);
-    try {
-      // payload cấu trúc: { address_id, notes, selected_item_uuids: [...] }
-      const data = await OrderService.checkout(payload);
-      console.log('✅ [useOrder] checkout success:', data);
-      return data; 
-    } catch (err) {
-      console.error('❌ [useOrder] checkout failed:', err);
-      setError(err.message || 'Đặt hàng thất bại'); 
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
 
-  // --- 4. BUY NOW (MUA NGAY) ---
-  const buyNow = useCallback(async (payload) => {
-    console.log('🚀 [useOrder] buyNow called with payload:', payload);
-    setLoading(true);
-    setError(null);
-    try {
-        const data = await OrderService.buyNow(payload);
-        console.log('✅ [useOrder] buyNow success:', data);
-        return data;
-    } catch (err) {
-        console.error('❌ [useOrder] buyNow failed:', err);
-        setError(err.message || 'Mua ngay thất bại');
-        throw err;
-    } finally {
-        setLoading(false);
-    }
-  }, []);
+        setLoading(true);
+        setError(null);
 
-  // --- 5. LẤY CHI TIẾT ĐƠN HÀNG ---
-  const getOrderDetail = useCallback(async (uuid) => {
-    console.log('🚀 [useOrder] getOrderDetail called for UUID:', uuid);
-    setLoading(true);
-    setError(null);
-    // setOrderDetail(null); // Optional: Clear data cũ nếu muốn hiện loading trắng trang
-    try {
-      const data = await OrderService.getOrderDetail(uuid);
-      console.log('✅ [useOrder] getOrderDetail success:', data);
-      setOrderDetail(data);
-      return data;
-    } catch (err) {
-      console.error('❌ [useOrder] getOrderDetail failed:', err);
-      setError(err.message || 'Lỗi tải chi tiết đơn hàng');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        try {
+            const response = await OrderService.getMyOrders(params, signal);
+            
+            // Lấy data từ response chuẩn Laravel Resource
+            const dataList = response.data || [];
+            const meta = response.meta || {}; 
 
-  // --- 6. HỦY ĐƠN HÀNG ---
-  const cancelOrder = useCallback(async (uuid) => {
-    if (!window.confirm('Bạn có chắc muốn hủy đơn hàng này?')) return false;
+            // ✅ FIX: Nối mảng nếu là Load More, ngược lại thì Replace
+            setOrders(prev => isLoadMore ? [...prev, ...dataList] : dataList);
+
+            // Set Pagination Info
+            if (meta.current_page) {
+                setPagination({
+                    current_page: meta.current_page,
+                    last_page: meta.last_page,
+                    total: meta.total,
+                    per_page: meta.per_page
+                });
+            }
+            
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.error('❌ Get orders failed:', err);
+            setError(err.message || 'Failed to load orders');
+            if (!isLoadMore) setOrders([]); // Clear list nếu lỗi trang 1
+        } finally {
+            // Chỉ tắt loading nếu request chưa bị hủy
+            if (!signal?.aborted) setLoading(false);
+        }
+    }, []);
+
+    // --- 2. GET ORDER DETAIL ---
+    const getOrderDetail = useCallback(async (uuid) => {
+        setLoading(true); 
+        setError(null);
+        try { 
+            const data = await OrderService.getOrderDetail(uuid); 
+            setOrderDetail(data); 
+            return data;
+        } catch(e) { 
+            setError(e.message); 
+            console.error(e);
+        } finally { 
+            setLoading(false); 
+        }
+    }, []);
+
+    // --- 3. ACTIONS ---
     
-    console.log('🚀 [useOrder] cancelOrder called for UUID:', uuid);
-    setLoading(true);
-    setError(null);
-    try {
-      await OrderService.cancelOrder(uuid);
-      console.log('✅ [useOrder] cancelOrder success');
-      return true; 
-    } catch (err) {
-      console.error('❌ [useOrder] cancelOrder failed:', err);
-      const msg = err.message || 'Hủy đơn thất bại';
-      setError(msg);
-      alert(msg); 
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    const checkout = useCallback(async (data) => {
+        setLoading(true); 
+        try { 
+            return await OrderService.checkout(data); 
+        } catch(e) { 
+            setError(e.message); 
+            throw e; // Ném lỗi để component UI hiển thị toast
+        } finally { 
+            setLoading(false); 
+        }
+    }, []);
 
-  return {
-    orders,
-    pagination,
-    orderDetail,
-    loading,
-    error,
-    createOrder,
-    getMyOrders,
-    getOrderDetail,
-    checkout,
-    buyNow,     
-    cancelOrder
-  };
+    const buyNow = useCallback(async (data) => {
+        setLoading(true); 
+        try { 
+            return await OrderService.buyNow(data); 
+        } catch(e) { 
+            setError(e.message); 
+            throw e; 
+        } finally { 
+            setLoading(false); 
+        }
+    }, []);
+
+    const cancelOrder = useCallback(async (uuid) => {
+        setLoading(true); 
+        try { 
+            await OrderService.cancelOrder(uuid); 
+            return true; 
+        } catch(e) { 
+            setError(e.message); 
+            throw e; 
+        } finally { 
+            setLoading(false); 
+        }
+    }, []);
+
+    return {
+        orders, 
+        setOrders, // Expose để component có thể clear thủ công nếu cần
+        pagination, 
+        orderDetail, 
+        loading, 
+        error,
+        getOrders, 
+        getOrderDetail, 
+        checkout, 
+        buyNow, 
+        cancelOrder
+    };
 };

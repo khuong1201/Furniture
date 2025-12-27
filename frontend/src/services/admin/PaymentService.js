@@ -1,91 +1,45 @@
-class PaymentService {
-    static _instance = null;
+import HttpService from './HttpService';
 
-    constructor() {
-        this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        this.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
-    }
+class PaymentService extends HttpService {
+    static _instance = null;
+    constructor() { super(); }
 
     static get instance() {
-        if (!PaymentService._instance) {
-            PaymentService._instance = new PaymentService();
-        }
+        if (!PaymentService._instance) PaymentService._instance = new PaymentService();
         return PaymentService._instance;
     }
 
-    setToken(token) {
-        if (token) {
-            this.headers['Authorization'] = `Bearer ${token}`;
-        } else {
-            delete this.headers['Authorization'];
-        }
-    }
-
-    async _request(endpoint, options = {}) {
-        try {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                this.setToken(token);
-            }
-
-            const url = `${this.baseUrl}${endpoint}`;
-            const config = {
-                ...options,
-                headers: {
-                    ...this.headers,
-                    ...options.headers,
-                },
-            };
-
-            const response = await fetch(url, config);
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || `API Error: ${response.status}`);
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`Payment Service Error (${endpoint}):`, error);
-            throw error;
-        }
-    }
-
-    // Get all payments with pagination
-    async getAll(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this._request(`/payments${queryString ? `?${queryString}` : ''}`);
-    }
-
-    // Get single payment
-    async getById(uuid) {
-        return this._request(`/payments/${uuid}`);
-    }
-
-    // Create payment
+    async getAll(params = {}) { return this.request('/payments', { params }); }
+    async getById(uuid) { return this.request(`/payments/${uuid}`); }
+    
     async create(data) {
-        return this._request('/payments', {
+        return this.request('/payments', {
             method: 'POST',
             body: JSON.stringify(data),
         });
     }
 
-    // Update payment
     async update(uuid, data) {
-        return this._request(`/payments/${uuid}`, {
+        return this.request(`/payments/${uuid}`, {
             method: 'PUT',
             body: JSON.stringify(data),
         });
     }
 
-    // Static methods
+    // --- FIX: Bổ sung method updateStatus để khớp với logic Backend ---
+    async updateStatus(uuid, status) {
+        return this.request(`/payments/${uuid}/status`, {
+            method: 'PATCH', // Dùng PATCH cho cập nhật từng phần (status)
+            body: JSON.stringify({ status }),
+        });
+    }
+
+    // Static mapping - Đảm bảo tất cả method instance đều có static tương ứng
     static getAll(params) { return PaymentService.instance.getAll(params); }
     static getById(uuid) { return PaymentService.instance.getById(uuid); }
     static create(data) { return PaymentService.instance.create(data); }
     static update(uuid, data) { return PaymentService.instance.update(uuid, data); }
+    static updateStatus(uuid, status) { return PaymentService.instance.updateStatus(uuid, status); }
 }
 
 export default PaymentService;

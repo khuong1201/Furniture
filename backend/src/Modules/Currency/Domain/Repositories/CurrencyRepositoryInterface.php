@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Currency\Domain\Repositories;
 
-use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Shared\Contracts\BaseRepositoryInterface;
 use Modules\Currency\Domain\Models\Currency;
 use Illuminate\Database\Eloquent\Collection;
 

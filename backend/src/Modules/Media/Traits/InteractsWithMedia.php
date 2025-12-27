@@ -13,10 +13,27 @@ trait InteractsWithMedia
     {
         return $this->morphMany(Media::class, 'model');
     }
-    
+
     public function getFirstMediaUrl(string $collection = 'default'): ?string
     {
+        $media = $this->media->first(function ($item) use ($collection) {
+            return $item->collection_name === $collection;
+        });
+
+        if ($media) {
+            return $media->url;
+        }
+
         $media = $this->media()->where('collection_name', $collection)->first();
-        return $media ? $media->url : null;
+
+        return $media?->url;
+    }
+
+    public function getMediaUrls(string $collection = 'default'): array
+    {
+        return $this->media
+            ->where('collection_name', $collection)
+            ->pluck('url')
+            ->toArray();
     }
 }

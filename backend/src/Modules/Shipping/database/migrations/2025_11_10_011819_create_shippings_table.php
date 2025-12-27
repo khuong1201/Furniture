@@ -14,8 +14,16 @@ return new class extends Migration
             
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             
-            $table->string('provider'); // GHN, GHTK, ViettelPost...
-            $table->string('tracking_number')->unique()->nullable(); // Có thể null lúc mới tạo
+            // --- THÊM MỚI 3 CỘT NÀY ---
+            $table->string('consignee_name')->nullable();
+            $table->string('consignee_phone')->nullable();
+            $table->text('address_full')->nullable();
+
+            // --- SỬA CỘT NÀY ---
+            // Phải cho nullable vì đơn Pending chưa có Provider
+            $table->string('provider')->nullable(); 
+            
+            $table->string('tracking_number')->unique()->nullable(); 
 
             $table->enum('status', ['pending', 'shipped', 'delivered', 'returned', 'cancelled'])->default('pending');
 
@@ -27,7 +35,6 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
             
-            // Index để tìm kiếm nhanh theo tracking number
             $table->index('tracking_number');
         });
     }

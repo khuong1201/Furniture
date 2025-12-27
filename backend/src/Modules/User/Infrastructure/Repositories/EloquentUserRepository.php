@@ -17,16 +17,21 @@ class EloquentUserRepository extends EloquentBaseRepository implements UserRepos
         parent::__construct($model);
     }
 
+    public function findByEmail(string $email): ?User
+    {
+        return $this->model->where('email', $email)->first();
+    }
+    
     public function filter(array $filters): LengthAwarePaginator
     {
-        $query = $this->query();
+        $query = $this->model->newQuery()->with('roles');;
 
         if (!empty($filters['q'])) {
             $q = $filters['q'];
             $query->where(function (Builder $sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
                     ->orWhere('email', 'like', "%{$q}%")
-                    ->orWhere('phone', 'like', "{$q}%"); 
+                    ->orWhere('phone', 'like', "{$q}%");
             });
         }
         

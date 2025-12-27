@@ -1,274 +1,210 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import {
-    Plus,
-    Search,
-    Edit2,
-    Trash2,
-    Tag,
-    Loader,
-    AlertCircle
-} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, Edit, Trash2, X, Tag, RefreshCw, Layers, Plus } from 'lucide-react'; // Đã bỏ Plus ở header
+import { useAttribute } from '@/hooks/admin/useAttribute';
 import AttributeService from '@/services/admin/AttributeService';
-import Modal from '@/components/admin/shared/Modal';
 import ConfirmDialog from '@/components/admin/shared/ConfirmDialog';
+import LoadingSpinner from '@/components/admin/shared/LoadingSpinner';
 import './AttributeList.css';
 
-const AttributeList = () => {
-    const [attributes, setAttributes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+// Nhận props từ ProductManager
+const AttributeList = ({ externalModalOpen, setExternalModalOpen }) => {
+    const { attributes, loading, fetchAttributes } = useAttribute();
     const [searchTerm, setSearchTerm] = useState('');
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedAttribute, setSelectedAttribute] = useState(null);
-    const [formData, setFormData] = useState({
-        name: '',
-        type: 'text',
-        values: []
-    });
-    const [valueInput, setValueInput] = useState('');
-    const [saving, setSaving] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    
+    // Modal state
+    // Lưu ý: isModalOpen nội bộ vẫn dùng để handle logic đóng/mở
+    const [isInternalModalOpen, setIsInternalModalOpen] = useState(false);
+    
+    const [editingAttribute, setEditingAttribute] = useState(null);
+    const [formData, setFormData] = useState({ name: '', type: 'text', values: [] });
+    const [newValue, setNewValue] = useState('');
+    const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, item: null });
 
     useEffect(() => {
         fetchAttributes();
-    }, []);
+    }, [fetchAttributes]);
 
-    const fetchAttributes = async () => {
-        try {
-            setLoading(true);
-            const response = await AttributeService.getAll();
-            setAttributes(response.data || []);
-        } catch (err) {
-            setError('Không thể tải danh sách thuộc tính');
-        } finally {
-            setLoading(false);
+    // --- EFFECT: Lắng nghe lệnh mở từ ProductManager ---
+    useEffect(() => {
+        if (externalModalOpen) {
+            handleOpenModal(); // Mở form tạo mới
+        }
+    }, [externalModalOpen]);
+
+    // --- Handlers ---
+    const handleCloseModal = () => {
+        setIsInternalModalOpen(false);
+        // Báo ngược lại cho Parent biết là đã đóng
+        if (setExternalModalOpen) setExternalModalOpen(false);
+    };
+
+    const handleOpenModal = (attribute = null) => {
+        if (attribute) {
+            setEditingAttribute(attribute);
+            setFormData({
+                name: attribute.name,
+                type: attribute.type,
+                values: attribute.values ? attribute.values.map(v => v.value) : []
+            });
+        } else {
+            setEditingAttribute(null);
+            setFormData({ name: '', type: 'text', values: [] });
+        }
+        setIsInternalModalOpen(true);
+    };
+
+    const handleAddValue = (e) => {
+        e?.preventDefault();
+        if (newValue.trim() && !formData.values.includes(newValue.trim())) {
+            setFormData(prev => ({ ...prev, values: [...prev.values, newValue.trim()] }));
+            setNewValue('');
         }
     };
 
-    const handleOpenCreate = () => {
-        setSelectedAttribute(null);
-        setFormData({ name: '', type: 'text', values: [] });
-        setValueInput('');
-        setIsModalOpen(true);
-    };
-
-    const handleOpenEdit = (attr) => {
-        setSelectedAttribute(attr);
-        setFormData({
-            name: attr.name || '',
-            type: attr.type || 'text',
-            values: attr.values || []
-        });
-        setIsModalOpen(true);
-    };
-
-    const handleOpenDelete = (attr) => {
-        setSelectedAttribute(attr);
-        setIsDeleteOpen(true);
-    };
-
-    const handleAddValue = () => {
-        if (valueInput.trim() && !formData.values.includes(valueInput.trim())) {
-            setFormData(prev => ({
-                ...prev,
-                values: [...prev.values, valueInput.trim()]
-            }));
-            setValueInput('');
-        }
-    };
-
-    const handleRemoveValue = (value) => {
-        setFormData(prev => ({
-            ...prev,
-            values: prev.values.filter(v => v !== value)
-        }));
+    const handleRemoveValue = (index) => {
+        setFormData(prev => ({ ...prev, values: prev.values.filter((_, i) => i !== index) }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
         try {
-            if (selectedAttribute) {
-                await AttributeService.update(selectedAttribute.uuid, formData);
+            const payload = { ...formData };
+            if (editingAttribute) {
+                await AttributeService.update(editingAttribute.uuid, payload);
             } else {
-                await AttributeService.create(formData);
+                await AttributeService.create(payload);
             }
-            setIsModalOpen(false);
             fetchAttributes();
-        } catch (err) {
-            setError(err.message || 'Có lỗi xảy ra');
-        } finally {
-            setSaving(false);
+            handleCloseModal();
+        } catch (error) {
+            alert('Failed to save attribute');
         }
     };
 
     const handleDelete = async () => {
+        if (!deleteDialog.item) return;
         try {
-            await AttributeService.delete(selectedAttribute.uuid);
-            setIsDeleteOpen(false);
+            await AttributeService.delete(deleteDialog.item.uuid);
             fetchAttributes();
-        } catch (err) {
-            setError(err.message || 'Không thể xóa thuộc tính');
+            setDeleteDialog({ isOpen: false, item: null });
+        } catch (error) {
+            alert('Failed to delete attribute');
         }
     };
 
-    const filteredAttributes = attributes.filter(attr =>
-        attr.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredAttributes = attributes.filter(attr => 
+        attr.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (loading) {
-        return (
-            <div className="loading-state">
-                <Loader className="spinner" size={40} />
-                <p>Đang tải...</p>
-            </div>
-        );
-    }
+    if (loading && attributes.length === 0 && !isRefreshing) return <LoadingSpinner />;
 
     return (
         <div className="attribute_list-page">
-            <div className="page-header">
-                <div className="page-title">
-                    <h1>Quản lý Thuộc tính</h1>
-                    <p className="page-subtitle">Quản lý các thuộc tính sản phẩm (màu sắc, kích thước, ...)</p>
-                </div>
-                <button className="btn btn-add" onClick={handleOpenCreate}>
-                    <Plus size={20} />
-                    Thêm thuộc tính
-                </button>
-            </div>
-
-            {error && (
-                <div className="error-alert">
-                    <AlertCircle size={20} />
-                    <span>{error}</span>
-                    <button onClick={() => setError('')}>×</button>
-                </div>
-            )}
-
-            <div className="search-filters">
-                <div className="search-box">
-                    <Search size={20} className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm thuộc tính..."
+            {/* Header đã xóa vì ProductManager quản lý rồi */}
+            
+            {/* Chỉ giữ lại Filter Bar */}
+            <div className="filter-bar">
+                <div className="search-group">
+                    <Search className="search-icon" size={18} />
+                    <input 
+                        className="filter-input"
+                        type="text" 
+                        placeholder="Search attributes..." 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                {/* Nút refresh */}
+                <button className="btn-refresh" onClick={() => fetchAttributes()}>
+                    <RefreshCw size={18} />
+                </button>
             </div>
 
-            <div className="attributes-grid">
+            {/* Grid Content */}
+            <div className="attributes-grid-container">
                 {filteredAttributes.length === 0 ? (
                     <div className="empty-state">
-                        <Tag size={64} />
-                        <h3>Chưa có thuộc tính nào</h3>
-                        <p>Bắt đầu bằng cách thêm thuộc tính mới</p>
+                        <Tag size={48} />
+                        <h3>No attributes found</h3>
+                        <p>Click "Create Attribute" above to start.</p>
                     </div>
                 ) : (
-                    filteredAttributes.map((attr) => (
-                        <div key={attr.uuid} className="attribute_card">
-                            <div className="attribute_header">
-                                <div className="attribute-icon">
-                                    <Tag size={20} />
+                    <div className="attributes-grid">
+                        {filteredAttributes.map(attr => (
+                            <div key={attr.uuid} className="attribute-card">
+                                <div className="attr-card-header">
+                                    <div className="attr-info">
+                                        <div className="attr-icon"><Tag size={18}/></div>
+                                        <div>
+                                            <h3 className="attr-name">{attr.name}</h3>
+                                            <span className="attr-slug">{attr.slug}</span>
+                                        </div>
+                                    </div>
+                                    <div className="attr-actions">
+                                        <button className="btn-icon-small" onClick={() => handleOpenModal(attr)}>
+                                            <Edit size={16} />
+                                        </button>
+                                        <button className="btn-icon-small danger" onClick={() => setDeleteDialog({ isOpen: true, item: attr })}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="attribute_info">
-                                    <h3>{attr.name}</h3>
-                                    <span className="attribute-type">{attr.type}</span>
-                                </div>
-                                <div className="attribute_actions">
-                                    <button className="action-btn btn-edit" onClick={() => handleOpenEdit(attr)}>
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button className="action-btn btn-delete" onClick={() => handleOpenDelete(attr)}>
-                                        <Trash2 size={16} />
-                                    </button>
+                                <div className="attr-values-area">
+                                    <span className="values-label">Values:</span>
+                                    <div className="values-list">
+                                        {attr.values?.slice(0, 5).map((val, idx) => (
+                                            <span key={idx} className="value-chip">{val.value}</span>
+                                        ))}
+                                        {attr.values?.length > 5 && <span className="value-chip more">+{attr.values.length - 5}</span>}
+                                    </div>
                                 </div>
                             </div>
-                            {attr.values && attr.values.length > 0 && (
-                                <div className="attribute_values">
-                                    {attr.values.map((value, i) => (
-                                        <span key={i} className="value-tag">{value}</span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 )}
             </div>
 
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={selectedAttribute ? 'Sửa thuộc tính' : 'Thêm thuộc tính mới'}
-                size="sm"
-            >
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Tên thuộc tính *</label>
-                        <input
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="vd: Màu sắc, Kích thước"
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Loại</label>
-                        <select
-                            value={formData.type}
-                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                        >
-                            <option value="text">Text</option>
-                            <option value="select">Select</option>
-                            <option value="color">Color</option>
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label>Giá trị</label>
-                        <div className="value-input-group">
-                            <input
-                                type="text"
-                                value={valueInput}
-                                onChange={(e) => setValueInput(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddValue())}
-                                placeholder="Nhập giá trị và Enter"
-                            />
-                            <button type="button" className="btn-add-value" onClick={handleAddValue}>
-                                <Plus size={18} />
-                            </button>
+            {/* Modal Form */}
+            {isInternalModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-container">
+                        <div className="modal-header">
+                            <h3>{editingAttribute ? 'Edit Attribute' : 'Create Attribute'}</h3>
+                            <button className="btn-close" onClick={handleCloseModal}><X size={20}/></button>
                         </div>
-                        <div className="value-tags">
-                            {formData.values.map((value, i) => (
-                                <span key={i} className="value-tag">
-                                    {value}
-                                    <button type="button" onClick={() => handleRemoveValue(value)}>×</button>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="modal-btn modal-btn-secondary" onClick={() => setIsModalOpen(false)}>
-                            Hủy
-                        </button>
-                        <button type="submit" className="modal-btn modal-btn-primary" disabled={saving}>
-                            {saving ? 'Đang lưu...' : (selectedAttribute ? 'Cập nhật' : 'Tạo mới')}
-                        </button>
-                    </div>
-                </form>
-            </Modal>
+                        <form onSubmit={handleSubmit} className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label required">Attribute Name</label>
+                                <input className="form-input" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Color"/>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label className="form-label">Values</label>
+                                <div className="input-with-button">
+                                    <input className="form-input" value={newValue} onChange={(e) => setNewValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddValue(e)} placeholder="Type value & Enter"/>
+                                    <button type="button" className="btn-add-inline" onClick={handleAddValue}><Plus size={18}/></button>
+                                </div>
+                                <div className="values-container-edit">
+                                    {formData.values.map((val, idx) => (
+                                        <div key={idx} className="value-chip-edit">
+                                            <span>{val}</span>
+                                            <button type="button" onClick={() => handleRemoveValue(idx)}><X size={12}/></button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-            <ConfirmDialog
-                isOpen={isDeleteOpen}
-                onClose={() => setIsDeleteOpen(false)}
-                onConfirm={handleDelete}
-                title="Xác nhận xóa"
-                message={`Bạn có chắc muốn xóa thuộc tính "${selectedAttribute?.name}"?`}
-                type="danger"
-            />
+                            <div className="modal-footer">
+                                <button type="button" className="btn-secondary" onClick={handleCloseModal}>Cancel</button>
+                                <button type="submit" className="btn-primary-gradient">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <ConfirmDialog isOpen={deleteDialog.isOpen} onClose={() => setDeleteDialog({ isOpen: false, item: null })} onConfirm={handleDelete} title="Delete" message="Are you sure?" type="danger"/>
         </div>
     );
 };

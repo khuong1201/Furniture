@@ -6,17 +6,25 @@ namespace Modules\Shared\Contracts;
 
 interface InventoryServiceInterface
 {
-    public function syncStock(int $variantId, array $stockData): void;
-    
     /**
-     * Trừ kho khi đặt hàng. Trả về ID kho đã trừ.
+     * Đồng bộ kho từ warehouse (External System).
      */
-    public function allocate(int $variantId, int $quantity): int; 
+    public function syncStock(int $variantId, array $stockData): void;
 
     /**
-     * Hoàn kho khi hủy đơn.
+     * Kiểm tra và giữ hàng (Reserve stock) khi tạo đơn.
+     * @throws BusinessException nếu hết hàng.
+     * @return int Transaction ID hoặc Inventory ID đã trừ.
+     */
+    public function allocate(int $variantId, int $quantity): int;
+
+    /**
+     * Hoàn kho khi hủy đơn hàng.
      */
     public function restore(int $variantId, int $quantity, int $warehouseId): void;
 
+    /**
+     * Lấy tổng tồn kho hiện tại.
+     */
     public function getTotalStock(int $variantId): int;
 }

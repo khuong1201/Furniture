@@ -157,6 +157,19 @@
     display: none;
   }
 
+.product-horizontal {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 16px 0;
+  scroll-behavior: smooth;
+  flex-wrap: nowrap; 
+}
+
+.product-horizontal > * {
+  flex-shrink: 0; 
+  width: 280px;   
+}
   /* --- Loading --- */
   .loading-state {
     display: flex;

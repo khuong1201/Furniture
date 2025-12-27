@@ -18,7 +18,8 @@ class Warehouse extends Model
 {
     use HasFactory, SoftDeletes, Loggable;
 
-    protected $fillable = ['uuid', 'name', 'location', 'manager_id', 'is_active'];
+    protected $fillable = ['uuid', 'name', 'location', 'manager_id', 'is_active', 'contact_email',
+    'contact_phone',];
 
     protected $casts = [
         'is_active' => 'boolean',

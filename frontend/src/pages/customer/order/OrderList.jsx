@@ -1,240 +1,215 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-// Giả định bạn đã có hàm getOrders trong hook useOrder
 import { useOrder } from '@/hooks/useOrder'; 
-import { 
-    Search, Package, Truck, CheckCircle, 
-    XCircle, Store, ChevronRight, ChevronLeft 
-} from 'lucide-react';
+import { Search, Package, Truck, CheckCircle, XCircle, Store } from 'lucide-react';
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import styles from './OrderList.module.css';
 
-const OrderList = () => {
+const OrderList = ({ isEmbedded = false }) => {
     const navigate = useNavigate();
-    // Destructure các hàm từ hook (bạn cần bổ sung getOrders vào useOrder nếu chưa có)
-    const { orders, pagination, loading, getOrders } = useOrder();
+    const { orders, setOrders, pagination, loading, getOrders, cancelOrder } = useOrder();
 
-    const [statusFilter, setStatusFilter] = useState('all'); // all, pending, shipping, completed, cancelled
+    const [statusFilter, setStatusFilter] = useState('all'); 
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // --- 1. Gọi API ---
+    // --- INFINITE SCROLL LOGIC ---
+    const observer = useRef();
+    
+    // Check an toàn: Ép kiểu Number để so sánh
+    const hasMore = pagination && Number(pagination.current_page) < Number(pagination.last_page);
+
+    const lastOrderElementRef = useCallback(node => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();
+        
+        observer.current = new IntersectionObserver(entries => {
+            // Nếu nhìn thấy phần tử cuối VÀ còn trang tiếp theo
+            if (entries[0].isIntersecting && hasMore) {
+                console.log('🚀 Trigger load more page:', currentPage + 1);
+                setCurrentPage(prev => prev + 1);
+            }
+        });
+        
+        if (node) observer.current.observe(node);
+    }, [loading, hasMore, currentPage]);
+
+    // --- CALL API ---
     useEffect(() => {
         const params = {
             page: currentPage,
-            limit: 5, // List đơn hàng thường load ít hơn list transaction vì card to
+            // ✅ Fix: Tăng số lượng lên 10 để đủ dài tạo scrollbar
+            per_page: 10, 
             sort_by: 'created_at',
             sort_dir: 'desc'
         };
 
-        if (statusFilter !== 'all') {
-            params.status = statusFilter;
-        }
-
-        if (searchTerm) {
-            params.search = searchTerm;
-        }
+        if (statusFilter !== 'all') params.status = statusFilter;
+        if (searchTerm) params.search = searchTerm;
 
         getOrders(params);
-    }, [getOrders, currentPage, statusFilter, searchTerm]); // Thêm debounce cho search nếu cần
+        
+    }, [getOrders, currentPage, statusFilter, searchTerm]);
 
-    // --- Helpers ---
-    const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
-
-    // Map status sang Tiếng Việt và màu sắc
-    const getStatusInfo = (status) => {
-        const map = {
-            pending: { label: 'Chờ thanh toán', color: '#ffb916', icon: <Package size={14}/> },
-            processing: { label: 'Đang xử lý', color: '#4080ee', icon: <Package size={14}/> },
-            shipping: { label: 'Đang vận chuyển', color: '#26aa99', icon: <Truck size={14}/> },
-            delivered: { label: 'Hoàn thành', color: '#26aa99', icon: <CheckCircle size={14}/> },
-            completed: { label: 'Hoàn thành', color: '#26aa99', icon: <CheckCircle size={14}/> },
-            cancelled: { label: 'Đã hủy', color: '#d9534f', icon: <XCircle size={14}/> },
-        };
-        return map[status] || map.pending;
+    const handleTabChange = (key) => {
+        if (statusFilter === key) return;
+        setOrders([]); 
+        setStatusFilter(key);
+        setCurrentPage(1);
     };
 
-    // --- Tabs Configuration ---
+    const onCancelOrder = async (uuid) => {
+        if (window.confirm('Are you sure you want to cancel this order?')) {
+            try {
+                await cancelOrder(uuid);
+                alert('Order cancelled successfully');
+                setOrders([]);
+                setCurrentPage(1);
+                getOrders({ page: 1, per_page: 10, status: statusFilter !== 'all' ? statusFilter : undefined });
+            } catch (e) {
+                alert(e.message || 'Failed to cancel');
+            }
+        }
+    };
+
+    const onBuyAgain = (order) => {
+        const validItem = order.items?.find(i => i.product_id);
+        if (order.items && order.items.length === 1 && validItem) {
+            navigate(`/products/${validItem.product_id}`); 
+        } else {
+            navigate(`/orders/${order.uuid}`, { state: { reorder: true } });
+        }
+    };
+
+    const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+
+    const getStatusInfo = (status) => {
+        const map = {
+            pending:    { label: 'Pending', color: '#ffb916', icon: <Package size={14}/> },
+            processing: { label: 'Processing', color: '#4080ee', icon: <Package size={14}/> },
+            shipping:   { label: 'Shipping', color: '#26aa99', icon: <Truck size={14}/> },
+            delivered:  { label: 'Delivered', color: '#26aa99', icon: <CheckCircle size={14}/> },
+            cancelled:  { label: 'Cancelled', color: '#d9534f', icon: <XCircle size={14}/> },
+        };
+        return map[status] || { label: status, color: '#999', icon: <Package size={14}/> };
+    };
+
     const TABS = [
-        { key: 'all', label: 'Tất cả' },
-        { key: 'pending', label: 'Chờ thanh toán' },
-        { key: 'shipping', label: 'Vận chuyển' },
-        { key: 'completed', label: 'Hoàn thành' },
-        { key: 'cancelled', label: 'Đã hủy' },
+        { key: 'all', label: 'All' },
+        { key: 'pending', label: 'Pending' },
+        { key: 'shipping', label: 'Shipping' },
+        { key: 'delivered', label: 'Delivered' },
+        { key: 'cancelled', label: 'Cancelled' },
     ];
 
     return (
-        <div className={styles.container}>
-            {/* TOP HEADER */}
-            <div className={styles.topHeader}>
-                <div className={styles.headerContent}>
-                    <div className={styles.logoArea}>
-                        <h1 className={styles.pageTitle}>My Orders</h1>
-                        <div className={styles.searchBar}>
-                            <Search size={18} className={styles.searchIcon} />
-                            <input 
-                                type="text" 
-                                placeholder="Tìm đơn hàng theo Mã đơn hoặc Tên sản phẩm..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
+        <div className={isEmbedded ? '' : styles.container}>
+            {!isEmbedded && (
+                <div className={styles.topHeader}>
+                    <div className={styles.headerContent}>
+                         <h1 className={styles.pageTitle}>My Orders</h1>
+                         <div className={styles.searchBar}>
+                             <Search size={18} className={styles.searchIcon} />
+                             <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setOrders([]); setCurrentPage(1);}} />
+                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            <div className={styles['content-wrapper']}>
-                
-                {/* STATUS TABS */}
-                <div className={styles.tabsContainer}>
+            <div className={isEmbedded ? '' : styles['content-wrapper']}>
+                <div className={styles.tabsContainer} style={isEmbedded ? {boxShadow:'none', border:'1px solid #eee'} : {}}>
                     {TABS.map(tab => (
-                        <button 
-                            key={tab.key}
-                            className={`${styles.tabBtn} ${statusFilter === tab.key ? styles.activeTab : ''}`}
-                            onClick={() => {
-                                setStatusFilter(tab.key);
-                                setCurrentPage(1); // Reset về trang 1 khi đổi tab
-                            }}
-                        >
+                        <button key={tab.key} className={`${styles.tabBtn} ${statusFilter === tab.key ? styles.activeTab : ''}`} onClick={() => handleTabChange(tab.key)}>
                             {tab.label}
                         </button>
                     ))}
                 </div>
 
-                {/* ORDER LIST */}
-                {loading ? (
-                    <div className={styles.loadingState}>
-                        <AiOutlineLoading3Quarters className={styles.spin} /> Đang tải đơn hàng...
-                    </div>
-                ) : (
-                    <div className={styles.listContainer}>
-                        {orders && orders.length > 0 ? (
-                            orders.map((order) => {
-                                const statusInfo = getStatusInfo(order.status);
-                                // Lấy item đầu tiên để hiển thị đại diện
-                                const firstItem = order.items?.[0];
+                <div className={styles.listContainer}>
+                    {orders.map((order, index) => {
+                        const sInfo = getStatusInfo(order.status);
+                        
+                        // Logic Ref: Gắn vào phần tử cuối cùng của mảng
+                        const isLastElement = orders.length === index + 1;
 
-                                return (
-                                    <div key={order.uuid} className={styles.orderCard}>
-                                        {/* Card Header: Shop & Status */}
-                                        <div className={styles.cardHeader}>
-                                            <div className={styles.shopName}>
-                                                <Store size={16} /> 
-                                                <span>Atelier Furniture Official</span>
-                                                <button className={styles.chatBtn}>Chat</button>
-                                            </div>
-                                            <div className={styles.statusLabel} style={{color: statusInfo.color}}>
-                                                {statusInfo.icon} {statusInfo.label.toUpperCase()}
-                                                {/* Hiển thị vách ngăn | */}
-                                                <span className={styles.divider}>|</span>
-                                                <span className={styles.statusText}>{order.payment_status === 'paid' ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Product List Preview (Click vào chuyển sang chi tiết) */}
-                                        <Link to={`/customer/orders/${order.uuid}`} className={styles.cardBody}>
-                                            {order.items?.map((item, idx) => (
-                                                <div key={idx} className={styles.productRow}>
-                                                    <img 
-                                                        src={item.image || "https://placehold.co/100"} 
-                                                        alt={item.product_name} 
-                                                        className={styles.productImg} 
-                                                    />
-                                                    <div className={styles.productInfo}>
-                                                        <div className={styles.productName}>{item.product_name}</div>
-                                                        <div className={styles.productVariant}>
-                                                            {item.sku ? `Phân loại: ${item.sku}` : `x${item.quantity}`}
-                                                        </div>
-                                                        <div className={styles.productQty}>x{item.quantity}</div>
-                                                    </div>
-                                                    <div className={styles.productPrice}>
-                                                        {item.price_formatted || formatCurrency(item.price)}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </Link>
-
-                                        {/* Card Footer: Total & Actions */}
-                                        <div className={styles.cardFooter}>
-                                            <div className={styles.totalSection}>
-                                                Thành tiền: 
-                                                <span className={styles.totalPrice}>
-                                                    {order.total_formatted || formatCurrency(order.total_amount)}
-                                                </span>
-                                            </div>
-                                            
-                                            <div className={styles.actionButtons}>
-                                                {/* Logic hiển thị nút dựa trên trạng thái */}
-                                                {order.status === 'pending' && (
-                                                    <>
-                                                        <button className={styles.btnSecondary}>Hủy đơn</button>
-                                                        <button 
-                                                            className={styles.btnPrimary}
-                                                            onClick={() => navigate(`/customer/orders/${order.uuid}`)}
-                                                        >
-                                                            Thanh toán ngay
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {(order.status === 'completed' || order.status === 'cancelled') && (
-                                                    <button className={styles.btnPrimary}>Mua lại</button>
-                                                )}
-
-                                                {order.status === 'shipping' && (
-                                                    <button className={styles.btnSecondary} disabled>Đã nhận hàng</button>
-                                                )}
-
-                                                <button 
-                                                    className={styles.btnOutline}
-                                                    onClick={() => navigate(`/customer/orders/${order.uuid}`)}
-                                                >
-                                                    Xem chi tiết
-                                                </button>
-                                            </div>
-                                        </div>
+                        return (
+                            <div 
+                                key={order.uuid} 
+                                ref={isLastElement ? lastOrderElementRef : null} 
+                                className={styles.orderCard} 
+                                style={isEmbedded ? {border:'1px solid #eee', boxShadow:'none'} : {}}
+                            >
+                                <div className={styles.cardHeader}>
+                                    <div className={styles.shopName}>
+                                        <Store size={16} /> <span>#{order.code || order.uuid.substring(0,8).toUpperCase()}</span>
                                     </div>
-                                );
-                            })
-                        ) : (
-                            <div className={styles.emptyState}>
-                                <div className={styles.emptyIcon}>📦</div>
-                                <p>Chưa có đơn hàng nào.</p>
-                                <Link to="/" className={styles.btnGoShopping}>Mua sắm ngay</Link>
+                                    <div className={styles.statusLabel} style={{color: sInfo.color}}>
+                                        {sInfo.icon} {sInfo.label.toUpperCase()}
+                                        <span className={styles.divider}>|</span>
+                                        <span className={styles.statusText}>{order.payment_status === 'paid' ? 'PAID' : 'UNPAID'}</span>
+                                    </div>
+                                </div>
+
+                                <div className={styles.cardBody}>
+                                    {order.items?.map((item, idx) => {
+                                        // ✅ Check an toàn product_id
+                                        const productUrl = item.product_id ? `/products/${item.product_id}` : '#';
+                                        
+                                        return (
+                                            <div key={idx} className={styles.productRow}>
+                                                <Link to={productUrl} className={styles.productLink} style={!item.product_id ? {pointerEvents: 'none'} : {}}>
+                                                    <img src={item.image || "https://placehold.co/100"} className={styles.productImg} alt={item.product_name} />
+                                                </Link>
+                                                
+                                                <div className={styles.productInfo}>
+                                                    <Link to={productUrl} className={styles.productNameLink} style={!item.product_id ? {pointerEvents: 'none', color: 'inherit', textDecoration: 'none'} : {}}>
+                                                        <div className={styles.productName}>{item.product_name}</div>
+                                                    </Link>
+                                                    <div className={styles.productVariant}>{item.sku ? `Variant: ${item.sku}` : `x${item.quantity}`}</div>
+                                                    <div className={styles.productQty}>x{item.quantity}</div>
+                                                </div>
+                                                <div className={styles.productPrice}>{item.unit_price_formatted || formatCurrency(item.price)}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className={styles.cardFooter}>
+                                    <div className={styles.totalSection}>
+                                        Total: <span className={styles.totalPrice}>{order.grand_total_formatted || formatCurrency(order.grand_total)}</span>
+                                    </div>
+                                    <div className={styles.actionButtons}>
+                                        {order.status === 'pending' && (
+                                            <>
+                                                <button className={styles.btnSecondary} onClick={() => onCancelOrder(order.uuid)}>Cancel</button>
+                                                <button className={styles.btnPrimary} onClick={() => navigate(`/orders/${order.uuid}`)}>Pay Now</button>
+                                            </>
+                                        )}
+                                        
+                                        {(order.status === 'completed' || order.status === 'cancelled') && (
+                                            <button className={styles.btnPrimary} onClick={() => onBuyAgain(order)}>
+                                                {order.items.length > 1 ? 'View & Buy' : 'Buy Again'}
+                                            </button>
+                                        )}
+                                        
+                                        <button className={styles.btnOutline} onClick={() => navigate(`/orders/${order.uuid}`)}>Details</button>
+                                    </div>
+                                </div>
                             </div>
-                        )}
+                        );
+                    })}
+                </div>
+
+                {/* State Loading */}
+                {loading && (
+                    <div className={styles.loadingState} style={{padding: '20px', textAlign:'center'}}>
+                        <AiOutlineLoading3Quarters className={styles.spin} /> Loading more orders...
                     </div>
                 )}
-
-                {/* PAGINATION */}
-                {pagination && pagination.last_page > 1 && (
-                    <div className={styles.pagination}>
-                        <button 
-                            className={styles.pageBtn} 
-                            disabled={currentPage === 1 || loading}
-                            onClick={() => {
-                                setCurrentPage(p => p - 1);
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                        >
-                            <ChevronLeft size={16} /> Prev
-                        </button>
-                        
-                        <span className={styles.pageInfo}>
-                            {pagination.current_page} / {pagination.last_page}
-                        </span>
-
-                        <button 
-                            className={styles.pageBtn} 
-                            disabled={currentPage === pagination.last_page || loading}
-                            onClick={() => {
-                                setCurrentPage(p => p + 1);
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                        >
-                            Next <ChevronRight size={16} />
-                        </button>
-                    </div>
+                
+                {/* Empty State */}
+                {!loading && orders.length === 0 && (
+                    <div className={styles.emptyState}><div className={styles.emptyIcon}>📦</div><p>No orders found.</p></div>
                 )}
             </div>
         </div>

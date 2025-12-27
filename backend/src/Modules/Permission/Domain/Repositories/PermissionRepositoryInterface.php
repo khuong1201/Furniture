@@ -2,7 +2,7 @@
 
 namespace Modules\Permission\Domain\Repositories;
 
-use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Shared\Contracts\BaseRepositoryInterface;
 use Modules\Permission\Domain\Models\Permission;
 use Illuminate\Support\Facades\DB;
 

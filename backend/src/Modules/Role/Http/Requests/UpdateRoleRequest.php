@@ -14,15 +14,25 @@ class UpdateRoleRequest extends FormRequest
 
     public function rules(): array
     {
-        $uuid = $this->route('role') ?? $this->route('uuid'); 
+        $uuid = $this->route('uuid'); 
         
+        $roleId = Role::where('uuid', $uuid)->value('id');
+
         return [
             'name' => [
-                'sometimes', 'string', 'max:100',
-                Rule::unique('roles', 'name')->ignore($uuid, 'uuid')
+                'sometimes', 
+                'string', 
+                'max:100',
+                Rule::unique('roles', 'name')->ignore($roleId) 
+            ],
+            'slug' => [
+                'nullable', 
+                'string', 
+                'max:100',
+                Rule::unique('roles', 'slug')->ignore($roleId)
             ],
             'description' => 'nullable|string|max:500',
-            'priority' => 'integer|min:0',
+            'priority'    => 'integer|min:0',
         ];
     }
 }

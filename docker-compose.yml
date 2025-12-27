@@ -1,79 +1,210 @@
-version: "3.9"
+# version: '3.8'
 
 services:
-  php:
+  # 1. Main App (PHP-FPM) - Xử lý logic chính
+  app:
     build:
-      context: ./backend
-      dockerfile: ./php/Dockerfile
-    container_name: app-php
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: laravel-app:latest
+    container_name: laravel-app
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file:
+      - ./backend/src/.env
+    environment:
+      - CONTAINER_ROLE=app
+      # - DB_RESET_ON_BOOT=${DB_RESET_ON_BOOT:-false}
+      # - RUN_SEED=${RUN_SEED:-false}
     volumes:
-      - ./backend:/var/www/html
+      - ./backend/src:/var/www:delegated  # Map code từ máy thật vào container
+      - static-content:/var/www/public  # new
+      # - storage:/var/www/storage
+      # - cache:/var/www/bootstrap/cache
+      - ./docker/php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./docker/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
     networks:
-      - appnet
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep php-fpm >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 30s
 
+  # 2. Web Server (Nginx) - Cổng vào
   nginx:
-    build:
-      context: ./backend
-      dockerfile: ./nginx/Dockerfile
-    container_name: app-nginx
+    image: nginx:alpine
+    container_name: laravel-nginx
+    restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
-      - ./backend:/var/www/html
-      - ./backend/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - php
+      - ./backend/src:/var/www:delegated
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static-content:/var/www/public # new
     networks:
-      - appnet
+      - app-network
+    depends_on:
+      app:
+        condition: service_healthy
 
-  queue:
-    build:
-      context: ./backend
-      dockerfile: ./php/Dockerfile
-    container_name: app-queue
-    command: php artisan queue:work --verbose --tries=3 --timeout=90
+  # 3. Database (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: laravel-db
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password --skip-name-resolve
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
     volumes:
-      - ./backend:/var/www/html
-    depends_on:
-      - php
-      - redis
+      - dbdata:/var/lib/mysql # Lưu dữ liệu để không mất khi tắt docker
     networks:
-      - appnet
-
-  reverb:
-    build:
-      context: ./backend
-      dockerfile: ./php/Dockerfile
-    container_name: app-reverb
-    command: php artisan reverb:start
+      - app-network
     ports:
-      - "6001:6001"
-    volumes:
-      - ./backend:/var/www/html
-    depends_on:
-      - php
-      - redis
-    networks:
-      - appnet
+      - "3306:3306" # Mở port này để dùng Workbench/Navicat kết nối từ ngoài
 
+  # 4. Redis (Cache & Queue Broker)
   redis:
-    image: redis:7-alpine
-    container_name: app-redis
+    image: redis:alpine
+    container_name: laravel-redis
     ports:
       - "6379:6379"
     networks:
-      - appnet
+      - app-network
+    command: redis-server --save "" --appendonly no
 
-  frontend:
+  # 5. Frontend (React + Vite)
+  frontend-customer:
     build:
-      context: ./frontend
-      dockerfile: ./Dockerfile
-    container_name: react-frontend
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    image: react-frontend-customer
+    container_name: react-frontend-customer
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_APP_TYPE=customer
     ports:
-      - "3000:80"
+      - "5173:5173"
     networks:
-      - appnet
+      - app-network
+    command: npm run dev -- --host --port 5173
 
+  frontend-admin:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    image: react-frontend-admin
+    container_name: react-frontend-admin
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_APP_TYPE=admin
+    ports:
+      - "5174:5174"
+    networks:
+      - app-network
+    command: npm run dev -- --host --port 5174
+
+  # 6. Queue Worker (Chạy ngầm xử lý job)
+  queue:
+    image: laravel-app:latest
+    # build:
+    #   context: .                # Y hệt app
+    #   dockerfile: docker/php/Dockerfile
+    container_name: laravel-queue
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file:
+      - ./backend/src/.env
+    environment:
+      - CONTAINER_ROLE=queue
+    volumes:
+      - ./backend/src:/var/www:delegated
+    command: "php artisan queue:work --queue=notifications,default --tries=3 --timeout=90"
+    networks:
+      - app-network
+    depends_on:
+      - app
+      - redis
+      - db
+
+  # 7. Reverb Server (WebSockets)
+  reverb:
+    
+    image: laravel-app:latest
+    # build:
+    #   context: .                # Y hệt app
+    #   dockerfile: docker/php/Dockerfile
+    container_name: laravel-reverb
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file:
+      - ./backend/src/.env
+    environment:
+      - CONTAINER_ROLE=reverb
+    volumes:
+      - ./backend/src:/var/www:delegated
+    # Lưu ý: host 0.0.0.0 là bắt buộc để mapping port ra ngoài được
+    command: "php artisan reverb:start --host=0.0.0.0 --port=8080"
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - app
+      - redis
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: laravel-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # Cổng Web UI (để bạn vào xem mail)
+      - "1025:1025" # Cổng SMTP (để Laravel gửi mail vào đây)
+    networks:
+      - app-network
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: laravel-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #     # Map file script từ máy thật vào container
+  #     - ./docker/ollama/entrypoint.sh:/entrypoint.sh
+  #   networks:
+  #     - app-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4G
+  #   # Chạy script bằng /bin/sh
+  #   entrypoint: ["/bin/sh", "/entrypoint.sh"]
+
+# Định nghĩa network chung
 networks:
-  appnet:
+  app-network:
     driver: bridge
+
+# Định nghĩa nơi lưu data
+volumes:
+  dbdata:
+    driver: local
+  static-content: # new
+    driver: local
+  storage: 
+    driver: local
+  cache:
+    driver: local
+  # ollama_data:
+  #   driver: local

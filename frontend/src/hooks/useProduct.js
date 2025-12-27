@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import ProductService from '@/services/customer/ProductService';
 
 export const useProduct = () => {
@@ -7,47 +7,52 @@ export const useProduct = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // (Optional) State lưu pagination để dùng cho UI phân trang
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
     total: 0
   });
 
-  // --- 1. LẤY DANH SÁCH (Hỗ trợ Filter/Search/Page) ---
+  // --- 1. LẤY DANH SÁCH (Có trả về data để xử lý ở UI) ---
   const getProducts = useCallback(async (params = {}) => {
     setLoading(true);
     setError(null);
     try {
-      // Gọi Service
       const responseData = await ProductService.getAllProducts(params);
       
+      let fetchedData = [];
+
       if (responseData && Array.isArray(responseData.data)) {
-         setProducts(responseData.data);
+         fetchedData = responseData.data;
+         setProducts(fetchedData);
          
          setPagination({
-            currentPage: responseData.current_page,
-            lastPage: responseData.last_page,
-            total: responseData.total
+           currentPage: responseData.current_page,
+           lastPage: responseData.last_page,
+           total: responseData.total
          });
       } else if (Array.isArray(responseData)) {
-         setProducts(responseData);
+         fetchedData = responseData;
+         setProducts(fetchedData);
       } else {
          setProducts([]);
       }
 
-      console.log('✅ Fetch products success');
+      // [QUAN TRỌNG] Return data để component cha có thể dùng (ví dụ: nối mảng)
+      return fetchedData; 
+
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Lỗi tải danh sách sản phẩm');
+      setError(err.message || 'Failed to fetch products');
       setProducts([]);
+      return []; // Return mảng rỗng khi lỗi
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Alias cho code cũ
-  const fetchProducts = useCallback(() => getProducts(), [getProducts]);
+  // [FIX] Alias cần nhận params để truyền vào getProducts
+  const fetchProducts = useCallback((params) => getProducts(params), [getProducts]);
 
   // --- 2. CHI TIẾT SẢN PHẨM ---
   const getDetail = useCallback(async (id) => {
@@ -57,8 +62,9 @@ export const useProduct = () => {
     try {
       const data = await ProductService.getProductDetail(id);
       setProductDetail(data);
+      return data;
     } catch (err) {
-      setError(err.message || 'Lỗi tải chi tiết sản phẩm');
+      setError(err.message || 'Failed to fetch product detail');
     } finally {
       setLoading(false);
     }
@@ -67,11 +73,6 @@ export const useProduct = () => {
   const searchProducts = useCallback(async (keyword) => {
     await getProducts({ search: keyword, page: 1 });
   }, [getProducts]);
-
-  // // Tự động load khi component mount
-  // useEffect(() => {
-  //   fetchProducts();
-  // }, [fetchProducts]);
 
   return {
     products,

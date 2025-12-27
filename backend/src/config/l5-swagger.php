@@ -151,7 +151,7 @@ return [
              * @see \OpenApi\scan
              */
             'pattern' => null,
-
+            'attributes' => true,
             /*
              * Absolute path to directories that should be excluded from scanning
              * @note This option overwrites `paths.excludes`
@@ -167,7 +167,6 @@ return [
                 'Database', 
                 'database',
                 'Config',
-                'Resources',
                 // --------------------------
             ],
 

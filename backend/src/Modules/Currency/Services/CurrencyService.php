@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Currency\Services;
 
-use Modules\Shared\Services\BaseService;
-use Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
-use Modules\Currency\Domain\Models\Currency;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\ValidationException;
+use Modules\Currency\Domain\Models\Currency;
+use Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
+use Modules\Shared\Exceptions\BusinessException; // <--- Dùng cái này
+use Modules\Shared\Services\BaseService;
 
 class CurrencyService extends BaseService
 {
@@ -20,15 +20,10 @@ class CurrencyService extends BaseService
     public function __construct(CurrencyRepositoryInterface $repository)
     {
         parent::__construct($repository);
-        $this->detectCurrency();
     }
 
-    public function detectCurrency(): void
+    public function setCurrency(?string $code): void
     {
-        if ($this->currentCurrency) return;
-
-        $code = request()->header('X-Currency');
-        
         $currencies = Cache::remember('active_currencies', 86400, function () {
             return $this->repository->getActiveCurrencies()->keyBy('code');
         });
@@ -44,39 +39,37 @@ class CurrencyService extends BaseService
 
     public function getCurrentCurrency(): Currency
     {
+        if (!$this->currentCurrency) {
+            $this->setCurrency(null);
+        }
         return $this->currentCurrency;
     }
 
-    /**
-     * Quy đổi từ Integer (Base Unit) sang Float (Target Currency Unit).
-     * Ví dụ: 100,000 VND -> 4.00 USD
-     */
     public function convert(int|float|string $amount): float
     {
-        $amount = (int) $amount; // Ép kiểu về số nguyên (Base Unit)
+        $currency = $this->getCurrentCurrency();
+        $amount = (float) $amount; 
 
-        if ($this->currentCurrency->code === $this->baseCurrency->code) {
-            return (float) $amount;
+        if ($currency->code === $this->baseCurrency?->code) {
+            return $amount;
         }
 
-        return round($amount * $this->currentCurrency->exchange_rate, 2);
+        return round($amount * $currency->exchange_rate, 2);
     }
 
     public function format(int|float|string $amount): string
     {
-        $amount = (int) $amount; // Ép kiểu
-        
         $converted = $this->convert($amount);
-        $symbol = $this->currentCurrency->symbol;
+        $currency = $this->getCurrentCurrency();
+        $symbol = $currency->symbol;
 
-        if ($this->currentCurrency->code === 'VND') {
+        if ($currency->code === 'VND') {
             return number_format($converted, 0, ',', '.') . ' ' . $symbol;
         }
 
         return $symbol . number_format($converted, 2);
     }
 
-    // --- CRUD Logic giữ nguyên như cũ ---
     public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {
@@ -104,9 +97,11 @@ class CurrencyService extends BaseService
     public function delete(string $uuid): bool
     {
         $currency = $this->findByUuidOrFail($uuid);
+
         if ($currency->is_default) {
-            throw ValidationException::withMessages(['uuid' => 'Cannot delete the default currency.']);
+            throw new BusinessException(409071); 
         }
+
         $res = parent::delete($uuid);
         $this->clearCache();
         return $res;

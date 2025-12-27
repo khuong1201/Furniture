@@ -3,12 +3,13 @@
 namespace Modules\Shared\Providers;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Modules\Shared\Repositories\EloquentBaseRepository;
-use Modules\Shared\Repositories\BaseRepositoryInterface;
+use Modules\Shared\Contracts\BaseRepositoryInterface;
 
 class SharedServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,7 @@ class SharedServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app['router']->pushMiddlewareToGroup('api', \Modules\Shared\Http\Middleware\ForceJsonResponse::class);
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
@@ -36,9 +38,8 @@ class SharedServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app['router']->pushMiddlewareToGroup('api', \Modules\Shared\Http\Middleware\LogExceptions::class);
         $this->app->bind(
-            \Modules\Shared\Contracts\ImageStorageInterface::class,
+            \Modules\Shared\Contracts\StorageServiceInterface::class,
             \Modules\Shared\Services\CloudinaryStorageService::class
         );
         $this->app->register(EventServiceProvider::class);

@@ -1,42 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Package,
-  FolderTree,
-  ShoppingCart,
-  Users,
-  Gift,
-  Settings,
-  Menu,
-  Search,
-  Bell,
-  User,
-  ChevronDown,
-  LogOut,
-  Star,
-  Shield,
-  Boxes,
-  Layers,
-  Truck,
-  Activity,
-  Sliders,
-  DollarSign,
-  ChevronRight,
-  Warehouse
+  LayoutDashboard, ShoppingCart, Users, Settings,
+  Menu, User, LogOut,
+  Activity, DollarSign, ChevronRight, Warehouse, Gift, ArrowLeft,
+  Star, FolderKanban
 } from 'lucide-react';
 import { useAuth } from '@/hooks/AuthContext';
 import './AdminLayout.css';
-import logo from '@/assets/icons/assets_admin/logo_admin.png';
 import NotificationBell from '@/components/admin/NotificationBell.jsx';
 
 const AdminLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
   const [profileOpen, setProfileOpen] = useState(false);
   const { user, loading, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [expandedGroups, setExpandedGroups] = useState(['dashboard', 'catalog']);
+
+  const [expandedGroups, setExpandedGroups] = useState(['dashboard']);
+
+
+  useEffect(() => {
+    if (window.innerWidth <= 1024) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -44,213 +32,217 @@ const AdminLayout = () => {
     }
   }, [user, loading, navigate]);
 
-  // Grouped menu items
   const menuGroups = [
     {
       id: 'dashboard',
-      label: 'Tổng quan',
+      label: 'Dashboard',
       icon: LayoutDashboard,
       single: true,
       path: '/admin'
     },
-    {
-      id: 'catalog',
-      label: 'Danh mục',
-      icon: Package,
-      items: [
-        { icon: Package, label: 'Sản phẩm', path: '/admin/products' },
-        { icon: FolderTree, label: 'Danh mục', path: '/admin/categories' },
-        { icon: Layers, label: 'Bộ sưu tập', path: '/admin/collections' },
-        { icon: Sliders, label: 'Thuộc tính', path: '/admin/attributes' },
-      ]
-    },
+
+    // === SALES ===
     {
       id: 'sales',
-      label: 'Bán hàng',
+      label: 'Sales & Orders',
       icon: ShoppingCart,
       items: [
-        { icon: ShoppingCart, label: 'Đơn hàng', path: '/admin/orders' },
-        { icon: DollarSign, label: 'Thanh toán', path: '/admin/payments' },
-        { icon: Gift, label: 'Khuyến mãi', path: '/admin/promotions' },
+        { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
+        { icon: DollarSign, label: 'Payments', path: '/admin/payments' },
+        { icon: Gift, label: 'Promotions', path: '/admin/promotions' },
       ]
     },
+
+    // === CATALOG ===
     {
-      id: 'inventory',
-      label: 'Kho & Vận chuyển',
-      icon: Boxes,
+      id: 'catalog',
+      label: 'Catalog',
+      icon: FolderKanban,
       items: [
-        { icon: Boxes, label: 'Tồn kho', path: '/admin/inventory' },
-        { icon: Warehouse, label: 'Kho hàng', path: '/admin/warehouses' },
-        { icon: Truck, label: 'Vận chuyển', path: '/admin/shippings' },
+        { icon: FolderKanban, label: 'Product Management', path: '/admin/product-manager' },
+        { icon: Warehouse, label: 'Inventory', path: '/admin/inventory-manager' },
+        { icon: Star, label: 'Reviews', path: '/admin/reviews' },
       ]
     },
+
+    // === USERS ===
     {
       id: 'users',
-      label: 'Quản lý',
+      label: 'User Management',
       icon: Users,
       items: [
-        { icon: Users, label: 'Người dùng', path: '/admin/users' },
-        { icon: Shield, label: 'Vai trò', path: '/admin/roles' },
-        { icon: Shield, label: 'Quyền hạn', path: '/admin/permissions' },
+        { icon: Users, label: 'Users', path: '/admin/users' },
       ]
     },
+
+    // === SYSTEM ===
     {
-      id: 'system',
-      label: 'Hệ thống',
+      id: 'others',
+      label: 'System',
       icon: Settings,
       items: [
-        { icon: Activity, label: 'Nhật ký', path: '/admin/logs' },
-        { icon: Star, label: 'Đánh giá', path: '/admin/reviews' },
-        { icon: Settings, label: 'Cài đặt', path: '/admin/settings' },
+        { icon: Activity, label: 'Activity Logs', path: '/admin/logs' },
+        { icon: Settings, label: 'Settings', path: '/admin/settings' },
       ]
     },
   ];
 
   const toggleGroup = (groupId) => {
-    setExpandedGroups(prev =>
-      prev.includes(groupId)
-        ? prev.filter(id => id !== groupId)
-        : [...prev, groupId]
-    );
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/customer/login');
-  };
-
-  const isActive = (path) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin';
+    if (!sidebarOpen) {
+      setSidebarOpen(true);
+      setExpandedGroups([groupId]);
+    } else {
+      setExpandedGroups(prev =>
+        prev.includes(groupId)
+          ? prev.filter(id => id !== groupId)
+          : [...prev, groupId]
+      );
     }
-    return location.pathname.startsWith(path);
   };
 
-  const isGroupActive = (group) => {
-    if (group.single) return isActive(group.path);
-    return group.items?.some(item => isActive(item.path));
-  };
+  const isActive = (path) =>
+    path === '/admin'
+      ? location.pathname === '/admin'
+      : location.pathname.startsWith(path);
+
+  const isGroupActive = (group) =>
+    group.single
+      ? isActive(group.path)
+      : group.items?.some(item => isActive(item.path));
 
   return (
     <div className="admin-app-container">
       <div className="admin-layout">
+
         {/* Sidebar */}
-        <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+        <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
           <div className="sidebar-header">
-            <h2 className="sidebar-logo">
-              <div className="logo-icon-sidebar">
-                <img src={logo} alt="Logo" />
-              </div>
-              {sidebarOpen && <span className="logo-text">Admin Panel</span>}
-            </h2>
+            <Link to="/admin" className="sidebar-logo">
+              <span className={`logo-text serif-font ${!sidebarOpen && 'hidden'}`}>
+                Atelier
+              </span>
+            </Link>
           </div>
 
           <nav className="sidebar-nav">
-            {menuGroups.map((group) => {
+            {menuGroups.map(group => {
               const GroupIcon = group.icon;
               const isExpanded = expandedGroups.includes(group.id);
               const isGroupItemActive = isGroupActive(group);
 
-              if (group.single) {
-                return (
-                  <Link
-                    key={group.id}
-                    to={group.path}
-                    className={`nav-item ${isActive(group.path) ? 'active' : ''}`}
-                    onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
-                  >
-                    <GroupIcon size={20} className="nav-icon" />
-                    {sidebarOpen && <span>{group.label}</span>}
-                  </Link>
-                );
-              }
-
               return (
-                <div key={group.id} className="nav-group">
-                  <button
-                    className={`nav-group-header ${isGroupItemActive ? 'active' : ''}`}
-                    onClick={() => sidebarOpen && toggleGroup(group.id)}
-                  >
-                    <GroupIcon size={20} className="nav-icon" />
-                    {sidebarOpen && (
-                      <>
-                        <span className="group-label">{group.label}</span>
-                        <ChevronRight
-                          size={16}
-                          className={`expand-icon ${isExpanded ? 'expanded' : ''}`}
-                        />
-                      </>
-                    )}
-                  </button>
+                <div key={group.id} className="nav-group-container">
+                  {group.single ? (
+                    <Link
+                      to={group.path}
+                      className={`nav-item single-item ${isActive(group.path) ? 'active' : ''}`}
+                      title={!sidebarOpen ? group.label : ''}
+                    >
+                      <GroupIcon size={20} className="nav-icon" />
+                      <span className={`nav-text ${!sidebarOpen && 'hidden'}`}>
+                        {group.label}
+                      </span>
+                    </Link>
+                  ) : (
+                    <div className={`nav-group ${isExpanded ? 'expanded' : ''}`}>
+                      <div
+                        className={`nav-group-header ${isGroupItemActive ? 'group-active' : ''}`}
+                        onClick={() => toggleGroup(group.id)}
+                        title={!sidebarOpen ? group.label : ''}
+                      >
+                        <div className="group-header-left">
+                          <GroupIcon size={20} className="nav-icon" />
+                          <span className={`group-label ${!sidebarOpen && 'hidden'}`}>
+                            {group.label}
+                          </span>
+                        </div>
+                        {sidebarOpen && (
+                          <ChevronRight
+                            size={16}
+                            className={`expand-icon ${isExpanded ? 'rotated' : ''}`}
+                          />
+                        )}
+                      </div>
 
-                  {sidebarOpen && isExpanded && (
-                    <div className="nav-group-items">
-                      {group.items.map((item) => {
-                        const ItemIcon = item.icon;
-                        return (
+                      <div className={`nav-group-items ${(!sidebarOpen || !isExpanded) ? 'hidden' : ''}`}>
+                        {group.items.map(item => (
                           <Link
                             key={item.path}
                             to={item.path}
                             className={`nav-sub-item ${isActive(item.path) ? 'active' : ''}`}
-                            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
                           >
-                            <ItemIcon size={18} className="nav-icon" />
+                            <span className="dot-indicator" />
                             <span>{item.label}</span>
                           </Link>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
               );
             })}
           </nav>
+
+          <div className="sidebar-footer">
+            <button
+              className="sidebar-back-btn"
+              onClick={async () => {
+                await logout();
+                navigate('/customer/login');
+              }}
+              title="Back to Customer Site"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          </div>
         </aside>
 
-        {/* Main Content */}
-        <div className={`admin-main ${sidebarOpen ? '' : 'sidebar-closed'}`}>
-          {/* Header */}
+        {/* Main */}
+        <div className={`admin-main ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
           <header className="admin-header">
             <div className="header-left">
-              <button className="toggle-sidebar-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                <Menu size={20} />
+              <button
+                className="toggle-sidebar-btn"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                <Menu size={20} color="#fff" />
               </button>
-
-              <div className="search-box">
-                <Search size={16} className="search-icon" />
-                <input type="text" placeholder="Tìm kiếm..." />
-              </div>
             </div>
 
             <div className="header-right">
               <NotificationBell />
-
               <div className="profile-dropdown">
-                <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>
-                  <div className="avatar">
+                <button
+                  className="profile-btn"
+                  onClick={() => setProfileOpen(!profileOpen)}
+                >
+                  <div className="profile-info">
+                    <span className="welcome-text">
+                      Hello {user?.name || 'Admin'}
+                    </span>
+                  </div>
+                  <div className="avatar-circle">
                     <User size={20} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <span className="profile-name">{user?.name || 'Admin'}</span>
-                    <span className="profile-role">Administrator</span>
-                  </div>
-                  <ChevronDown size={16} />
                 </button>
 
                 {profileOpen && (
                   <div className="dropdown-menu">
                     <Link to="/admin/profile" className="dropdown-item">
-                      <User size={16} />
-                      Hồ sơ
+                      <User size={16} /> Profile
                     </Link>
                     <Link to="/admin/settings" className="dropdown-item">
-                      <Settings size={16} />
-                      Cài đặt
+                      <Settings size={16} /> Settings
                     </Link>
                     <hr />
-                    <button className="dropdown-item logout" onClick={handleLogout}>
-                      <LogOut size={16} />
-                      Đăng xuất
+                    <button
+                      className="dropdown-item logout"
+                      onClick={async () => {
+                        await logout();
+                        navigate('/customer/login');
+                      }}
+                    >
+                      <LogOut size={16} /> Logout
                     </button>
                   </div>
                 )}
@@ -258,25 +250,12 @@ const AdminLayout = () => {
             </div>
           </header>
 
-          {/* Content */}
           <div className="admin-content">
             <Outlet />
           </div>
 
-          {/* Footer */}
-          <footer className="admin-footer">
-            <div className="footer-content">
-              <div className="footer-left">
-                <p className="copyright">© 2024 Jewelry Admin Panel</p>
-              </div>
-              <div className="footer-right">
-                <div className="footer-links">
-                  <a href="#" className="footer-link">Trợ giúp</a>
-                  <span className="separator">•</span>
-                  <a href="#" className="footer-link">Tài liệu</a>
-                </div>
-              </div>
-            </div>
+          <footer className="admin-footer-text">
+            © 2024 Atelier Management
           </footer>
         </div>
       </div>

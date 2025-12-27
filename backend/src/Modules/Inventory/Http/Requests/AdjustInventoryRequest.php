@@ -13,10 +13,10 @@ class AdjustInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'variant_uuid' => 'required|exists:product_variants,uuid',
-            'warehouse_uuid' => 'required|exists:warehouses,uuid',
-            'quantity' => 'required|integer|not_in:0', // Không cho phép 0
-            'reason' => 'nullable|string|max:255',
+            'inventory_uuid' => ['required', 'uuid', 'exists:inventory_stocks,uuid'],
+            'quantity' => ['required', 'integer'],
+            'reason' => ['nullable', 'string'],
         ];
     }
+
 }

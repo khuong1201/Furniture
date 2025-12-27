@@ -23,24 +23,17 @@ class Role extends Model
 
     protected $casts = [
         'is_system' => 'boolean',
-        'priority' => 'integer',
+        'priority'  => 'integer',
     ];
 
     protected static function boot(): void
     {
         parent::boot();
+        
         static::creating(function ($model) {
             $model->uuid = $model->uuid ?: (string) Str::uuid();
-            if (empty($model->slug)) {
-                $model->slug = Str::slug($model->name);
-            }
         });
         
-        static::updating(function ($model) {
-            if ($model->isDirty('name') && !$model->is_system && empty($model->slug)) {
-                $model->slug = Str::slug($model->name);
-            }
-        });
     }
 
     public function users(): BelongsToMany

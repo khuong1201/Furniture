@@ -76,7 +76,7 @@ const RegisterForm = () => {
 
     if (isSuccess) {
         alert("Create account success");
-        navigate('/customer/login'); 
+        navigate('/login'); 
     }
   };
 
@@ -218,7 +218,7 @@ const RegisterForm = () => {
         {/* Footer Login Link */}
         <p className={styles['footer-text']}>
           Already have an account?{' '}
-          <Link to='/customer/login' className={styles['link-highlight']}>
+          <Link to='/login' className={styles['link-highlight']}>
             Login   
           </Link>
         </p>

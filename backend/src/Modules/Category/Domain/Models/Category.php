@@ -11,18 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Modules\Shared\Traits\Loggable;
+use Modules\Category\database\factories\CategoryFactory;
 
 class Category extends Model
 {
     use HasFactory, SoftDeletes, Loggable;
 
     protected $fillable = [
-        'uuid',
-        'name',
-        'slug',
-        'description',
-        'parent_id',
-        'is_active'
+        'uuid', 'name', 'slug', 'description', 'parent_id', 'is_active', 'image'
     ];
 
     protected $casts = [
@@ -32,19 +28,11 @@ class Category extends Model
     protected static function boot(): void
     {
         parent::boot();
-
+        
         static::creating(function (Category $model) {
             $model->uuid = $model->uuid ?: (string) Str::uuid();
-            if (empty($model->slug)) {
-                $model->slug = Str::slug($model->name);
-            }
         });
-
-        static::updating(function (Category $model) {
-            if ($model->isDirty('name') && !$model->isDirty('slug')) {
-                $model->slug = Str::slug($model->name);
-            }
-        });
+        
     }
 
     public function parent(): BelongsTo
@@ -64,6 +52,6 @@ class Category extends Model
 
     protected static function newFactory()
     {
-        return \Modules\Category\Database\factories\CategoryFactory::new();
+        return CategoryFactory::new();
     }
 }

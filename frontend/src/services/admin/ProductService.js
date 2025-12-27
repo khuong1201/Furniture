@@ -1,113 +1,70 @@
-class ProductService {
-    static _instance = null;
+import HttpService from './HttpService';
 
-    constructor() {
-        this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        this.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
-    }
+class ProductService extends HttpService {
+    static _instance = null;
+    constructor() { super(); }
 
     static get instance() {
-        if (!ProductService._instance) {
-            ProductService._instance = new ProductService();
-        }
+        if (!ProductService._instance) ProductService._instance = new ProductService();
         return ProductService._instance;
     }
 
-    setToken(token) {
-        if (token) {
-            this.headers['Authorization'] = `Bearer ${token}`;
-        } else {
-            delete this.headers['Authorization'];
-        }
-    }
-
-    async _request(endpoint, options = {}) {
-        try {
-            // Auto-set token from localStorage
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                this.setToken(token);
-            }
-
-            const url = `${this.baseUrl}${endpoint}`;
-            const config = {
-                ...options,
-                headers: {
-                    ...this.headers,
-                    ...options.headers,
-                },
-            };
-
-            const response = await fetch(url, config);
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || `API Error: ${response.status}`);
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`Product Service Error (${endpoint}):`, error);
-            throw error;
-        }
-    }
-
-    // Get products list (admin)
+    // --- Core API ---
     async getProducts(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this._request(`/admin/products${queryString ? `?${queryString}` : ''}`);
+        return this.request('/admin/products', { params });
     }
 
-    // Get single product
     async getProduct(uuid) {
-        return this._request(`/public/products/${uuid}`);
+        return this.request(`/admin/products/${uuid}`); 
     }
 
-    // Create product
     async createProduct(data) {
-        return this._request('/admin/products', {
+        return this.request('/admin/products', {
             method: 'POST',
-            body: JSON.stringify(data),
+            body: JSON.stringify(data)
         });
     }
 
-    // Update product
     async updateProduct(uuid, data) {
-        return this._request(`/admin/products/${uuid}`, {
+        return this.request(`/admin/products/${uuid}`, {
             method: 'PUT',
-            body: JSON.stringify(data),
+            body: JSON.stringify(data)
         });
     }
 
-    // Delete product
     async deleteProduct(uuid) {
-        return this._request(`/admin/products/${uuid}`, {
-            method: 'DELETE',
+        return this.request(`/admin/products/${uuid}`, { method: 'DELETE' });
+    }
+
+    // --- Media API (Fix Logic) ---
+    async uploadImage(productUuid, file, isPrimary = false) {
+        // Validation
+        if (!file || !(file instanceof File)) {
+            console.error("Upload Error: Invalid file object", file);
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file); // Backend nhận field 'image'
+        formData.append('is_primary', isPrimary ? '1' : '0');
+
+        return this.request(`/admin/products/${productUuid}/images`, {
+            method: 'POST',
+            body: formData
+            // HttpService sẽ tự xử lý headers, không cần truyền gì thêm
         });
     }
 
-    // Static methods
-    static async getProducts(params) {
-        return ProductService.instance.getProducts(params);
+    async deleteImage(imageUuid) {
+        return this.request(`/admin/product-images/${imageUuid}`, { method: 'DELETE' });
     }
 
-    static async getProduct(uuid) {
-        return ProductService.instance.getProduct(uuid);
-    }
-
-    static async createProduct(data) {
-        return ProductService.instance.createProduct(data);
-    }
-
-    static async updateProduct(uuid, data) {
-        return ProductService.instance.updateProduct(uuid, data);
-    }
-
-    static async deleteProduct(uuid) {
-        return ProductService.instance.deleteProduct(uuid);
+    // --- AI Feature ---
+    async generateDescription(payload) {
+        return this.request('/admin/products/generate-ai-description', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
     }
 }
 

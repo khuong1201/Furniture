@@ -7,21 +7,15 @@ export const useCart = () => {
   const [error, setError] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [message, setMessage] = useState(null); 
+
   const calculateTotal = (items) => {
     const total = items.reduce((acc, item) => {
-      const price =
-        item.variant?.price ??
-        item.product?.price ??
-        item.price ??
-        0;
-
+      const price = item.variant?.price ?? item.product?.price ?? item.price ?? 0;
       return acc + price * item.quantity;
     }, 0);
-
     setTotalPrice(total);
   };
 
-  // ✅ LẤY GIỎ
   const fetchCart = useCallback(async () => {
     setLoading(true);
     try {
@@ -36,20 +30,14 @@ export const useCart = () => {
     }
   }, []);
 
-  // ✅🔥 THÊM VÀO GIỎ (CHUẨN HOOK)
   const addToCart = async (variantUuid, quantity = 1) => {
     setLoading(true);
     setError(null);
     setMessage(null);
-
     try {
       const result = await CartService.addToCart(variantUuid, quantity);
-
       setMessage('✅ Đã thêm vào giỏ hàng!');
-
-      // ✅ Reload giỏ để sync toàn app
       await fetchCart();
-
       return result;
     } catch (err) {
       setError(err.message);
@@ -59,41 +47,50 @@ export const useCart = () => {
     }
   };
 
-  // ✅ UPDATE ITEM
+  const addAllToCart = async (items) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const promises = items.map(item => {
+        const targetId = item.variant_uuid || item.product_id || item.id;
+        
+        if (!targetId) return Promise.resolve(); 
+
+        return CartService.addToCart(targetId, item.quantity)
+          .catch(e => console.error(`Failed to add item ${targetId}`, e));
+      });
+
+      await Promise.all(promises);
+
+      setMessage('✅ Đã thêm các sản phẩm vào giỏ!');
+      await fetchCart();
+      return true;
+    } catch (err) {
+      setError(err.message || "Có lỗi khi thêm vào giỏ hàng");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateQuantity = async (itemUuid, newQuantity) => {
     if (newQuantity < 0) return;
-
-    if (newQuantity === 0) {
-      return removeItem(itemUuid);
-    }
-
+    if (newQuantity === 0) return removeItem(itemUuid);
     try {
-      const newItems = cartItems.map(item =>
-        item.uuid === itemUuid
-          ? { ...item, quantity: newQuantity }
-          : item
-      );
-
+      const newItems = cartItems.map(item => item.uuid === itemUuid ? { ...item, quantity: newQuantity } : item);
       setCartItems(newItems);
       calculateTotal(newItems);
-
       await CartService.updateItem(itemUuid, newQuantity);
     } catch (err) {
       fetchCart();
     }
   };
 
-  // ✅ DELETE ITEM
   const removeItem = async (itemUuid) => {
     if (!window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
-
     try {
       await CartService.removeItem(itemUuid);
-
-      const newItems = cartItems.filter(
-        item => item.uuid !== itemUuid
-      );
-
+      const newItems = cartItems.filter(item => item.uuid !== itemUuid);
       setCartItems(newItems);
       calculateTotal(newItems);
     } catch (err) {
@@ -102,14 +99,8 @@ export const useCart = () => {
   };
   
   return {
-    cartItems,
-    loading,
-    error,
-    message,   
-    totalPrice,
-    fetchCart,
-    addToCart,  
-    updateQuantity,
-    removeItem,
+    cartItems, loading, error, message, totalPrice,
+    fetchCart, addToCart, addAllToCart, // Export hàm mới
+    updateQuantity, removeItem,
   };
 };

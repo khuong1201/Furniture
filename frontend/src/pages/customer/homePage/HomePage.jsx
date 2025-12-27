@@ -1,23 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import './HomePage.css';
-import ProductCard from '@/pages/customer/components/ProductCard.jsx'
+import ProductCard from '@/pages/customer/components/ProductCard.jsx';
 import { useProduct } from '@/hooks/useProduct';
-import {Link, useNavigate} from 'react-router-dom';
+import { useCategory } from '@/hooks/useCategory';
+import { Link } from 'react-router-dom'; 
 import { AiOutlineLoading3Quarters, AiOutlineWarning } from 'react-icons/ai';
 
-import bedIcon from '@/assets/icons/categories/bed.svg';
-import tableIcon from '@/assets/icons/categories/table.svg';
-import sofaIcon from '@/assets/icons/categories/sofa.svg';
-import chairIcon from '@/assets/icons/categories/chair.svg';
-import wardrobesIcon from '@/assets/icons/categories/wardrobes.svg';
-import lightIcon from '@/assets/icons/categories/light.svg';
-import shelfIcon from '@/assets/icons/categories/shelf.svg';
-import outdoorIcon from '@/assets/icons/categories/outdoor.svg';
-import trending from '@/assets/icons/trending.svg';
+import trendingIcon from '@/assets/icons/trending.svg';
 
 function HomePage() {
-
-  const { products, loading, error, fetchProducts } = useProduct();
+  const { 
+    categories, 
+    loading: categoriesLoading, 
+    fetchCategories 
+  } = useCategory();
 
   const { 
     products: flashProducts, 
@@ -25,113 +21,167 @@ function HomePage() {
     getProducts: fetchFlashSale 
   } = useProduct();
 
-  useEffect(() => {
-    fetchProducts();
-    fetchFlashSale({ is_flash_sale: true, per_page: 8 });
-  }, [fetchProducts, fetchFlashSale]);
+  const {
+    products: trendingProducts,
+    loading: trendingLoading,
+    getProducts: fetchTrending
+  } = useProduct();
 
-  const categories = [
-    { name: "Bed", img: bedIcon },
-    { name: "Table", img: tableIcon },
-    { name: "Sofa", img: sofaIcon },
-    { name: "Chair", img: chairIcon },
-    { name: "Wardrobes", img: wardrobesIcon },
-    { name: "Light", img: lightIcon },
-    { name: "Shelf", img: shelfIcon },
-    { name: "Outdoor", img: outdoorIcon },
-  ];
-  
+  const { 
+    loading: suggestionLoading, 
+    fetchProducts: fetchSuggestionsRaw,
+    error: suggestionError
+  } = useProduct();
+
+  const [suggestionList, setSuggestionList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadingRef = useRef(false);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchFlashSale({ is_flash_sale: true, per_page: 20 });
+    fetchTrending({ sort_by: 'best_selling', per_page: 20 });
+    
+    loadSuggestions(1);
+  }, []); 
+
+  const loadSuggestions = useCallback(async (currentPage) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+
+    try {
+      const newProducts = await fetchSuggestionsRaw({ 
+        sort_by: 'view_count', 
+        per_page: 12, 
+        page: currentPage 
+      });
+
+      if (!newProducts || newProducts.length === 0) {
+        setHasMore(false);
+      } else {
+        setSuggestionList(prev => [...prev, ...newProducts]);
+      }
+    } catch (err) {
+      console.error("Load more suggestions failed:", err);
+    } finally {
+      loadingRef.current = false;
+    }
+  }, [fetchSuggestionsRaw]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 300 >= document.documentElement.offsetHeight &&
+        !loadingRef.current &&
+        hasMore &&
+        !suggestionLoading
+      ) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        loadSuggestions(nextPage);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, suggestionLoading, page, loadSuggestions]);
+
+  const SectionLoading = () => (
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '20px' }}>
+      <AiOutlineLoading3Quarters className="loading-icon spin" />
+    </div>
+  );
+
   return (
     <div className="home-container">
-
-      {loading && (
-        <div className="loading-state">
-          <AiOutlineLoading3Quarters className="loading-icon" />
-          <span>Đang tải sản phẩm...</span>
-        </div>
-      )}
-
-      {error && (
+      
+      {/* Hiển thị lỗi Global nếu có */}
+      {suggestionError && (
         <div className="error-state">
           <AiOutlineWarning className="error-icon" />
-          <span>{error}</span>
+          <span>{suggestionError}</span>
         </div>
       )}
       
-      {/* --- PHẦN 2: CATEGORIES --- */}
+      {/* --- PHẦN 1: CATEGORIES --- */}
       <section className="categories-section">
-        <h3>Categories</h3>
-        <div className="category-list">
-          {categories.map((cat, index) => (
-            <div key={index} className="cat-item">
-              <div className="cat-icon-box">
-                {/* 3. DÙNG THẺ IMG THAY VÌ COMPONENT */}
-                <img src={cat.img} alt={cat.name} className="cat-img-svg" />
-              </div>
-              <span>{cat.name}</span>
-            </div>
-          ))}
-        </div>
+        {categoriesLoading ? <SectionLoading /> : (
+          <div className="category-list">
+            {categories.map((cat) => (
+              <Link to={`/category/${cat.slug}`} key={cat.uuid || cat.id} className="cat-item">
+                <div className="cat-icon-box">
+                  <img 
+                    src={cat.image || 'https://placehold.co/150?text=No+Img'} 
+                    alt={cat.name} 
+                    className="cat-img-svg" 
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/150?text=Icon'; }}
+                  />
+                </div>
+                <span>{cat.name}</span>
+              </Link>
+            ))}
+            {!categoriesLoading && categories.length === 0 && (
+              <div style={{textAlign: 'center', width: '100%', color: '#999'}}>No categories found.</div>
+            )}
+          </div>
+        )}
       </section>
 
-      {/* --- PHẦN 3: FLASH SALE  --- */}
+      {/* --- PHẦN 2: FLASH SALE (Horizontal Scroll) --- */}
       <section className="pd-sale-section">
         <div className="flash-header">
-          <h3>Flash Sale 
-            {/* <span className="timer">01 : 23 : 20</span> */}
-          </h3>
-          <a href="#" className="view-all">View all</a>
+          <h3>Flash Sale</h3>
+          <Link to="/flash-sale" className="view-all">View all</Link>
         </div>
-
-
-        <div className="product-horizontal">
-          {flashProducts.map((item) => (
-            <ProductCard 
-              key={item.uuid || item.id}  
-              item={item}
-              variant="flash"
-            />
-          ))}
-        </div>  
+        {flashLoading ? <SectionLoading /> : (
+          // Thêm style overflowX để lướt ngang
+          <div className="product-horizontal" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '10px' }}>
+            {flashProducts.map((item) => (
+              <ProductCard key={item.uuid || item.id} item={item} variant="flash" />
+            ))}
+          </div>  
+        )}
       </section>
 
-      {/* Top Trending */} 
+      {/* --- PHẦN 3: TOP TRENDING (Horizontal Scroll) --- */} 
       <section className='pd-trending-section'> 
         <div className="trending-header"> 
-          <h3>Top Trending
-            <img src={trending} alt='trending' className="trending-icon" />
-          </h3> 
-          <a href="#" className="view-all">
-            View all
-          </a> 
+          <h3>Top Trending <img src={trendingIcon} alt='trending' className="trending-icon" /></h3> 
+          <Link to="/trending" className="view-all">View all</Link> 
         </div> 
-
-        <div className="product-horizontal">
-          {products.map((item) => (
-            <ProductCard 
-              key={item.uuid || item.id}  
-              item={item}
-              variant="top"
-            />
-          ))}
-        </div>  
+        {trendingLoading ? <SectionLoading /> : (
+          <div className="product-horizontal" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '10px' }}>
+            {trendingProducts.map((item) => (
+              <ProductCard key={item.uuid || item.id} item={item} variant="top" />
+            ))}
+          </div>  
+        )}
       </section>
       
-        {/* Today's Suggestions */}
+      {/* --- PHẦN 4: SUGGESTIONS (Vertical Infinite Scroll) --- */}
       <section className='pd-suggestion-section'>
         <div className="suggestion-header">
           <h3>Today's Suggestions</h3> 
         </div>
 
         <div className="product-grid">
-          {products.map((item) => (
-            <ProductCard 
-              key={item.uuid || item.id}  
-              item={item}
-              variant="default"
-            />
+          {suggestionList.map((item, index) => (
+            // Dùng index làm key dự phòng để tránh lỗi duplicate key khi React render nhanh
+            <ProductCard key={`${item.uuid}-${index}`} item={item} variant="default" />
           ))}
         </div>
+
+        {/* Loading Spinner khi đang tải trang tiếp theo */}
+        {suggestionLoading && <SectionLoading />}
+        
+        {/* Thông báo hết dữ liệu */}
+        {!hasMore && suggestionList.length > 0 && (
+          <div style={{ textAlign: 'center', padding: '30px', color: '#888', fontStyle: 'italic' }}>
+            You have reached the end of the list.
+          </div>
+        )}
       </section>
     </div>
   );

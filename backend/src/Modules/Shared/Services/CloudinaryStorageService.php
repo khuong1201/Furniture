@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Modules\Shared\Services;
 
-use Modules\Shared\Contracts\ImageStorageInterface;
-use Illuminate\Http\UploadedFile;
 use Cloudinary\Cloudinary;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use RuntimeException;
-use InvalidArgumentException;
+use Modules\Shared\Contracts\StorageServiceInterface;
+use Modules\Shared\DTOs\UploadedFileDTO;
+use Modules\Shared\Exceptions\BusinessException;
+use Throwable;
 
-class CloudinaryStorageService implements ImageStorageInterface
+class CloudinaryStorageService implements StorageServiceInterface
 {
     protected Cloudinary $cloudinary;
 
     public function __construct()
     {
-        $config = config('cloudinary');
-        if (empty($config['cloud_name']) || empty($config['api_key'])) {
-             Log::warning("Cloudinary config is missing.");
+        if (empty(config('cloudinary.cloud_name'))) {
+            throw new BusinessException(500990, 'Cloudinary config is missing');
         }
 
         $this->cloudinary = new Cloudinary([
@@ -28,72 +28,42 @@ class CloudinaryStorageService implements ImageStorageInterface
                 'api_key'    => config('cloudinary.api_key'),
                 'api_secret' => config('cloudinary.api_secret'),
             ],
-            'url' => [
-                'secure' => true
-            ]
+            'url' => ['secure' => true]
         ]);
     }
 
-    public function upload(UploadedFile $file, string $folder): array
+    public function upload(UploadedFile $file, string $folder = 'general'): UploadedFileDTO
     {
-        $this->validateFile($file);
-
         try {
-            $uploaded = $this->cloudinary->uploadApi()->upload(
+            $response = $this->cloudinary->uploadApi()->upload(
                 $file->getRealPath(),
                 [
                     'folder' => $folder,
                     'resource_type' => 'auto',
                     'quality' => 'auto:good',
-                    'fetch_format' => 'auto',
                 ]
             );
 
-            return [
-                'url' => (string) $uploaded['secure_url'],
-                'public_id' => (string) $uploaded['public_id'],
-                'format' => $uploaded['format'] ?? null,
-                'width' => $uploaded['width'] ?? null,
-                'height' => $uploaded['height'] ?? null,
-            ];
-            
-        } catch (\Exception $e) {
-            Log::error('Cloudinary upload failed', [
+            return UploadedFileDTO::fromCloudinary((array)$response);
+
+        } catch (Throwable $e) {
+            Log::error('Cloudinary upload failed: ' . $e->getMessage(), [
                 'file' => $file->getClientOriginalName(),
-                'error' => $e->getMessage()
+                'trace' => $e->getTraceAsString()
             ]);
             
-            throw new RuntimeException('Failed to upload image: ' . $e->getMessage());
+            throw new BusinessException(500110, 'Failed to upload media: ' . $e->getMessage());
         }
     }
 
-    public function delete(?string $publicId): void
+    public function delete(string $fileId): bool
     {
-        if (!$publicId) {
-            return;
-        }
-
         try {
-            $this->cloudinary->uploadApi()->destroy($publicId);
-        } catch (\Exception $e) {
-            Log::warning('Cloudinary delete failed', [
-                'public_id' => $publicId,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    protected function validateFile(UploadedFile $file): void
-    {
-        $maxSize = 10 * 1024 * 1024; 
-        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-
-        if ($file->getSize() > $maxSize) {
-            throw new InvalidArgumentException('File size exceeds 10MB limit.');
-        }
-
-        if (!in_array($file->getMimeType(), $allowedMimes)) {
-            throw new InvalidArgumentException('Invalid file type. Only images are allowed.');
+            $this->cloudinary->uploadApi()->destroy($fileId);
+            return true;
+        } catch (Throwable $e) {
+            Log::warning("Cloudinary delete failed: {$fileId}", ['error' => $e->getMessage()]);
+            return false;
         }
     }
 }

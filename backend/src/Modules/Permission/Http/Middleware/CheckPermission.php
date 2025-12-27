@@ -7,7 +7,7 @@ namespace Modules\Permission\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Modules\Permission\Services\PermissionService;
-use Modules\Shared\Http\Resources\ApiResponse;
+use Modules\Shared\Exceptions\BusinessException;
 
 class CheckPermission
 {
@@ -18,10 +18,13 @@ class CheckPermission
     public function handle(Request $request, Closure $next, string $permission): mixed
     {
         $user = $request->user();
+
         if (!$user) {
-            return response()->json(ApiResponse::error('Unauthenticated', 401), 401);
+            throw new BusinessException(401022, 'Unauthenticated');
         }
-        
+
+        if ($user->hasRole('super-admin')) return $next($request);
+
         $permissionsToCheck = explode('|', $permission);
         $userId = (int) $user->id;
 
@@ -31,6 +34,6 @@ class CheckPermission
             }
         }
 
-        return response()->json(ApiResponse::error('Forbidden: You do not have the required permission.', 403), 403);
+        throw new BusinessException(403023);
     }
 }

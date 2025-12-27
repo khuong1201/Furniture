@@ -3,10 +3,10 @@
 namespace Modules\Log\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Modules\Log\Events\ModelActionLogged;
-use Modules\Log\Events\SystemErrorLogged;
-use Modules\Log\Listeners\WriteModelActionLog;
-use Modules\Log\Listeners\WriteSystemErrorLog;
+use Modules\Shared\Events\EntityActioned;
+use Modules\Shared\Events\SystemErrorOccurred;
+use Modules\Log\Listeners\HandleEntityAction;
+use Modules\Log\Listeners\HandleSystemError;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -16,8 +16,12 @@ class EventServiceProvider extends ServiceProvider
      * @var array<string, array<int, string>>
      */
     protected $listen = [
-        ModelActionLogged::class => [WriteModelActionLog::class],
-        SystemErrorLogged::class => [WriteSystemErrorLog::class],
+        EntityActioned::class => [
+            HandleEntityAction::class,
+        ],
+        SystemErrorOccurred::class => [
+            HandleSystemError::class,
+        ],
     ];
 
     /**

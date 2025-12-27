@@ -4,25 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\Product\Services;
 
-use Modules\Shared\Services\BaseService;
-use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Modules\Product\Domain\Models\Product;
-use Modules\Product\Domain\Models\ProductVariant;
-use Modules\Product\Domain\Models\AttributeValue;
-use Modules\Product\Domain\Models\Attribute;
-use Modules\Product\Domain\Models\ProductImage;
-use Modules\Category\Domain\Models\Category;
-use Modules\Shared\Contracts\MediaServiceInterface;
-use Modules\Shared\Contracts\InventoryServiceInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Pagination\LengthAwarePaginator;
+
+use Modules\Shared\Services\BaseService;
+use Modules\Shared\Exceptions\BusinessException;
+use Modules\Shared\Contracts\InventoryServiceInterface;
+use Modules\Shared\Contracts\StorageServiceInterface;
+
+use Modules\Category\Domain\Models\Category;
+use Modules\Brand\Domain\Models\Brand;
+use Modules\Product\Domain\Models\Attribute;
+use Modules\Product\Domain\Models\AttributeValue;
+use Modules\Product\Domain\Models\Product;
+use Modules\Product\Domain\Models\ProductImage;
+use Modules\Product\Domain\Models\ProductVariant;
+use Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 
 class ProductService extends BaseService
 {
     public function __construct(
         ProductRepositoryInterface $repo,
-        protected MediaServiceInterface $mediaService,
+        protected StorageServiceInterface $storageService,
         protected InventoryServiceInterface $inventoryService
     ) {
         parent::__construct($repo);
@@ -30,61 +37,43 @@ class ProductService extends BaseService
 
     public function create(array $data): Model
     {
+        if (!empty($data['variants'])) {
+            $this->validateUniqueSkuInPayload($data['variants']);
+        }
+
         return DB::transaction(function () use ($data) {
-            // 1. Create Product Core
             $productData = [
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-                'is_active' => $data['is_active'] ?? true,
+                'name'         => $data['name'],
+                'slug'         => $data['slug'] ?? Str::slug($data['name']),
+                'description'  => $data['description'] ?? null,
+                'is_active'    => $data['is_active'] ?? true,
                 'has_variants' => $data['has_variants'] ?? false,
+                'price'        => $data['has_variants'] ? 0 : ($data['price'] ?? 0),
+                'sku'          => $data['has_variants'] ? null : ($data['sku'] ?? null),
             ];
 
             if (isset($data['category_uuid'])) {
                 $productData['category_id'] = Category::where('uuid', $data['category_uuid'])->value('id');
             }
-
-            // Nếu là sản phẩm đơn, dùng giá trực tiếp
-            if (!$productData['has_variants']) {
-                $productData['price'] = $data['price'];
-                $productData['sku'] = $data['sku'];
+            if (isset($data['brand_uuid'])) {
+                $productData['brand_id'] = Brand::where('uuid', $data['brand_uuid'])->value('id');
             }
 
             $product = parent::create($productData);
 
-            // 2. Handle Variants
             if ($product->has_variants && !empty($data['variants'])) {
-                foreach ($data['variants'] as $variantData) {
-                    $this->createVariant($product, $variantData);
-                }
-                
-                // [LOGIC QUAN TRỌNG]: Cập nhật lại giá min/max cho cha sau khi tạo xong variants
-                $this->updateProductMetadata($product);
+                $this->processVariants($product, $data['variants']);
             } else {
-                // Tạo variant ẩn cho sản phẩm đơn
-                $this->createVariant($product, [
-                    'sku' => $data['sku'],
-                    'price' => $data['price'],
-                    'weight' => $data['weight'] ?? 0,
-                    'stock' => $data['warehouse_stock'] ?? [], 
-                    'attributes' => [] 
-                ]);
+                $this->createSingleVariant($product, $data);
             }
 
-            // 3. Handle Images
-            if (!empty($data['images']) && is_array($data['images'])) {
-                foreach ($data['images'] as $index => $file) {
-                    $uploadData = $this->mediaService->upload($file, 'products');
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_url' => $uploadData['url'],
-                        'public_id' => $uploadData['public_id'] ?? null,
-                        'is_primary' => $index === 0,
-                        'sort_order' => $index
-                    ]);
-                }
+            if (!empty($data['images'])) {
+                $this->processImages($product, $data['images']);
             }
 
-            return $product->load(['variants.attributeValues', 'images', 'category']);
+            $this->updateProductMetadata($product);
+
+            return $product->load(['variants', 'images', 'brand', 'category']);
         });
     }
 
@@ -92,14 +81,23 @@ class ProductService extends BaseService
     {
         $product = $this->findByUuidOrFail($uuid);
 
+        if (isset($data['variants'])) {
+            $this->validateUniqueSkuInPayload($data['variants']);
+        }
+
         return DB::transaction(function () use ($product, $data) {
-            $updateData = collect($data)->only(['name', 'description', 'is_active'])->toArray();
+            $updateData = collect($data)->only(['name', 'description', 'is_active', 'slug'])->toArray();
             
+            if (isset($data['name']) && !isset($data['slug'])) {
+                $updateData['slug'] = Str::slug($data['name']);
+            }
             if (isset($data['category_uuid'])) {
                 $updateData['category_id'] = Category::where('uuid', $data['category_uuid'])->value('id');
             }
+            if (isset($data['brand_uuid'])) {
+                $updateData['brand_id'] = Brand::where('uuid', $data['brand_uuid'])->value('id');
+            }
 
-            // Update giá trực tiếp nếu là sản phẩm đơn
             if (!$product->has_variants) {
                 if (isset($data['price'])) $updateData['price'] = $data['price'];
                 if (isset($data['sku'])) $updateData['sku'] = $data['sku'];
@@ -107,100 +105,237 @@ class ProductService extends BaseService
 
             $product->update($updateData);
 
-            // Xử lý update biến thể
             if ($product->has_variants && isset($data['variants'])) {
-                $this->syncVariants($product, $data['variants']);
-                
-                // [LOGIC QUAN TRỌNG]: Tính lại giá Min sau khi sửa/xóa/thêm variant
-                $this->updateProductMetadata($product);
+                $product->variants()->delete(); 
+                $this->processVariants($product, $data['variants']);
             } 
-            
+            elseif (!$product->has_variants && isset($data['warehouse_stock'])) {
+                $variant = $product->variants()->first();
+                if ($variant) {
+                    $this->syncVariantStock($variant->id, $data['warehouse_stock']);
+                } else {
+                    $this->createSingleVariant($product, $data);
+                }
+            }
+
+            if (isset($data['deleted_image_uuids']) && is_array($data['deleted_image_uuids'])) {
+                $this->deleteImages($data['deleted_image_uuids']);
+            }
+            if (isset($data['current_images_state']) && is_array($data['current_images_state'])) {
+                $this->updateImagesState($data['current_images_state']);
+            }
+
+            $this->updateProductMetadata($product);
+
             return $product->load(['variants', 'images']);
         });
     }
 
-    /**
-     * Hàm helper để đồng bộ giá thấp nhất từ Variants lên Product cha
-     * Giúp hiển thị "Giá từ..." ở danh sách cực nhanh.
-     */
-    protected function updateProductMetadata(Product $product): void
+    protected function createSingleVariant(Product $product, array $data): void
     {
-        if ($product->has_variants) {
-            // Lấy giá thấp nhất trong bảng variants
-            $minPrice = $product->variants()->min('price');
-            $representativeSku = $product->variants()->value('sku'); // Lấy SKU đầu tiên làm đại diện
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'sku'        => $data['sku'] ?? $product->sku,
+            'name'       => $product->name,
+            'price'      => $data['price'] ?? 0,
+            'weight'     => $data['weight'] ?? 0,
+        ]);
 
-            // Update trực tiếp vào bảng products
-            $product->update([
-                'price' => $minPrice, // Cột này giờ đóng vai trò là "Min Price"
-                'sku' => $representativeSku // SKU đại diện
+        $stockData = $data['warehouse_stock'] ?? $data['stock'] ?? [];
+        
+        if (!empty($stockData)) {
+            $this->syncVariantStock($variant->id, $stockData);
+        }
+    }
+
+    protected function processVariants(Product $product, array $variantsData): void
+    {
+        $allAttrSlugs = [];
+        foreach ($variantsData as $v) {
+            if (!empty($v['attributes'])) {
+                foreach ($v['attributes'] as $attr) {
+                    $allAttrSlugs[] = $attr['attribute_slug'];
+                }
+            }
+        }
+        $allAttrSlugs = array_unique($allAttrSlugs);
+        $attributesMap = Attribute::whereIn('slug', $allAttrSlugs)->get()->keyBy('slug');
+
+        foreach ($variantsData as $vData) {
+            $variantName = $vData['name'] ?? ($product->name . ' - ' . $vData['sku']);
+
+            $variant = ProductVariant::create([
+                'product_id' => $product->id,
+                'sku'        => $vData['sku'],
+                'name'       => $variantName,
+                'price'      => $vData['price'],
+                'weight'     => $vData['weight'] ?? 0,
+            ]);
+
+            if (!empty($vData['attributes'])) {
+                $this->attachAttributesToVariant($variant, $vData['attributes'], $attributesMap);
+            }
+
+            $stockData = $vData['warehouse_stock'] ?? $vData['stock'] ?? [];
+            if (!empty($stockData)) {
+                $this->syncVariantStock($variant->id, $stockData);
+            }
+        }
+    }
+
+    /**
+     * FIX: Revert logic map ID.
+     * Chuyển lại về việc gửi payload thô (có chứa warehouse_uuid)
+     * để InventoryService tự xử lý lookup.
+     */
+    protected function syncVariantStock(int $variantId, array $stockData): void
+    {
+        $cleanPayload = [];
+
+        foreach ($stockData as $item) {
+            // Chỉ cần đảm bảo có đủ key, không map sang ID nữa vì InventoryService cần UUID
+            if (isset($item['warehouse_uuid']) && isset($item['quantity'])) {
+                $cleanPayload[] = [
+                    'warehouse_uuid' => $item['warehouse_uuid'],
+                    'quantity'       => (int)$item['quantity']
+                ];
+            }
+        }
+
+        if (!empty($cleanPayload)) {
+            $this->inventoryService->syncStock($variantId, $cleanPayload);
+        }
+    }
+
+    protected function attachAttributesToVariant(ProductVariant $variant, array $attributesData, Collection $attributesMap): void
+    {
+        $attrValueIds = [];
+        foreach ($attributesData as $item) {
+            $slug = $item['attribute_slug'];
+            $attribute = $attributesMap->get($slug);
+            if (!$attribute) continue; 
+
+            $val = AttributeValue::firstOrCreate(
+                ['attribute_id' => $attribute->id, 'value' => $item['value']],
+                ['code' => $item['code'] ?? null]
+            );
+            $attrValueIds[] = $val->id;
+        }
+        $variant->attributeValues()->sync($attrValueIds);
+    }
+
+    protected function deleteImages(array $uuids): void
+    {
+        $images = ProductImage::whereIn('uuid', $uuids)->get();
+        foreach ($images as $img) {
+            if ($img->public_id) {
+                try {
+                    $this->storageService->delete($img->public_id);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("Failed to delete image on cloud: " . $img->public_id);
+                }
+            }
+            $img->delete();
+        }
+    }
+
+    protected function updateImagesState(array $imagesState): void
+    {
+        foreach ($imagesState as $state) {
+            ProductImage::where('uuid', $state['uuid'])->update([
+                'is_primary' => $state['is_primary']
             ]);
         }
     }
 
-    protected function createVariant(Product $product, array $data): void
+    protected function processImages(Product $product, array $files): void
     {
-        $variant = ProductVariant::create([
-            'product_id' => $product->id,
-            'sku' => $data['sku'],
-            'price' => $data['price'],
-            'weight' => $data['weight'] ?? 0,
-        ]);
-
-        if (!empty($data['attributes'])) {
-            $attrValueIds = [];
-            foreach ($data['attributes'] as $attrItem) {
-                $attribute = Attribute::where('slug', $attrItem['attribute_slug'])->first();
-                if (!$attribute) continue;
-
-                if (!empty($attrItem['is_new'])) {
-                    $val = AttributeValue::firstOrCreate(
-                        ['attribute_id' => $attribute->id, 'value' => $attrItem['value']],
-                        ['code' => $attrItem['code'] ?? null]
-                    );
-                    $attrValueIds[] = $val->id;
-                } else {
-                    $val = AttributeValue::where('uuid', $attrItem['value'])->first();
-                    if ($val) $attrValueIds[] = $val->id;
-                }
-            }
-            $variant->attributeValues()->sync($attrValueIds);
-        }
-
-        if (!empty($data['stock'])) {
-            $this->inventoryService->syncStock($variant->id, $data['stock']);
+        foreach ($files as $index => $file) {
+            $dto = $this->storageService->upload($file, 'products/' . $product->uuid);
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_url'  => $dto->url,
+                'public_id'  => $dto->publicId,
+                'is_primary' => $index === 0,
+                'sort_order' => $index
+            ]);
         }
     }
 
-    protected function syncVariants(Product $product, array $variantsData): void
+    protected function updateProductMetadata(Product $product): void
     {
-        foreach ($variantsData as $vData) {
-            if (isset($vData['uuid'])) {
-                // Update
-                $variant = ProductVariant::where('uuid', $vData['uuid'])
-                    ->where('product_id', $product->id)
-                    ->first();
-
-                if ($variant) {
-                    $variant->update([
-                        'sku' => $vData['sku'], 
-                        'price' => $vData['price']
-                    ]);
-                    if (isset($vData['stock'])) {
-                        $this->inventoryService->syncStock($variant->id, $vData['stock']);
-                    }
-                }
-            } else {
-                // Create New
-                $this->createVariant($product, $vData);
-            }
-        }  
+        if ($product->has_variants) {
+            $minPrice = $product->variants()->min('price') ?? 0;
+            $product->update(['price' => $minPrice]);
+        }
     }
 
-    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    protected function validateUniqueSkuInPayload(array $variants): void
+    {
+        $skus = array_column($variants, 'sku');
+        if (count($skus) !== count(array_unique($skus))) {
+            throw new BusinessException(422162, 'Duplicate SKU in variants payload'); 
+        }
+    }
+
+    public function filter(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
         $filters['per_page'] = $perPage;
-
         return $this->repository->filter($filters);
+    }
+
+    public function generateAiDescription(array $data): string
+    {
+        $name = $data['name'];
+        $price = isset($data['price']) ? number_format((int)$data['price']) . ' VND' : 'Contact for price'; 
+        
+        $categoryName = isset($data['category_uuid']) 
+            ? Category::where('uuid', $data['category_uuid'])->value('name') 
+            : 'Uncategorized'; 
+            
+        $brandName = isset($data['brand_uuid']) 
+            ? Brand::where('uuid', $data['brand_uuid'])->value('name') 
+            : 'Generic Brand'; 
+        $variantText = "";
+        if (!empty($data['variants']) && is_array($data['variants'])) {
+            $attrs = [];
+            foreach ($data['variants'] as $v) {
+                if (!empty($v['attributes'])) {
+                    foreach ($v['attributes'] as $attr) {
+                        $val = $attr['value'] ?? '';
+                        if ($val) $attrs[] = "$val";
+                    }
+                }
+            }
+            if (!empty($attrs)) {
+                $variantText = "Available options: " . implode(', ', array_unique($attrs));
+            }
+        }
+
+        $prompt = "You are an expert E-commerce Copywriter. Write a compelling, SEO-friendly product description in ENGLISH based on:\n"
+            . "- Product: $name\n"
+            . "- Category: $categoryName\n"
+            . "- Brand: $brandName\n"
+            . "- Price: $price\n"
+            . "- $variantText\n\n"
+            . "Requirements: ~150 words, professional tone, highlight benefits. Just output content.";
+
+        try {
+            $response = Http::timeout(60)->post('http://ollama:11434/api/generate', [
+                'model' => 'phi4-mini',
+                'prompt' => $prompt,
+                'stream' => false,
+                'options' => ['temperature' => 0.7]
+            ]);
+
+            if ($response->successful()) {
+                return $response->json()['response'];
+            }
+            
+            throw new BusinessException(500, 'AI Service failed to respond.');
+
+        } catch (\Exception $e) {
+            throw new BusinessException(500, 'Could not connect to AI Server.');
+        }
     }
 }

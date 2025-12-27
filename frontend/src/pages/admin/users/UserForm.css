@@ -1,392 +1,415 @@
-/* User Form - Modern Gold Theme với màu chủ đạo #CBA890 */
-
+/* =========================================
+   1. LAYOUT & CONTAINER
+   ========================================= */
 .admin-app-container .user_form-page {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
-/* === Header === */
 .admin-app-container .user_page-header {
     display: flex;
+    /* justify-content: space-between;  <-- XÓA HOẶC SỬA DÒNG NÀY */
+    justify-content: flex-start;     /* Căn tất cả về bên trái */
     align-items: center;
-    gap: 20px;
+    gap: 20px;                       /* Khoảng cách giữa nút Back và Tiêu đề */
+    
     margin-bottom: 24px;
-    padding: 24px 28px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 250, 245, 0.95) 100%);
-    border-radius: 12px;
+    padding: 20px 24px;
+    background: #fff;
+    border-radius: 8px;
     border: 1px solid #e5e7eb;
 }
 
+/* Chỉnh lại style nút Back một chút cho đẹp khi có icon */
 .admin-app-container .user_btn-back {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: white;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #fff;
     border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #6b7280;
+    border-radius: 6px;
+    color: #374151;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 14px;
-    font-weight: 500;
 }
 
 .admin-app-container .user_btn-back:hover {
-    background: #fdf6e3;
+    background: #f3f4f6;
     border-color: #CBA890;
-    color: #a88b75;
-}
-
-.admin-app-container .user_header-content h1 {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 24px;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
-}
-
-.admin-app-container .user_header-content h1 svg {
     color: #CBA890;
 }
 
-/* === Form Container === */
+.admin-app-container .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    /* Thêm border trái để tạo vách ngăn (tùy chọn) */
+    padding-left: 20px;
+    border-left: 1px solid #e5e7eb;
+    line-height: 1.2;
+}
+
+/* =========================================
+   2. FORM SECTIONS
+   ========================================= */
 .admin-app-container .user_form-container {
-    background: white;
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 8px;
     border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
 .admin-app-container .user_form-section {
-    padding: 28px;
+    padding: 24px 32px;
     border-bottom: 1px solid #f3f4f6;
-}
-
-.admin-app-container .user_form-section:last-child {
-    border-bottom: none;
 }
 
 .admin-app-container .user_section-title {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-bottom: 24px;
+    color: #1f2937;
+}
+
+.admin-app-container .user_section-title svg { color: #CBA890; }
+
+.admin-app-container .user_section-title h2 {
     font-size: 16px;
     font-weight: 600;
-    color: #a88b75;
-    margin: 0 0 20px 0;
+    text-transform: uppercase;
+    margin: 0;
 }
 
-.admin-app-container .user_section-title svg {
-    color: #CBA890;
-    width: 18px;
-    height: 18px;
+.admin-app-container .section-hint {
+    font-size: 13px;
+    color: #6b7280;
+    margin: -10px 0 20px 0;
 }
 
-/* === Form Grid === */
+/* =========================================
+   3. INPUTS & GRID
+   ========================================= */
 .admin-app-container .user_form-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-@media (max-width: 600px) {
-    .admin-app-container .user_form-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* === Form Group === */
 .admin-app-container .user_form-group {
-    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .admin-app-container .user_form-group.full-width {
     grid-column: 1 / -1;
 }
 
-.admin-app-container .user_form-group label {
-    display: block;
+.admin-app-container label {
+    font-size: 13px;
     font-weight: 500;
     color: #374151;
-    font-size: 14px;
-    margin-bottom: 8px;
 }
 
-.admin-app-container .user_form-group label .required {
-    color: #ef4444;
-    margin-left: 2px;
-}
-
-.admin-app-container .user_form-group input,
-.admin-app-container .user_form-group select,
-.admin-app-container .user_form-group textarea {
-    width: 100%;
-    padding: 12px 16px;
+.admin-app-container input {
+    padding: 10px 12px;
     border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 14px;
-    transition: all 0.2s;
-    background: white;
+    width: 100%;
 }
 
-.admin-app-container .user_form-group input:focus,
-.admin-app-container .user_form-group select:focus,
-.admin-app-container .user_form-group textarea:focus {
+.admin-app-container input:focus {
     outline: none;
     border-color: #CBA890;
-    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
+    box-shadow: 0 0 0 2px rgba(203, 168, 144, 0.1);
 }
 
-.admin-app-container .user_form-group input:disabled {
-    background: #f9fafb;
-    color: #9ca3af;
-    cursor: not-allowed;
-    border-color: #e5e7eb;
-}
-
-.admin-app-container .user_form-hint {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 6px;
-    line-height: 1.4;
-}
-
-/* === Password Input === */
-.admin-app-container .user_password-input {
+.admin-app-container .input-icon-wrap {
     position: relative;
 }
-
-.admin-app-container .user_password-input input {
-    padding-right: 48px;
-}
-
-.admin-app-container .user_toggle-password {
+.admin-app-container .input-icon-wrap svg {
     position: absolute;
-    right: 12px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    padding: 6px;
+    color: #9ca3af;
+}
+.admin-app-container .input-icon-wrap input {
+    padding-left: 36px;
+}
+
+/* =========================================
+   4. ACCOUNT STATUS (LEFT ALIGNED)
+   ========================================= */
+.admin-app-container .status-wrapper {
+    margin-top: 12px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: all 0.2s;
+    flex-direction: column;
+    align-items: flex-start; /* Căn trái */
 }
 
-.admin-app-container .user_toggle-password:hover {
-    color: #CBA890;
-    background: #fdf6e3;
-}
-
-/* === Roles Checkbox === */
-.admin-app-container .user_roles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
-}
-
-.admin-app-container .user_role-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.admin-app-container .user_role-checkbox:hover {
-    border-color: #CBA890;
-    background: #fdf6e3;
-}
-
-.admin-app-container .user_role-checkbox.selected {
-    background: white;
-    border-color: #CBA890;
-    box-shadow: 0 0 0 3px rgba(203, 168, 144, 0.1);
-}
-
-.admin-app-container .user_role-checkbox input {
-    width: 18px;
-    height: 18px;
-    accent-color: #CBA890;
-    cursor: pointer;
-}
-
-.admin-app-container .user_role-checkbox span {
-    font-size: 14px;
-    color: #374151;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-/* === Switch === */
-.admin-app-container .user_switch-group {
+.admin-app-container .status-control {
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-top: 4px;
+    cursor: pointer;
 }
 
-.admin-app-container .user_switch-label {
-    font-size: 14px;
-    color: #374151;
-    font-weight: 500;
-}
-
+/* Khung Toggle */
 .admin-app-container .user_switch {
     width: 48px;
     height: 26px;
-    background: #d1d5db;
-    border-radius: 13px;
+    background: #e5e7eb;
+    border-radius: 20px;
     position: relative;
-    cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.3s;
+    border: 1px solid #d1d5db;
     flex-shrink: 0;
-}
-
-.admin-app-container .user_switch:hover {
-    background: #cbd5e1;
 }
 
 .admin-app-container .user_switch.active {
     background: #CBA890;
+    border-color: #CBA890;
 }
 
-.admin-app-container .user_switch.active:hover {
-    background: #a88b75;
-}
-
-.admin-app-container .user_switch::before {
+/* Viên bi tròn */
+.admin-app-container .user_switch::after {
     content: '';
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    background: white;
+    width: 20px;
+    height: 20px;
+    background: #fff;
     border-radius: 50%;
+    position: absolute;
     top: 2px;
     left: 2px;
-    transition: transform 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.admin-app-container .user_switch.active::before {
+.admin-app-container .user_switch.active::after {
     transform: translateX(22px);
 }
 
-/* === Form Actions === */
-.admin-app-container .user_form-actions {
-    display: flex;
+.admin-app-container .status-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* =========================================
+   5. ROLES GRID
+   ========================================= */
+.admin-app-container .user_roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
-    justify-content: flex-end;
-    padding: 24px 28px;
+}
+
+.admin-app-container .role-card {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #f9fafb;
+    transition: all 0.2s;
+}
+
+.admin-app-container .role-card.selected {
+    border-color: #CBA890;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(203, 168, 144, 0.15);
+}
+
+.admin-app-container .role-check { color: #d1d5db; }
+.admin-app-container .role-card.selected .role-check { color: #CBA890; }
+
+.admin-app-container .role-info strong { display: block; font-size: 14px; color: #1f2937; }
+.admin-app-container .role-info span { font-size: 12px; color: #6b7280; }
+
+/* =========================================
+   6. TRANSFER LIST
+   ========================================= */
+.admin-app-container .transfer-list-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 400px;
+}
+
+.admin-app-container .transfer-column {
+    flex: 1;
+    height: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.admin-app-container .transfer-header {
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+    text-transform: uppercase;
+}
+
+.admin-app-container .transfer-header.assigned {
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.admin-app-container .transfer-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+}
+
+.admin-app-container .transfer-search input {
+    border: none;
+    padding: 6px;
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    background: transparent;
+}
+
+.admin-app-container .transfer-search svg { color: #9ca3af; }
+
+.admin-app-container .transfer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    background: #fafafa;
+}
+
+.admin-app-container .transfer-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.admin-app-container .transfer-item:hover {
     background: #fdf6e3;
-    border-top: 1px solid #d1d5db;
-    border-radius: 0 0 12px 12px;
+    border-color: #e5e7eb;
+}
+
+.admin-app-container .transfer-item.selected {
+    background: #CBA890;
+    color: #fff;
+    border-color: #CBA890;
+}
+
+.admin-app-container .transfer-item.selected .item-module {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+.admin-app-container .item-name { font-size: 13px; font-weight: 500; }
+.admin-app-container .item-module {
+    font-size: 11px;
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #6b7280;
+}
+
+.admin-app-container .empty-msg {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    margin-top: 60px;
+    font-style: italic;
+}
+
+.admin-app-container .transfer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-app-container .btn-move {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.admin-app-container .btn-move:hover:not(:disabled) {
+    background: #CBA890;
+    color: #fff;
+    border-color: #CBA890;
+}
+
+.admin-app-container .btn-move:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f3f4f6;
+}
+
+/* =========================================
+   7. ACTIONS FOOTER
+   ========================================= */
+.admin-app-container .user_form-actions {
+    padding: 20px 32px;
+    background: #f9fafb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #e5e7eb;
 }
 
 .admin-app-container .user_btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: all 0.2s;
-    min-width: 100px;
-    justify-content: center;
 }
 
-.admin-app-container .user_btn-primary {
-    background: linear-gradient(135deg, #CBA890 0%, #a88b75 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(203, 168, 144, 0.25);
-}
+.admin-app-container .user_btn-primary { background: #CBA890; color: #fff; }
+.admin-app-container .user_btn-primary:hover { background: #b08d74; }
+.admin-app-container .user_btn-secondary { background: #fff; border: 1px solid #d1d5db; color: #374151; }
+.admin-app-container .user_btn-secondary:hover { background: #f3f4f6; }
 
-.admin-app-container .user_btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(203, 168, 144, 0.35);
-}
-
-.admin-app-container .user_btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.admin-app-container .user_btn-secondary {
-    background: white;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
-}
-
-.admin-app-container .user_btn-secondary:hover {
-    background: #fdf6e3;
-    border-color: #CBA890;
-    color: #a88b75;
-}
-
-/* === Alert === */
-.admin-app-container .user_alert {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.admin-app-container .user_alert-error {
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.admin-app-container .user_alert svg {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-}
-
-/* === Loading === */
-.admin-app-container .user_loading-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 60px;
-}
-
-.admin-app-container .user_spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid #e5e7eb;
-    border-top-color: #CBA890;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.admin-app-container .user_loading-state p {
-    color: #6b7280;
-    font-size: 14px;
-    margin: 0;
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-app-container .user_form-grid { grid-template-columns: 1fr; }
+    .admin-app-container .transfer-list-container { flex-direction: column; height: auto; }
+    .admin-app-container .transfer-column { width: 100%; height: 300px; }
+    .admin-app-container .transfer-actions { flex-direction: row; }
 }

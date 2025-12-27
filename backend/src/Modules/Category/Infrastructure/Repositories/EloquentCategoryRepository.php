@@ -17,27 +17,32 @@ class EloquentCategoryRepository extends EloquentBaseRepository implements Categ
         parent::__construct($model);
     }
 
+    public function findBySlug(string $slug): ?Category
+    {
+        return $this->model->where('slug', $slug)->first();
+    }
+
     public function getTree(): Collection
     {
         return $this->model
             ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->with(['allChildren' => function($query) {
-                $query->where('is_active', true);
+            ->with(['children' => function($query) {
+                $query->orderBy('name'); 
             }])
+            ->orderBy('name')
             ->get();
     }
 
     public function filter(array $filters): LengthAwarePaginator
     {
-        $query = $this->query();
+        $query = $this->model->newQuery();
 
         if (!empty($filters['search'])) {
             $query->where('name', 'like', "%{$filters['search']}%");
         }
         
         if (isset($filters['is_active'])) {
-            $query->where('is_active', (bool)$filters['is_active']);
+            $query->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN));
         }
 
         return $query->latest()->paginate($filters['per_page'] ?? 15);

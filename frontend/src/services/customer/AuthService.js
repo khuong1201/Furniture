@@ -73,7 +73,7 @@ class AuthService {
         } catch (refreshError) {
             console.error('❌ Refresh Token thất bại:', refreshError);
             this.logout();
-            window.location.href = '/customer/login'; 
+            window.location.href = '/login'; 
             throw refreshError;
         }
       }

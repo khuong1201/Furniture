@@ -16,8 +16,15 @@ class EventServiceProvider extends ServiceProvider
             \Modules\Notification\Listeners\SendLowStockNotification::class,
         ],
         \Modules\Order\Events\OrderCreated::class => [
-            \Modules\Notification\Listeners\SendOrderCreatedNotification::class,
+            \Modules\Notification\Listeners\SendOrderCreateNotificationListener::class,
+        
+            \Modules\Notification\Listeners\SendOrderEmailListener::class,
         ],
+
+        \Modules\Order\Events\OrderCancelled::class => [
+            \Modules\Notification\Listeners\SendOrderCancelNotificationListener::class,
+        ],
+
         \Modules\Order\Events\OrderStatusUpdated::class => [
             \Modules\Notification\Listeners\SendOrderStatusNotification::class,
         ],
